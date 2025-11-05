@@ -6,7 +6,7 @@ Make a GitHub account
 
 Download:
 Unity Hub
-Unity Version 6.1 (6001.3f1)
+Unity Version 6.2 (6001.2.10f1)
 GitHub desktop
 git lfs (at git-lfs.com)
 git bash (at git-scm.com/install/windows)
