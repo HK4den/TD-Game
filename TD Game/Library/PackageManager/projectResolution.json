@@ -1,18 +1,18 @@
 {
   "context": {
-    "projectPath": "C:/Users/kaden/OneDrive/Desktop/TD-Game/TD Game/Packages",
+    "projectPath": "C:/Users/Student/Documents/GitHub/TD-Game/TD Game/Packages",
     "unityVersion": "6000.2.10f1"
   },
   "inputs": [
-    "C:\\Users\\kaden\\OneDrive\\Desktop\\TD-Game\\TD Game\\Packages\\manifest.json",
-    "C:\\Users\\kaden\\OneDrive\\Desktop\\TD-Game\\TD Game\\Packages\\packages-lock.json",
+    "C:\\Users\\Student\\Documents\\GitHub\\TD-Game\\TD Game\\Packages\\manifest.json",
+    "C:\\Users\\Student\\Documents\\GitHub\\TD-Game\\TD Game\\Packages\\packages-lock.json",
     "C:\\Program Files\\Unity\\Hub\\Editor\\6000.2.10f1\\Editor\\Data\\Resources\\PackageManager\\BuiltInPackages\\BuiltInPackagesCombined.sha1"
   ],
   "outputs": {
     "com.unity.ai.navigation@2.0.9": {
       "name": "com.unity.ai.navigation",
       "displayName": "AI Navigation",
-      "resolvedPath": "C:\\Users\\kaden\\OneDrive\\Desktop\\TD-Game\\TD Game\\Library\\PackageCache\\com.unity.ai.navigation@5218e4bf7edc",
+      "resolvedPath": "C:\\Users\\Student\\Documents\\GitHub\\TD-Game\\TD Game\\Library\\PackageCache\\com.unity.ai.navigation@5218e4bf7edc",
       "fingerprint": "5218e4bf7edc04fcad4ed3836c1c41aef334b996",
       "editorCompatibility": "6000.0.0a1",
       "version": "2.0.9",
@@ -22,7 +22,7 @@
     "com.unity.collab-proxy@2.10.1": {
       "name": "com.unity.collab-proxy",
       "displayName": "Unity Version Control",
-      "resolvedPath": "C:\\Users\\kaden\\OneDrive\\Desktop\\TD-Game\\TD Game\\Library\\PackageCache\\com.unity.collab-proxy@b8d65294b30f",
+      "resolvedPath": "C:\\Users\\Student\\Documents\\GitHub\\TD-Game\\TD Game\\Library\\PackageCache\\com.unity.collab-proxy@b8d65294b30f",
       "fingerprint": "b8d65294b30f82d8ae36bb804a8fe1e8213be057",
       "editorCompatibility": "2021.3.0f1",
       "version": "2.10.1",
@@ -32,7 +32,7 @@
     "com.unity.ide.rider@3.0.38": {
       "name": "com.unity.ide.rider",
       "displayName": "JetBrains Rider Editor",
-      "resolvedPath": "C:\\Users\\kaden\\OneDrive\\Desktop\\TD-Game\\TD Game\\Library\\PackageCache\\com.unity.ide.rider@1f60b3138684",
+      "resolvedPath": "C:\\Users\\Student\\Documents\\GitHub\\TD-Game\\TD Game\\Library\\PackageCache\\com.unity.ide.rider@1f60b3138684",
       "fingerprint": "1f60b3138684c97af67aa8d911b1632ba916d29d",
       "editorCompatibility": "2021.3.0a1",
       "version": "3.0.38",
@@ -42,7 +42,7 @@
     "com.unity.ide.visualstudio@2.0.25": {
       "name": "com.unity.ide.visualstudio",
       "displayName": "Visual Studio Editor",
-      "resolvedPath": "C:\\Users\\kaden\\OneDrive\\Desktop\\TD-Game\\TD Game\\Library\\PackageCache\\com.unity.ide.visualstudio@74aa435fc4bb",
+      "resolvedPath": "C:\\Users\\Student\\Documents\\GitHub\\TD-Game\\TD Game\\Library\\PackageCache\\com.unity.ide.visualstudio@74aa435fc4bb",
       "fingerprint": "74aa435fc4bb41890f400130ec80f271d1292fd4",
       "editorCompatibility": "2021.3.0a1",
       "version": "2.0.25",
@@ -52,7 +52,7 @@
     "com.unity.inputsystem@1.14.2": {
       "name": "com.unity.inputsystem",
       "displayName": "Input System",
-      "resolvedPath": "C:\\Users\\kaden\\OneDrive\\Desktop\\TD-Game\\TD Game\\Library\\PackageCache\\com.unity.inputsystem@be6c4fd0abf5",
+      "resolvedPath": "C:\\Users\\Student\\Documents\\GitHub\\TD-Game\\TD Game\\Library\\PackageCache\\com.unity.inputsystem@be6c4fd0abf5",
       "fingerprint": "be6c4fd0abf5b9b45f956b97294032a67f3c2f4d",
       "editorCompatibility": "2021.3.0a1",
       "version": "1.14.2",
@@ -62,7 +62,7 @@
     "com.unity.multiplayer.center@1.0.0": {
       "name": "com.unity.multiplayer.center",
       "displayName": "Multiplayer Center",
-      "resolvedPath": "C:\\Users\\kaden\\OneDrive\\Desktop\\TD-Game\\TD Game\\Library\\PackageCache\\com.unity.multiplayer.center@f3fb577b3546",
+      "resolvedPath": "C:\\Users\\Student\\Documents\\GitHub\\TD-Game\\TD Game\\Library\\PackageCache\\com.unity.multiplayer.center@f3fb577b3546",
       "fingerprint": "f3fb577b3546594b97b8cc34307cd621f60f1c73",
       "editorCompatibility": "6000.0.0a1",
       "version": "1.0.0",
@@ -72,7 +72,7 @@
     "com.unity.render-pipelines.universal@17.2.0": {
       "name": "com.unity.render-pipelines.universal",
       "displayName": "Universal Render Pipeline",
-      "resolvedPath": "C:\\Users\\kaden\\OneDrive\\Desktop\\TD-Game\\TD Game\\Library\\PackageCache\\com.unity.render-pipelines.universal@4976252adeb8",
+      "resolvedPath": "C:\\Users\\Student\\Documents\\GitHub\\TD-Game\\TD Game\\Library\\PackageCache\\com.unity.render-pipelines.universal@4976252adeb8",
       "fingerprint": "4976252adeb8bb9e73a668b5c0776a28ae94afd6",
       "editorCompatibility": "6000.2.0a1",
       "version": "17.2.0",
@@ -82,7 +82,7 @@
     "com.unity.test-framework@1.6.0": {
       "name": "com.unity.test-framework",
       "displayName": "Test Framework",
-      "resolvedPath": "C:\\Users\\kaden\\OneDrive\\Desktop\\TD-Game\\TD Game\\Library\\PackageCache\\com.unity.test-framework@d97b7cd61ded",
+      "resolvedPath": "C:\\Users\\Student\\Documents\\GitHub\\TD-Game\\TD Game\\Library\\PackageCache\\com.unity.test-framework@d97b7cd61ded",
       "fingerprint": "d97b7cd61dedd05f0fbaa425a40bd39d098f5cfc",
       "editorCompatibility": "6000.0.44f1",
       "version": "1.6.0",
@@ -92,7 +92,7 @@
     "com.unity.timeline@1.8.9": {
       "name": "com.unity.timeline",
       "displayName": "Timeline",
-      "resolvedPath": "C:\\Users\\kaden\\OneDrive\\Desktop\\TD-Game\\TD Game\\Library\\PackageCache\\com.unity.timeline@6b9e48457ddb",
+      "resolvedPath": "C:\\Users\\Student\\Documents\\GitHub\\TD-Game\\TD Game\\Library\\PackageCache\\com.unity.timeline@6b9e48457ddb",
       "fingerprint": "6b9e48457ddb4f64813d77fd77efc79a8f3102ae",
       "editorCompatibility": "2021.3.0a1",
       "version": "1.8.9",
@@ -102,7 +102,7 @@
     "com.unity.ugui@2.0.0": {
       "name": "com.unity.ugui",
       "displayName": "Unity UI",
-      "resolvedPath": "C:\\Users\\kaden\\OneDrive\\Desktop\\TD-Game\\TD Game\\Library\\PackageCache\\com.unity.ugui@7056cb05de4c",
+      "resolvedPath": "C:\\Users\\Student\\Documents\\GitHub\\TD-Game\\TD Game\\Library\\PackageCache\\com.unity.ugui@7056cb05de4c",
       "fingerprint": "7056cb05de4c8d42fc864130edd83b3a093a8505",
       "editorCompatibility": "2019.2.0a1",
       "version": "2.0.0",
@@ -112,7 +112,7 @@
     "com.unity.visualscripting@1.9.8": {
       "name": "com.unity.visualscripting",
       "displayName": "Visual Scripting",
-      "resolvedPath": "C:\\Users\\kaden\\OneDrive\\Desktop\\TD-Game\\TD Game\\Library\\PackageCache\\com.unity.visualscripting@b4d700247d4b",
+      "resolvedPath": "C:\\Users\\Student\\Documents\\GitHub\\TD-Game\\TD Game\\Library\\PackageCache\\com.unity.visualscripting@b4d700247d4b",
       "fingerprint": "b4d700247d4b84b3360e1afeb054b0bdb201fbc7",
       "editorCompatibility": "2021.3.0a1",
       "version": "1.9.8",
@@ -394,7 +394,7 @@
     "com.unity.ext.nunit@2.0.5": {
       "name": "com.unity.ext.nunit",
       "displayName": "Custom NUnit",
-      "resolvedPath": "C:\\Users\\kaden\\OneDrive\\Desktop\\TD-Game\\TD Game\\Library\\PackageCache\\com.unity.ext.nunit@031a54704bff",
+      "resolvedPath": "C:\\Users\\Student\\Documents\\GitHub\\TD-Game\\TD Game\\Library\\PackageCache\\com.unity.ext.nunit@031a54704bff",
       "fingerprint": "031a54704bffe39e6a0324909f8eaa4565bdebf2",
       "editorCompatibility": "2019.4.0a1",
       "version": "2.0.5",
@@ -404,7 +404,7 @@
     "com.unity.render-pipelines.core@17.2.0": {
       "name": "com.unity.render-pipelines.core",
       "displayName": "Scriptable Render Pipeline Core",
-      "resolvedPath": "C:\\Users\\kaden\\OneDrive\\Desktop\\TD-Game\\TD Game\\Library\\PackageCache\\com.unity.render-pipelines.core@1f4d88678591",
+      "resolvedPath": "C:\\Users\\Student\\Documents\\GitHub\\TD-Game\\TD Game\\Library\\PackageCache\\com.unity.render-pipelines.core@1f4d88678591",
       "fingerprint": "1f4d8867859138979c404a1b8a05c2eea37f8a9c",
       "editorCompatibility": "6000.2.0a1",
       "version": "17.2.0",
@@ -414,7 +414,7 @@
     "com.unity.shadergraph@17.2.0": {
       "name": "com.unity.shadergraph",
       "displayName": "Shader Graph",
-      "resolvedPath": "C:\\Users\\kaden\\OneDrive\\Desktop\\TD-Game\\TD Game\\Library\\PackageCache\\com.unity.shadergraph@cd9db05bbc12",
+      "resolvedPath": "C:\\Users\\Student\\Documents\\GitHub\\TD-Game\\TD Game\\Library\\PackageCache\\com.unity.shadergraph@cd9db05bbc12",
       "fingerprint": "cd9db05bbc12e55ac2643785fe5cca52228ad256",
       "editorCompatibility": "6000.2.0a1",
       "version": "17.2.0",
@@ -424,7 +424,7 @@
     "com.unity.render-pipelines.universal-config@17.0.3": {
       "name": "com.unity.render-pipelines.universal-config",
       "displayName": "Universal Render Pipeline Config",
-      "resolvedPath": "C:\\Users\\kaden\\OneDrive\\Desktop\\TD-Game\\TD Game\\Library\\PackageCache\\com.unity.render-pipelines.universal-config@8dc1aab4af1d",
+      "resolvedPath": "C:\\Users\\Student\\Documents\\GitHub\\TD-Game\\TD Game\\Library\\PackageCache\\com.unity.render-pipelines.universal-config@8dc1aab4af1d",
       "fingerprint": "8dc1aab4af1d718781689a36ed5231a35ad1a524",
       "editorCompatibility": "6000.0.0a1",
       "version": "17.0.3",
@@ -434,7 +434,7 @@
     "com.unity.searcher@4.9.3": {
       "name": "com.unity.searcher",
       "displayName": "Searcher",
-      "resolvedPath": "C:\\Users\\kaden\\OneDrive\\Desktop\\TD-Game\\TD Game\\Library\\PackageCache\\com.unity.searcher@1e17ce91558d",
+      "resolvedPath": "C:\\Users\\Student\\Documents\\GitHub\\TD-Game\\TD Game\\Library\\PackageCache\\com.unity.searcher@1e17ce91558d",
       "fingerprint": "1e17ce91558d1d9127554adc03d275f39a7466a2",
       "editorCompatibility": "2019.1.0a1",
       "version": "4.9.3",
@@ -444,7 +444,7 @@
     "com.unity.burst@1.8.25": {
       "name": "com.unity.burst",
       "displayName": "Burst",
-      "resolvedPath": "C:\\Users\\kaden\\OneDrive\\Desktop\\TD-Game\\TD Game\\Library\\PackageCache\\com.unity.burst@1df634d836b8",
+      "resolvedPath": "C:\\Users\\Student\\Documents\\GitHub\\TD-Game\\TD Game\\Library\\PackageCache\\com.unity.burst@1df634d836b8",
       "fingerprint": "1df634d836b8106f13dc82401a91b336d615a874",
       "editorCompatibility": "2021.3.0a1",
       "version": "1.8.25",
@@ -454,7 +454,7 @@
     "com.unity.mathematics@1.3.2": {
       "name": "com.unity.mathematics",
       "displayName": "Mathematics",
-      "resolvedPath": "C:\\Users\\kaden\\OneDrive\\Desktop\\TD-Game\\TD Game\\Library\\PackageCache\\com.unity.mathematics@8017b507cc74",
+      "resolvedPath": "C:\\Users\\Student\\Documents\\GitHub\\TD-Game\\TD Game\\Library\\PackageCache\\com.unity.mathematics@8017b507cc74",
       "fingerprint": "8017b507cc74bf0a1dd14b18aa860569f807314d",
       "editorCompatibility": "2021.3.0a1",
       "version": "1.3.2",
@@ -464,7 +464,7 @@
     "com.unity.collections@2.6.2": {
       "name": "com.unity.collections",
       "displayName": "Collections",
-      "resolvedPath": "C:\\Users\\kaden\\OneDrive\\Desktop\\TD-Game\\TD Game\\Library\\PackageCache\\com.unity.collections@aea9d3bd5e19",
+      "resolvedPath": "C:\\Users\\Student\\Documents\\GitHub\\TD-Game\\TD Game\\Library\\PackageCache\\com.unity.collections@aea9d3bd5e19",
       "fingerprint": "aea9d3bd5e19f2a90fc3a39919974a5f3613a159",
       "editorCompatibility": "2022.3.20f1",
       "version": "2.6.2",
@@ -474,7 +474,7 @@
     "com.unity.rendering.light-transport@1.0.1": {
       "name": "com.unity.rendering.light-transport",
       "displayName": "Unity Light Transport Library",
-      "resolvedPath": "C:\\Users\\kaden\\OneDrive\\Desktop\\TD-Game\\TD Game\\Library\\PackageCache\\com.unity.rendering.light-transport@2c9279f90d7c",
+      "resolvedPath": "C:\\Users\\Student\\Documents\\GitHub\\TD-Game\\TD Game\\Library\\PackageCache\\com.unity.rendering.light-transport@2c9279f90d7c",
       "fingerprint": "2c9279f90d7c8dfb6e76e3f90b6b3be1cafabfbc",
       "editorCompatibility": "2023.3.0b1",
       "version": "1.0.1",
@@ -484,7 +484,7 @@
     "com.unity.nuget.mono-cecil@1.11.5": {
       "name": "com.unity.nuget.mono-cecil",
       "displayName": "Mono Cecil",
-      "resolvedPath": "C:\\Users\\kaden\\OneDrive\\Desktop\\TD-Game\\TD Game\\Library\\PackageCache\\com.unity.nuget.mono-cecil@d78732e851eb",
+      "resolvedPath": "C:\\Users\\Student\\Documents\\GitHub\\TD-Game\\TD Game\\Library\\PackageCache\\com.unity.nuget.mono-cecil@d78732e851eb",
       "fingerprint": "d78732e851eb42273c8e4d97993d3a94b207e570",
       "editorCompatibility": "2019.4.0a1",
       "version": "1.11.5",
@@ -494,7 +494,7 @@
     "com.unity.test-framework.performance@3.2.0": {
       "name": "com.unity.test-framework.performance",
       "displayName": "Performance testing API",
-      "resolvedPath": "C:\\Users\\kaden\\OneDrive\\Desktop\\TD-Game\\TD Game\\Library\\PackageCache\\com.unity.test-framework.performance@0840f58e4562",
+      "resolvedPath": "C:\\Users\\Student\\Documents\\GitHub\\TD-Game\\TD Game\\Library\\PackageCache\\com.unity.test-framework.performance@0840f58e4562",
       "fingerprint": "0840f58e45624f7677679a0f8b6a5137689e607f",
       "editorCompatibility": "2020.3.0a1",
       "version": "3.2.0",
