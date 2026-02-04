@@ -8,6 +8,10 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float walkSpeed = 5f;
     [SerializeField] private float sprintSpeed = 8f;
 
+    [Header("Movement Smoothing")]
+    [SerializeField] private float acceleration = 12f;
+    [SerializeField] private float deceleration = 16f;
+
     [Header("Jump/Grav")]
     [SerializeField] private float jumpHeight = 1.5f; // meters
     [SerializeField] private float gravity = -20f;
@@ -31,6 +35,9 @@ public class PlayerMovement : MonoBehaviour
     private float jumpBufferTimer;
 
     private bool isGrounded;
+
+    private Vector3 horizontalVelocity;
+
 
     private void Awake()
     {
@@ -111,17 +118,37 @@ public class PlayerMovement : MonoBehaviour
 
             jumpBufferTimer = 0f;
             coyoteTimer = 0f;
+
+
         }
+        //Stops tiny sliding when stopping movement.
+        if (isGrounded && horizontalVelocity.magnitude < 0.01f)
+            horizontalVelocity = Vector3.zero;
+
     }
 
     private void HandleMovement()
     {
         Vector2 input = controls.Player.Move.ReadValue<Vector2>();
-        Vector3 move = (transform.right * input.x) + (transform.forward * input.y);
 
-        float speed = isSprinting ? sprintSpeed : walkSpeed;
-        controller.Move(move * speed * Time.deltaTime);
+        Vector3 inputDir = (transform.right * input.x) + (transform.forward * input.y);
+        inputDir = Vector3.ClampMagnitude(inputDir, 1f);
+
+        float targetSpeed = isSprinting ? sprintSpeed : walkSpeed;
+        Vector3 targetVelocity = inputDir * targetSpeed;
+
+        // Choose accel or decel depending on input
+        float smoothRate = inputDir.sqrMagnitude > 0.01f ? acceleration : deceleration;
+
+        horizontalVelocity = Vector3.MoveTowards(
+            horizontalVelocity,
+            targetVelocity,
+            smoothRate * Time.deltaTime
+        );
+
+        controller.Move(horizontalVelocity * Time.deltaTime);
     }
+
 
     private void ApplyGravityAndMove()
     {
