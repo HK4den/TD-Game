@@ -21,11 +21,16 @@ public class GridTile : MonoBehaviour
     [SerializeField] private Color energyTint = new Color(0.7f, 0.9f, 1f, 1f);
     [SerializeField] private Color blockedTint = new Color(0.6f, 0.6f, 0.6f, 1f);
 
-    [Header("Hover")]
-    [SerializeField] private float hoverBrightenMultiplier = 1.15f;
+    [Header("Hover Border Decal")]
+    [SerializeField] private Material hoverBorderMaterial;
+    [SerializeField] private float hoverYOffset = 0.015f; // tiny lift to avoid z-fighting
+    [SerializeField] private float hoverScale = 1.01f;    // slightly bigger than tile
 
     private Renderer rend;
     private Color baseColor = Color.white;
+
+    private GameObject hoverQuad;
+    private Renderer hoverRend;
     private bool isHovered;
 
     public int X => x;
@@ -37,9 +42,12 @@ public class GridTile : MonoBehaviour
     {
         rend = GetComponent<Renderer>();
 
-        // Only create per-tile material instances while playing.
-        if (Application.isPlaying)
-            EnsureInstanceMaterial();
+        // Play mode: allow per-tile material instances (simple approach)
+        if (Application.isPlaying && rend.sharedMaterial != null)
+            rend.material = new Material(rend.sharedMaterial);
+
+        EnsureHoverQuad();
+        SetHover(false);
 
         ApplyVisuals();
     }
@@ -52,8 +60,11 @@ public class GridTile : MonoBehaviour
 
         if (rend == null) rend = GetComponent<Renderer>();
 
-        if (Application.isPlaying)
-            EnsureInstanceMaterial();
+        if (Application.isPlaying && rend.sharedMaterial != null)
+            rend.material = new Material(rend.sharedMaterial);
+
+        EnsureHoverQuad();
+        SetHover(false);
 
         ApplyVisuals();
     }
@@ -67,27 +78,65 @@ public class GridTile : MonoBehaviour
     public void SetHover(bool hovering)
     {
         isHovered = hovering;
-        ApplyHoverColor();
+
+        if (hoverQuad != null)
+        {
+            // Keep it sized correctly even if you resize tiles later
+            if (isHovered) UpdateHoverQuadTransform();
+            hoverQuad.SetActive(isHovered);
+        }
     }
 
-    private void EnsureInstanceMaterial()
+    private void EnsureHoverQuad()
     {
-        // Create a unique material instance for this tile in play mode
+        if (hoverBorderMaterial == null) return;
+        if (hoverQuad != null) return;
+
         if (rend == null) rend = GetComponent<Renderer>();
-        if (rend.sharedMaterial != null)
-            rend.material = new Material(rend.sharedMaterial);
+
+        // Create a child quad (no collider)
+        hoverQuad = GameObject.CreatePrimitive(PrimitiveType.Quad);
+        hoverQuad.name = "HoverBorder";
+
+        // Remove any collider so it never blocks raycasts
+        Collider c = hoverQuad.GetComponent<Collider>();
+        if (c != null) DestroyImmediate(c);
+
+        hoverRend = hoverQuad.GetComponent<Renderer>();
+        hoverRend.sharedMaterial = hoverBorderMaterial;
+
+        // Make sure it doesn't interfere with raycasts
+        hoverQuad.layer = 2; // Ignore Raycast
+
+        // Position/size it based on the tile's actual world bounds
+        UpdateHoverQuadTransform();
+    }
+
+    private void UpdateHoverQuadTransform()
+    {
+        if (hoverQuad == null || rend == null) return;
+
+        // Place it slightly above the tile in world space
+        Vector3 pos = transform.position;
+        pos.y += hoverYOffset;
+        hoverQuad.transform.position = pos;
+
+        // Lay flat on XZ
+        hoverQuad.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
+
+        // Size it to match THIS tile's renderer bounds (world size)
+        Vector3 size = rend.bounds.size;
+        hoverQuad.transform.localScale = new Vector3(size.x * hoverScale, size.z * hoverScale, 1f);
     }
 
     public void ApplyVisuals()
     {
         if (rend == null) rend = GetComponent<Renderer>();
 
-        // Choose stable variant index
         int variantIdx = -1;
         if (variantMaterials != null && variantMaterials.Length > 0)
             variantIdx = Mathf.Abs(Hash(x, z)) % variantMaterials.Length;
 
-        // Terrain tint
         Color tint = terrainType switch
         {
             TerrainType.Swamp => swampTint,
@@ -99,7 +148,6 @@ public class GridTile : MonoBehaviour
 
         if (Application.isPlaying)
         {
-            // PLAY MODE: per-tile material instances allowed
             if (variantIdx >= 0 && variantMaterials[variantIdx] != null)
                 rend.material = new Material(variantMaterials[variantIdx]);
 
@@ -111,7 +159,7 @@ public class GridTile : MonoBehaviour
         }
         else
         {
-            // EDIT MODE: only touch sharedMaterial (no instancing spam)
+            // Editor: avoid material instancing spam
             if (variantIdx >= 0 && variantMaterials[variantIdx] != null)
                 rend.sharedMaterial = variantMaterials[variantIdx];
 
@@ -121,21 +169,6 @@ public class GridTile : MonoBehaviour
                 baseColor = tint;
             }
         }
-
-        ApplyHoverColor();
-    }
-
-    private void ApplyHoverColor()
-    {
-        if (rend == null) return;
-
-        // In edit mode, don't try to do hover color live (we'll do hover in play mode anyway)
-        if (!Application.isPlaying) return;
-
-        if (rend.material == null || !rend.material.HasProperty("_Color"))
-            return;
-
-        rend.material.color = isHovered ? baseColor * hoverBrightenMultiplier : baseColor;
     }
 
     private int Hash(int a, int b)
@@ -152,7 +185,6 @@ public class GridTile : MonoBehaviour
 #if UNITY_EDITOR
     private void OnValidate()
     {
-        // Don't run on the prefab asset itself
         if (UnityEditor.PrefabUtility.IsPartOfPrefabAsset(this))
             return;
 
