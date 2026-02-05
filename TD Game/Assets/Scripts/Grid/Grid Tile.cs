@@ -11,6 +11,16 @@ public class GridTile : MonoBehaviour
     [Header("Terrain")]
     [SerializeField] private TerrainType terrainType = TerrainType.Normal;
 
+    [Header("Rules")]
+    [Tooltip("Can the player place a tower here? (independent of terrain)")]
+    [SerializeField] private bool buildable = true;
+
+    [Tooltip("Does this tile block enemy pathing? (terrain Blocked will also block)")]
+    [SerializeField] private bool blocksEnemies = false;
+
+    [Header("Occupancy (runtime)")]
+    [SerializeField] private bool occupied; // later: store tower reference
+
     [Header("Visual Variants (optional)")]
     [SerializeField] private Material[] variantMaterials;
 
@@ -21,34 +31,25 @@ public class GridTile : MonoBehaviour
     [SerializeField] private Color energyTint = new Color(0.7f, 0.9f, 1f, 1f);
     [SerializeField] private Color blockedTint = new Color(0.6f, 0.6f, 0.6f, 1f);
 
-    [Header("Hover Border Decal")]
-    [SerializeField] private Material hoverBorderMaterial;
-    [SerializeField] private float hoverYOffset = 0.015f; // tiny lift to avoid z-fighting
-    [SerializeField] private float hoverScale = 1.01f;    // slightly bigger than tile
-
     private Renderer rend;
-    private Color baseColor = Color.white;
 
-    private GameObject hoverQuad;
-    private Renderer hoverRend;
-    private bool isHovered;
+    public void SetBlocksEnemies(bool value) => blocksEnemies = value;
+    public void SetBuildable(bool value) => buildable = value;
+
 
     public int X => x;
     public int Z => z;
     public TerrainType Terrain => terrainType;
-    public bool IsPassable => terrainType != TerrainType.Blocked;
+
+    // Enemy passability: blocked terrain OR explicit blocksEnemies
+    public bool IsPassableForEnemies => terrainType != TerrainType.Blocked && !blocksEnemies;
+
+    // Placement rules: must be buildable, not occupied. (Terrain can still be swamp/fire/etc.)
+    public bool CanPlaceTower => buildable && !occupied;
 
     private void Awake()
     {
         rend = GetComponent<Renderer>();
-
-        // Play mode: allow per-tile material instances (simple approach)
-        if (Application.isPlaying && rend.sharedMaterial != null)
-            rend.material = new Material(rend.sharedMaterial);
-
-        EnsureHoverQuad();
-        SetHover(false);
-
         ApplyVisuals();
     }
 
@@ -59,13 +60,6 @@ public class GridTile : MonoBehaviour
         gameObject.name = $"Tile ({x}, {z})";
 
         if (rend == null) rend = GetComponent<Renderer>();
-
-        if (Application.isPlaying && rend.sharedMaterial != null)
-            rend.material = new Material(rend.sharedMaterial);
-
-        EnsureHoverQuad();
-        SetHover(false);
-
         ApplyVisuals();
     }
 
@@ -75,59 +69,8 @@ public class GridTile : MonoBehaviour
         ApplyVisuals();
     }
 
-    public void SetHover(bool hovering)
-    {
-        isHovered = hovering;
-
-        if (hoverQuad != null)
-        {
-            // Keep it sized correctly even if you resize tiles later
-            if (isHovered) UpdateHoverQuadTransform();
-            hoverQuad.SetActive(isHovered);
-        }
-    }
-
-    private void EnsureHoverQuad()
-    {
-        if (hoverBorderMaterial == null) return;
-        if (hoverQuad != null) return;
-
-        if (rend == null) rend = GetComponent<Renderer>();
-
-        // Create a child quad (no collider)
-        hoverQuad = GameObject.CreatePrimitive(PrimitiveType.Quad);
-        hoverQuad.name = "HoverBorder";
-
-        // Remove any collider so it never blocks raycasts
-        Collider c = hoverQuad.GetComponent<Collider>();
-        if (c != null) DestroyImmediate(c);
-
-        hoverRend = hoverQuad.GetComponent<Renderer>();
-        hoverRend.sharedMaterial = hoverBorderMaterial;
-
-        // Make sure it doesn't interfere with raycasts
-        hoverQuad.layer = 2; // Ignore Raycast
-
-        // Position/size it based on the tile's actual world bounds
-        UpdateHoverQuadTransform();
-    }
-
-    private void UpdateHoverQuadTransform()
-    {
-        if (hoverQuad == null || rend == null) return;
-
-        // Place it slightly above the tile in world space
-        Vector3 pos = transform.position;
-        pos.y += hoverYOffset;
-        hoverQuad.transform.position = pos;
-
-        // Lay flat on XZ
-        hoverQuad.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
-
-        // Size it to match THIS tile's renderer bounds (world size)
-        Vector3 size = rend.bounds.size;
-        hoverQuad.transform.localScale = new Vector3(size.x * hoverScale, size.z * hoverScale, 1f);
-    }
+    // We'll use these later when placing/removing towers
+    public void SetOccupied(bool value) => occupied = value;
 
     public void ApplyVisuals()
     {
@@ -136,6 +79,9 @@ public class GridTile : MonoBehaviour
         int variantIdx = -1;
         if (variantMaterials != null && variantMaterials.Length > 0)
             variantIdx = Mathf.Abs(Hash(x, z)) % variantMaterials.Length;
+
+        if (variantIdx >= 0 && variantMaterials[variantIdx] != null)
+            rend.sharedMaterial = variantMaterials[variantIdx];
 
         Color tint = terrainType switch
         {
@@ -146,29 +92,8 @@ public class GridTile : MonoBehaviour
             _ => normalTint
         };
 
-        if (Application.isPlaying)
-        {
-            if (variantIdx >= 0 && variantMaterials[variantIdx] != null)
-                rend.material = new Material(variantMaterials[variantIdx]);
-
-            if (rend.material != null && rend.material.HasProperty("_Color"))
-            {
-                rend.material.color = tint;
-                baseColor = tint;
-            }
-        }
-        else
-        {
-            // Editor: avoid material instancing spam
-            if (variantIdx >= 0 && variantMaterials[variantIdx] != null)
-                rend.sharedMaterial = variantMaterials[variantIdx];
-
-            if (rend.sharedMaterial != null && rend.sharedMaterial.HasProperty("_Color"))
-            {
-                rend.sharedMaterial.color = tint;
-                baseColor = tint;
-            }
-        }
+        if (rend.sharedMaterial != null && rend.sharedMaterial.HasProperty("_Color"))
+            rend.sharedMaterial.color = tint;
     }
 
     private int Hash(int a, int b)

@@ -11,12 +11,11 @@ public class GridHoverSelector : MonoBehaviour
     [SerializeField] private LayerMask tileMask;
 
     [Header("Highlight Prefab")]
-    [SerializeField] private GameObject hoverHighlightPrefab; // drag your prefab here
+    [SerializeField] private GameObject hoverHighlightPrefab; // drag prefab
     [SerializeField] private float yOffset = 0.02f;
     [SerializeField] private float scalePadding = 1.02f;
 
     private Transform hoverHighlight;
-    private GridTile currentHover;
 
     private void Awake()
     {
@@ -24,12 +23,10 @@ public class GridHoverSelector : MonoBehaviour
 
         if (hoverHighlightPrefab != null)
         {
-            GameObject obj = Instantiate(hoverHighlightPrefab);
+            var obj = Instantiate(hoverHighlightPrefab);
             obj.name = "HoverHighlight (Runtime)";
-            obj.layer = 2; // Ignore Raycast (prevents blocking tile raycasts)
+            obj.layer = 2; // Ignore Raycast
             hoverHighlight = obj.transform;
-
-            // Ensure it starts hidden
             hoverHighlight.gameObject.SetActive(false);
         }
         else
@@ -45,8 +42,6 @@ public class GridHoverSelector : MonoBehaviour
 
     private void UpdateHover()
     {
-        currentHover = null;
-
         if (Mouse.current == null || cam == null || hoverHighlight == null)
         {
             SetHighlightActive(false);
@@ -61,7 +56,6 @@ public class GridHoverSelector : MonoBehaviour
             GridTile tile = hit.collider.GetComponent<GridTile>();
             if (tile != null)
             {
-                currentHover = tile;
                 MoveHighlightTo(tile);
                 SetHighlightActive(true);
                 return;
@@ -73,25 +67,16 @@ public class GridHoverSelector : MonoBehaviour
 
     private void MoveHighlightTo(GridTile tile)
     {
-        // Position above tile
         Vector3 pos = tile.transform.position;
         pos.y += yOffset;
         hoverHighlight.position = pos;
 
-        // DON'T override rotation; use prefab's rotation as-is.
-
-        // Get tile size in world
         Renderer tileRend = tile.GetComponent<Renderer>();
-        if (tileRend == null) return;
+        Renderer hlRend = hoverHighlight.GetComponentInChildren<Renderer>();
+        if (tileRend == null || hlRend == null) return;
 
         Vector3 tileSize = tileRend.bounds.size;
 
-        // Get highlight mesh size in world (at current scale)
-        Renderer hlRend = hoverHighlight.GetComponentInChildren<Renderer>();
-        if (hlRend == null) return;
-
-        // Bounds size includes current scale, so normalize by current scale to get "base" size.
-        // Use lossyScale because highlight might have parent transforms.
         Vector3 hlScale = hoverHighlight.lossyScale;
         Vector3 hlBaseSize = new Vector3(
             hlRend.bounds.size.x / Mathf.Max(hlScale.x, 0.0001f),
@@ -99,10 +84,6 @@ public class GridHoverSelector : MonoBehaviour
             hlRend.bounds.size.z / Mathf.Max(hlScale.z, 0.0001f)
         );
 
-        // We want highlight XZ footprint to match tile XZ footprint.
-        // Depending on your highlight mesh orientation, footprint axes could be XZ or XY.
-        // We'll assume it's lying flat already (your prefab rotation handles that).
-        // So we scale X by tileSize.x and Z by tileSize.z relative to highlight base size.
         float targetX = (tileSize.x * scalePadding) / Mathf.Max(hlBaseSize.x, 0.0001f);
         float targetZ = (tileSize.z * scalePadding) / Mathf.Max(hlBaseSize.z, 0.0001f);
 
@@ -110,10 +91,9 @@ public class GridHoverSelector : MonoBehaviour
         hoverHighlight.localScale = new Vector3(targetX, local.y, targetZ);
     }
 
-
     private void SetHighlightActive(bool active)
     {
-        if (hoverHighlight.gameObject.activeSelf != active)
+        if (hoverHighlight != null && hoverHighlight.gameObject.activeSelf != active)
             hoverHighlight.gameObject.SetActive(active);
     }
 }
