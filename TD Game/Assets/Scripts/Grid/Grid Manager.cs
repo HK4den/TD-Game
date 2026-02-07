@@ -24,7 +24,6 @@ public class GridManager : MonoBehaviour
 
     // ----------------------
     // Lookup / Access
-    // ----------------------
 
     public void RebuildLookupFromChildren()
     {

@@ -56,11 +56,9 @@ public class TowerPlacementController : MonoBehaviour
         ghost.name = "TowerGhost";
         SetLayerRecursively(ghost, 2); // Ignore Raycast
 
-        // Disable colliders on ghost
         foreach (var c in ghost.GetComponentsInChildren<Collider>())
             c.enabled = false;
 
-        // Optional material override
         if (ghostMaterial != null)
         {
             foreach (var r in ghost.GetComponentsInChildren<Renderer>())
@@ -108,11 +106,9 @@ public class TowerPlacementController : MonoBehaviour
         if (hoveredTile == null) return;
         if (towerPrefab == null) return;
 
-        // Basic placement rules
         if (!hoveredTile.CanPlaceTower)
             return;
 
-        // Optional: path enforcement
         if (enforcePath && towersBlockEnemies)
         {
             if (!WouldStillHavePathIfPlacedHere(hoveredTile))
@@ -122,17 +118,15 @@ public class TowerPlacementController : MonoBehaviour
             }
         }
 
-        // Place real tower
         Vector3 pos = hoveredTile.transform.position;
-        GameObject tower = Instantiate(towerPrefab, pos, Quaternion.identity);
+        Instantiate(towerPrefab, pos, Quaternion.identity);
 
-        // Mark tile occupied + blocking
         hoveredTile.SetOccupied(true);
         if (towersBlockEnemies)
             hoveredTile.SetBlocksEnemies(true);
 
-        // If you want grid lookup to update (not strictly needed since tiles are same)
-        if (grid != null) grid.RebuildLookupFromChildren();
+        // IMPORTANT: tell all enemies to repath
+        PathChangeBroadcaster.Bump();
     }
 
     private bool WouldStillHavePathIfPlacedHere(GridTile tile)
@@ -145,26 +139,19 @@ public class TowerPlacementController : MonoBehaviour
         GridTile goalTile = grid.GetTile(goalCoord.x, goalCoord.y);
         if (startTile == null || goalTile == null) return true;
 
-        // Temporarily mark as blocked-for-enemies
-        bool oldOccupied = true; // doesn't matter, we only need blocksEnemies
-        // We'll save/restore blocksEnemies by flipping terrain or blocksEnemies flag.
-        // Prefer blocksEnemies so terrain stays independent.
-        // BUT blocksEnemies is private; we added SetBlocksEnemies so we can safely flip it.
-        // We also need its previous value; easiest: infer from IsPassableForEnemies.
-        bool oldBlocks = !tile.IsPassableForEnemies || tile.Terrain == TerrainType.Blocked;
-
-        // If tile is already blocked by terrain, it shouldn't be placeable anyway.
-        // We'll just check path without changing anything.
+        // If the tile is blocked terrain, it shouldn't be placeable anyway.
         if (tile.Terrain == TerrainType.Blocked) return false;
+
+        // Save original passability (covers existing blocksEnemies state)
+        bool wasPassable = tile.IsPassableForEnemies;
 
         // Temporarily block
         tile.SetBlocksEnemies(true);
 
         var path = pathfinder.FindPathAStar(startTile, goalTile);
 
-        // Restore (only restore to "unblocked" if it was passable originally)
-        if (!oldBlocks)
-            tile.SetBlocksEnemies(false);
+        // Restore to original state (only if it was passable before)
+        tile.SetBlocksEnemies(!wasPassable);
 
         return path != null && path.Count > 0;
     }
