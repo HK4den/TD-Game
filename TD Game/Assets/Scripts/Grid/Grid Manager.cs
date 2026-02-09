@@ -52,9 +52,12 @@ public class GridManager : MonoBehaviour
 
     public GridTile GetTile(int x, int z)
     {
+        if (tiles == null) RebuildLookupFromChildren();   // <-- add this line
+        if (tiles == null) return null;                   // still null if tileParent missing
         if (!IsInBounds(x, z)) return null;
         return tiles[x, z];
     }
+
 
     public Vector3 GridToWorld(int x, int z)
     {

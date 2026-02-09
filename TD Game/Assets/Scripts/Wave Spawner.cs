@@ -4,19 +4,31 @@ using UnityEngine;
 public class WaveSpawner : MonoBehaviour
 {
     [System.Serializable]
+    public class SpawnGroup
+    {
+        [Header("Enemy Type")]
+        public EnemyAgent enemyPrefab;
+
+        [Header("Counts & Timing")]
+        public int count = 10;
+
+        [Tooltip("Delay between spawns inside this group (seconds).")]
+        public float spawnInterval = 0.6f;
+
+        [Tooltip("Extra delay AFTER this group finishes (seconds).")]
+        public float delayAfterGroup = 0.0f;
+    }
+
+    [System.Serializable]
     public class Wave
     {
-        public int count = 10;
-        public float spawnInterval = 0.6f;
-        public float enemySpeed = 2.5f;
+        public string name = "Wave";
+        public SpawnGroup[] groups;
     }
 
     [Header("Refs")]
     [SerializeField] private GridManager grid;
     [SerializeField] private GridPathfinder pathfinder;
-
-    [Header("Enemy Prefab")]
-    [SerializeField] private EnemyAgent enemyPrefab;
 
     [Header("Spawn/Goal")]
     [SerializeField] private Vector2Int spawnCoord = new Vector2Int(0, 0);
@@ -38,6 +50,8 @@ public class WaveSpawner : MonoBehaviour
     [ContextMenu("Start Next Wave")]
     public void StartNextWave()
     {
+        if (grid != null) grid.RebuildLookupFromChildren();
+
         if (running != null) return;
         if (waves == null || waves.Length == 0) return;
         if (waveIndex >= waves.Length) return;
@@ -48,18 +62,37 @@ public class WaveSpawner : MonoBehaviour
 
     private IEnumerator SpawnWave(Wave wave)
     {
-        for (int i = 0; i < wave.count; i++)
+        if (wave == null || wave.groups == null || wave.groups.Length == 0)
         {
-            SpawnOne(wave.enemySpeed);
-            yield return new WaitForSeconds(wave.spawnInterval);
+            running = null;
+            yield break;
+        }
+
+        for (int g = 0; g < wave.groups.Length; g++)
+        {
+            SpawnGroup group = wave.groups[g];
+            if (group == null || group.enemyPrefab == null || group.count <= 0)
+                continue;
+
+            for (int i = 0; i < group.count; i++)
+            {
+                SpawnOne(group.enemyPrefab);
+                if (group.spawnInterval > 0f)
+                    yield return new WaitForSeconds(group.spawnInterval);
+                else
+                    yield return null; // allow a frame if interval is 0
+            }
+
+            if (group.delayAfterGroup > 0f)
+                yield return new WaitForSeconds(group.delayAfterGroup);
         }
 
         running = null;
     }
 
-    private void SpawnOne(float speed)
+    private void SpawnOne(EnemyAgent prefab)
     {
-        if (enemyPrefab == null || grid == null || pathfinder == null) return;
+        if (prefab == null || grid == null || pathfinder == null) return;
 
         GridTile spawnTile = grid.GetTile(spawnCoord.x, spawnCoord.y);
         if (spawnTile == null) return;
@@ -67,7 +100,13 @@ public class WaveSpawner : MonoBehaviour
         Vector3 pos = spawnTile.transform.position;
         pos.y += spawnYOffset;
 
-        EnemyAgent enemy = Instantiate(enemyPrefab, pos, Quaternion.identity);
+        EnemyAgent enemy = Instantiate(prefab, pos, Quaternion.identity);
+
+        // Speed comes from the enemy type (prefab)
+        float speed = 2.5f;
+        EnemyStats stats = enemy.GetComponent<EnemyStats>();
+        if (stats != null) speed = stats.MoveSpeed;
+
         enemy.Init(grid, pathfinder, goalCoord, speed);
     }
 }

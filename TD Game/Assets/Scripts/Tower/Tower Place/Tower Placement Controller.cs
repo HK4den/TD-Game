@@ -56,17 +56,24 @@ public class TowerPlacementController : MonoBehaviour
         ghost.name = "TowerGhost";
         SetLayerRecursively(ghost, 2); // Ignore Raycast
 
-        foreach (var c in ghost.GetComponentsInChildren<Collider>())
+        // Disable colliders on ghost
+        foreach (var c in ghost.GetComponentsInChildren<Collider>(true))
             c.enabled = false;
 
+        // Disable ALL behaviours (prevents shooting, audio, animations, etc.)
+        foreach (var mb in ghost.GetComponentsInChildren<MonoBehaviour>(true))
+            mb.enabled = false;
+
+        // Optional material override
         if (ghostMaterial != null)
         {
-            foreach (var r in ghost.GetComponentsInChildren<Renderer>())
+            foreach (var r in ghost.GetComponentsInChildren<Renderer>(true))
                 r.sharedMaterial = ghostMaterial;
         }
 
         ghost.SetActive(false);
     }
+
 
     private void UpdateHoverTile()
     {

@@ -12,7 +12,6 @@ GameObject:
   - component: {fileID: 3211743337900024264}
   - component: {fileID: 8200407804235457328}
   - component: {fileID: 8600190436958150880}
-  - component: {fileID: 7480552424769826594}
   - component: {fileID: 483553121193507500}
   - component: {fileID: -4781632782304773973}
   m_Layer: 0
@@ -31,7 +30,7 @@ Transform:
   m_GameObject: {fileID: 2509369039561855588}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.009, y: 1.05, z: 1.126}
+  m_LocalPosition: {x: 1.009, y: 0.446, z: 1.126}
   m_LocalScale: {x: 0.41564, y: 0.41564, z: 0.41564}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -116,24 +115,6 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &7480552424769826594
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2509369039561855588}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: eeb1c3f6d8e62eb448b950af1eb7c068, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GridPathfinder
-  grid: {fileID: 0}
-  start: {x: 0, y: 0}
-  goal: {x: 19, y: 19}
-  enemyPrefab: {fileID: 0}
-  pathY: 0.2
-  drawPathGizmos: 1
 --- !u!114 &483553121193507500
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -146,8 +127,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9b369d3560b546a43bc123b9cd9ee6c7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAgent
-  grid: {fileID: 0}
-  pathfinder: {fileID: 0}
+  grid: {fileID: 7337746363587140048, guid: 6ce187c02f142a242848381859d11e5b, type: 3}
+  pathfinder: {fileID: 7387158980045677629, guid: be0b0b5192c67cc42a594bd8f372d6c1, type: 3}
   goalCoord: {x: 19, y: 19}
   nodeArriveDist: 0.08
   yOffset: 0
