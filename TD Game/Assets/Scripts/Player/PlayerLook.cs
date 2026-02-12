@@ -36,8 +36,6 @@ public class PlayerLook : MonoBehaviour
 
         if (playerCamera != null)
             playerCamera.fieldOfView = baseFOV;
-
-
     }
 
     private void OnEnable()
@@ -50,8 +48,16 @@ public class PlayerLook : MonoBehaviour
         controls.Disable();
     }
 
+    private void Start()
+    {
+        LockCursor();
+    }
+
     private void Update()
     {
+        // Stop ALL look-related behavior while paused
+        if (PauseState.IsPaused) return;
+
         Vector2 look = controls.Player.Look.ReadValue<Vector2>();
 
         // Yaw (left/right)
@@ -63,32 +69,14 @@ public class PlayerLook : MonoBehaviour
 
         cameraPivot.localRotation = Quaternion.Euler(pitch, 0f, 0f);
 
-        if (Keyboard.current.escapeKey.wasPressedThisFrame)
-        {
-            UnlockCursor(); // If escape pressed, cursor reappears
-        }
-
         HandleCameraBob();
-
         HandleSprintFOV();
-
-    }
-
-    private void Start()
-    {
-        LockCursor();
     }
 
     private void LockCursor()
     {
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
-    }
-
-    private void UnlockCursor()
-    {
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true; // Stuff for things like menus
     }
 
     private void HandleCameraBob()
@@ -98,7 +86,6 @@ public class PlayerLook : MonoBehaviour
 
         if (!isMoving)
         {
-            // Smoothly return to original position
             bobTimer = 0f;
             cameraPivot.localPosition = Vector3.Lerp(
                 cameraPivot.localPosition,
@@ -125,12 +112,10 @@ public class PlayerLook : MonoBehaviour
 
         float target = controls.Player.Sprint.IsPressed() ? sprintFOV : baseFOV;
 
-        // Smoothly move toward target; can't "stack" or glitch from spam.
         playerCamera.fieldOfView = Mathf.Lerp(
             playerCamera.fieldOfView,
             target,
             1f - Mathf.Exp(-fovSmoothSpeed * Time.deltaTime)
         );
     }
-
 }

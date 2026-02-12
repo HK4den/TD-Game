@@ -41,6 +41,12 @@ public class TowerPlacementController : MonoBehaviour
 
     private void Update()
     {
+        if (PauseState.IsPaused)
+        {
+            if (ghost != null) ghost.SetActive(false);
+            return;
+        }
+
         UpdateHoverTile();
         UpdateGhost();
 
