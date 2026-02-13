@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 3676228937446241712}
   - component: {fileID: 8904442986876764220}
   - component: {fileID: 8531513847695294043}
+  - component: {fileID: -6372878388460448235}
   m_Layer: 0
   m_Name: wizard
   m_TagString: Untagged
@@ -133,3 +134,16 @@ MonoBehaviour:
   fireRate: 2
   damage: 2
   muzzle: {fileID: 0}
+--- !u!114 &-6372878388460448235
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1937534747383321431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35646f14cd32b504db0d206eca515b64, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TowerCost
+  cost: 50

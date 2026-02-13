@@ -1,0 +1,80 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &2906545329388491397
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1300564849046510540}
+  - component: {fileID: 8247475752741641969}
+  - component: {fileID: 8209055954498011567}
+  m_Layer: 0
+  m_Name: TowerPlacementController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1300564849046510540
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2906545329388491397}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 12.12971, y: 0.001, z: -6.11625}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8247475752741641969
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2906545329388491397}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eeb1c3f6d8e62eb448b950af1eb7c068, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GridPathfinder
+  grid: {fileID: 0}
+  start: {x: 0, y: 0}
+  goal: {x: 19, y: 19}
+  enemyPrefab: {fileID: 0}
+  pathY: 0.2
+  drawPathGizmos: 1
+--- !u!114 &8209055954498011567
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2906545329388491397}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1f6f82390b218d48b1fa32c7b44fac3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TowerPlacementController
+  cam: {fileID: 0}
+  grid: {fileID: 0}
+  maxDistance: 5
+  tileMask:
+    serializedVersion: 2
+    m_Bits: 512
+  towerPrefab: {fileID: 1937534747383321431, guid: acfe89a8519482e4e8d2c6baf0ab4cc8, type: 3}
+  towersBlockEnemies: 1
+  enforcePath: 1
+  startCoord: {x: 0, y: 0}
+  goalCoord: {x: 19, y: 19}
+  pathfinder: {fileID: 0}
+  ghostMaterial: {fileID: 2100000, guid: b957998617595fb4c9d282bc9ba92e55, type: 2}
+  invalidGhostMaterial: {fileID: 2100000, guid: e02bcedd247d7ed4c88f39036efe36eb, type: 2}
+  ghostYOffset: 0.05

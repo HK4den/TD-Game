@@ -12,11 +12,7 @@ public class WaveSpawner : MonoBehaviour
 
         [Header("Counts & Timing")]
         public int count = 10;
-
-        [Tooltip("Delay between spawns inside this group (seconds).")]
         public float spawnInterval = 0.6f;
-
-        [Tooltip("Extra delay AFTER this group finishes (seconds).")]
         public float delayAfterGroup = 0.0f;
     }
 
@@ -24,6 +20,7 @@ public class WaveSpawner : MonoBehaviour
     public class Wave
     {
         public string name = "Wave";
+        public int completionReward = 50;   // NEW: per-wave reward
         public SpawnGroup[] groups;
     }
 
@@ -39,14 +36,18 @@ public class WaveSpawner : MonoBehaviour
     [Header("Waves")]
     [SerializeField] private Wave[] waves;
 
-    // --- Wave tracking ---
-    public event Action<int> OnWaveStarted;   // 1-based wave #
-    public event Action<int> OnWaveCompleted; // 1-based wave #
+    public event Action<int> OnWaveStarted;                 // wave # (1-based)
+    public event Action<int, int> OnWaveCompleted;          // wave #, reward $
 
-    public int AliveEnemiesThisWave => aliveThisWave;
+    public int TotalWaves => waves != null ? waves.Length : 0;
+    public int NextWaveNumber => Mathf.Clamp(waveIndex + 1, 1, Mathf.Max(1, TotalWaves)); // UI convenience
     public bool IsSpawning => running != null;
+    public int AliveEnemiesThisWave => aliveThisWave;
 
-    private int waveIndex = 0; // next wave to start
+    // "Wave in progress" means either we are still spawning OR enemies are still alive
+    public bool IsWaveInProgress => IsSpawning || aliveThisWave > 0;
+
+    private int waveIndex = 0; // next wave to start (0-based)
     private Coroutine running;
 
     private int aliveThisWave = 0;
@@ -71,37 +72,16 @@ public class WaveSpawner : MonoBehaviour
     [ContextMenu("Start Next Wave")]
     public void StartNextWave()
     {
-        // Helpful diagnostics so "nothing happens" never wastes your time again
-        if (grid == null) Debug.LogWarning("WaveSpawner: grid reference is NULL.");
-        if (pathfinder == null) Debug.LogWarning("WaveSpawner: pathfinder reference is NULL.");
-
         if (grid != null) grid.RebuildLookupFromChildren();
 
-        if (running != null)
-        {
-            Debug.Log("WaveSpawner: denied StartNextWave because a wave is already spawning.");
-            return;
-        }
+        if (running != null) return;
+        if (waves == null || waves.Length == 0) return;
+        if (waveIndex >= waves.Length) return;
 
-        if (waves == null || waves.Length == 0)
-        {
-            Debug.LogWarning("WaveSpawner: waves array is empty (Inspector data missing).");
-            return;
-        }
-
-        if (waveIndex >= waves.Length)
-        {
-            Debug.Log("WaveSpawner: no more waves to start.");
-            return;
-        }
-
-        // Reset tracking for this wave
         aliveThisWave = 0;
         spawningFinished = false;
 
         int startedWaveNumber = waveIndex + 1;
-        Debug.Log($"WaveSpawner: starting wave {startedWaveNumber} ({waves[waveIndex].name})");
-
         OnWaveStarted?.Invoke(startedWaveNumber);
 
         running = StartCoroutine(SpawnWave(waves[waveIndex], startedWaveNumber));
@@ -112,7 +92,6 @@ public class WaveSpawner : MonoBehaviour
     {
         if (wave == null || wave.groups == null || wave.groups.Length == 0)
         {
-            Debug.LogWarning($"WaveSpawner: wave {waveNumber} has no groups.");
             spawningFinished = true;
             running = null;
             TryCompleteWaveIfDone(waveNumber);
@@ -122,16 +101,7 @@ public class WaveSpawner : MonoBehaviour
         for (int g = 0; g < wave.groups.Length; g++)
         {
             SpawnGroup group = wave.groups[g];
-            if (group == null)
-                continue;
-
-            if (group.enemyPrefab == null)
-            {
-                Debug.LogWarning($"WaveSpawner: wave {waveNumber} group {g} has no enemyPrefab assigned.");
-                continue;
-            }
-
-            if (group.count <= 0)
+            if (group == null || group.enemyPrefab == null || group.count <= 0)
                 continue;
 
             for (int i = 0; i < group.count; i++)
@@ -151,7 +121,6 @@ public class WaveSpawner : MonoBehaviour
         spawningFinished = true;
         running = null;
 
-        Debug.Log($"WaveSpawner: finished spawning wave {waveNumber}. Alive now: {aliveThisWave}");
         TryCompleteWaveIfDone(waveNumber);
     }
 
@@ -160,11 +129,7 @@ public class WaveSpawner : MonoBehaviour
         if (prefab == null || grid == null || pathfinder == null) return;
 
         GridTile spawnTile = grid.GetTile(spawnCoord.x, spawnCoord.y);
-        if (spawnTile == null)
-        {
-            Debug.LogWarning("WaveSpawner: spawnTile is null. Check spawnCoord and that the grid exists at runtime.");
-            return;
-        }
+        if (spawnTile == null) return;
 
         Vector3 pos = spawnTile.transform.position;
         pos.y += spawnYOffset;
@@ -187,7 +152,8 @@ public class WaveSpawner : MonoBehaviour
         aliveThisWave--;
         if (aliveThisWave < 0) aliveThisWave = 0;
 
-        int currentWaveNumber = waveIndex; // because waveIndex already advanced when we started it
+        // waveIndex already advanced, so current wave number is waveIndex (1-based)
+        int currentWaveNumber = waveIndex;
         TryCompleteWaveIfDone(currentWaveNumber);
     }
 
@@ -196,7 +162,12 @@ public class WaveSpawner : MonoBehaviour
         if (!spawningFinished) return;
         if (aliveThisWave != 0) return;
 
-        Debug.Log($"WaveSpawner: WAVE {waveNumber} COMPLETE");
-        OnWaveCompleted?.Invoke(waveNumber);
+        // Reward is tied to the wave that just completed: waveNumber (1-based) -> index waveNumber-1
+        int idx = waveNumber - 1;
+        int reward = 50;
+        if (waves != null && idx >= 0 && idx < waves.Length)
+            reward = waves[idx].completionReward;
+
+        OnWaveCompleted?.Invoke(waveNumber, reward);
     }
 }

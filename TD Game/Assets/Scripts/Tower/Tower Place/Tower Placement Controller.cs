@@ -39,8 +39,13 @@ public class TowerPlacementController : MonoBehaviour
     private int lastSeenPathVersion = -1;
     private bool lastWasValid;
 
+    private EconomyManager economy;
+
+
     private void Awake()
     {
+        economy = FindFirstObjectByType<EconomyManager>();
+
         if (cam == null) cam = Camera.main;
         if (grid == null) grid = FindFirstObjectByType<GridManager>();
         if (pathfinder == null) pathfinder = FindFirstObjectByType<GridPathfinder>();
@@ -162,6 +167,13 @@ public class TowerPlacementController : MonoBehaviour
 
     private bool IsPlacementValid(GridTile tile)
     {
+        TowerCost costComp = towerPrefab.GetComponent<TowerCost>();
+        if (costComp != null && economy != null)
+        {
+            if (economy.Money < costComp.Cost)
+                return false;
+        }
+
         if (tile == null) return false;
 
         // non-buildable or blocked terrain is invalid (but we still show red ghost)
@@ -204,9 +216,17 @@ public class TowerPlacementController : MonoBehaviour
         // if occupied, no placement
         if (hoveredTile.IsOccupied) return;
 
-        // must be valid (including path rule)
+        // must be valid (includes money check via IsPlacementValid)
         if (!IsPlacementValid(hoveredTile))
             return;
+
+        // ONLY spend after we know placement will succeed
+        TowerCost costComp = towerPrefab.GetComponent<TowerCost>();
+        if (costComp != null && economy != null)
+        {
+            if (!economy.TrySpendMoney(costComp.Cost))
+                return;
+        }
 
         Vector3 pos = hoveredTile.transform.position;
         Instantiate(towerPrefab, pos, Quaternion.identity);
@@ -217,9 +237,9 @@ public class TowerPlacementController : MonoBehaviour
 
         PathChangeBroadcaster.Bump();
 
-        // After placing, hide the ghost immediately this frame (tile is now occupied)
         ghost.SetActive(false);
     }
+
 
     private bool WouldStillHavePathIfPlacedHere(GridTile tile)
     {
