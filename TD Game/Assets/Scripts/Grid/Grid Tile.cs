@@ -36,10 +36,13 @@ public class GridTile : MonoBehaviour
     public void SetBlocksEnemies(bool value) => blocksEnemies = value;
     public void SetBuildable(bool value) => buildable = value;
 
-
     public int X => x;
     public int Z => z;
     public TerrainType Terrain => terrainType;
+
+    // NEW: needed for “no ghost on occupied tile” and clean validation messaging
+    public bool IsOccupied => occupied;
+    public bool IsBuildable => buildable;
 
     // Enemy passability: blocked terrain OR explicit blocksEnemies
     public bool IsPassableForEnemies => terrainType != TerrainType.Blocked && !blocksEnemies;

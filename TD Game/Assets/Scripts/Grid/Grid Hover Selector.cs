@@ -15,7 +15,11 @@ public class GridHoverSelector : MonoBehaviour
     [SerializeField] private float yOffset = 0.02f;
     [SerializeField] private float scalePadding = 1.02f;
 
+    [Header("Click Blink")]
+    [SerializeField] private float clickBlinkDuration = 0.12f;
+
     private Transform hoverHighlight;
+    private float suppressUntilUnscaledTime;
 
     private void Awake()
     {
@@ -37,11 +41,22 @@ public class GridHoverSelector : MonoBehaviour
 
     private void Update()
     {
+        // Blink the highlight off briefly when clicking
+        if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+            suppressUntilUnscaledTime = Time.unscaledTime + clickBlinkDuration;
+
         UpdateHover();
     }
 
     private void UpdateHover()
     {
+        // During blink, force off
+        if (Time.unscaledTime < suppressUntilUnscaledTime)
+        {
+            SetHighlightActive(false);
+            return;
+        }
+
         if (Mouse.current == null || cam == null || hoverHighlight == null)
         {
             SetHighlightActive(false);
