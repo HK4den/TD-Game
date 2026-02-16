@@ -6,13 +6,17 @@ public class TowerPlacementController : MonoBehaviour
     [Header("References")]
     [SerializeField] private Camera cam;
     [SerializeField] private GridManager grid;
+    [SerializeField] private GridPathfinder pathfinder;
+    [SerializeField] private EconomyManager economy;
 
     [Header("Raycast")]
-    [SerializeField] private float maxDistance = 6f;
+    [SerializeField] private float maxDistance = 8f;
     [SerializeField] private LayerMask tileMask;
+    [SerializeField] private LayerMask towerMask;
 
-    [Header("Tower Prefab")]
-    [SerializeField] private GameObject towerPrefab;
+    [Header("Build Menu / Tower Options")]
+    [Tooltip("List of tower prefabs the player can choose from.")]
+    [SerializeField] private GameObject[] towerPrefabs;
 
     [Header("Placement Rules")]
     [SerializeField] private bool towersBlockEnemies = true;
@@ -21,36 +25,63 @@ public class TowerPlacementController : MonoBehaviour
     [Header("Path Check")]
     [SerializeField] private Vector2Int startCoord = new Vector2Int(0, 0);
     [SerializeField] private Vector2Int goalCoord = new Vector2Int(19, 19);
-    [SerializeField] private GridPathfinder pathfinder;
 
     [Header("Ghost Preview")]
-    [SerializeField] private Material ghostMaterial;         // valid material (optional)
-    [SerializeField] private Material invalidGhostMaterial;  // invalid material (red) (optional)
+    [SerializeField] private Material ghostMaterial;
+    [SerializeField] private Material invalidGhostMaterial;
     [SerializeField] private float ghostYOffset = 0.05f;
 
-    private GameObject ghost;
-    private GridTile hoveredTile;
+    [Header("UI")]
+    [SerializeField] private TowerInspectPanel inspectPanel;
 
+    private PlayerControls controls;
+
+    // Runtime selection
+    private GameObject selectedTowerPrefab;
+    private int selectedIndex = -1;
+
+    // Ghost
+    private GameObject ghost;
     private Renderer[] ghostRenderers;
     private Material validMatRuntime;
     private Material invalidMatRuntime;
 
+    // Hover cache
+    private GridTile hoveredTile;
     private GridTile lastTile;
     private int lastSeenPathVersion = -1;
     private bool lastWasValid;
 
-    private EconomyManager economy;
-
-
     private void Awake()
     {
-        economy = FindFirstObjectByType<EconomyManager>();
-
         if (cam == null) cam = Camera.main;
         if (grid == null) grid = FindFirstObjectByType<GridManager>();
         if (pathfinder == null) pathfinder = FindFirstObjectByType<GridPathfinder>();
+        if (economy == null) economy = FindFirstObjectByType<EconomyManager>();
+        if (inspectPanel == null) inspectPanel = FindFirstObjectByType<TowerInspectPanel>();
 
-        CreateGhost();
+        controls = new PlayerControls();
+    }
+
+    private void OnEnable()
+    {
+        controls.Enable();
+
+        controls.Player.PrimaryClick.performed += OnPrimaryClick;
+        controls.Player.SecondaryClick.performed += OnSecondaryClick;
+
+        // When equipping placement staff: nothing selected
+        ClearSelectionAndHideGhost();
+    }
+
+    private void OnDisable()
+    {
+        controls.Player.PrimaryClick.performed -= OnPrimaryClick;
+        controls.Player.SecondaryClick.performed -= OnSecondaryClick;
+
+        controls.Disable();
+
+        ClearSelectionAndHideGhost();
     }
 
     private void Update()
@@ -61,18 +92,80 @@ public class TowerPlacementController : MonoBehaviour
             return;
         }
 
-        UpdateHoverTile();
+        UpdateHoverTileCenterScreen();
         UpdateGhostVisualsAndPosition();
-
-        if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
-            TryPlace();
     }
 
-    private void CreateGhost()
+    // Called by ToolHotbar (or other tool switching)
+    public void ClearSelectionAndHideGhost()
     {
-        if (towerPrefab == null) return;
+        selectedTowerPrefab = null;
+        selectedIndex = -1;
 
-        ghost = Instantiate(towerPrefab);
+        if (ghost != null)
+        {
+            Destroy(ghost);
+            ghost = null;
+        }
+
+        hoveredTile = null;
+        lastTile = null;
+    }
+
+    private void OnSecondaryClick(InputAction.CallbackContext ctx)
+    {
+        if (PauseState.IsPaused) return;
+
+        // Placeholder until you make the real right-click menu UI:
+        // Right click cycles towers.
+        if (towerPrefabs == null || towerPrefabs.Length == 0) return;
+
+        int next = selectedIndex + 1;
+        if (next >= towerPrefabs.Length) next = 0;
+
+        SelectTower(next);
+    }
+
+    private void OnPrimaryClick(InputAction.CallbackContext ctx)
+    {
+        if (PauseState.IsPaused) return;
+
+        // If aiming at a tower -> open inspect/upgrade panel
+        Tower tower = RaycastTowerCenterScreen();
+        if (tower != null)
+        {
+            if (inspectPanel != null)
+                inspectPanel.Toggle(tower);
+            return;
+        }
+
+        // Otherwise try place (only if a tower is selected)
+        if (selectedTowerPrefab == null) return;
+
+        TryPlace();
+    }
+
+    private void SelectTower(int index)
+    {
+        if (towerPrefabs == null || index < 0 || index >= towerPrefabs.Length) return;
+
+        selectedIndex = index;
+        selectedTowerPrefab = towerPrefabs[index];
+
+        RecreateGhostForSelected();
+    }
+
+    private void RecreateGhostForSelected()
+    {
+        if (ghost != null)
+        {
+            Destroy(ghost);
+            ghost = null;
+        }
+
+        if (selectedTowerPrefab == null) return;
+
+        ghost = Instantiate(selectedTowerPrefab);
         ghost.name = "TowerGhost";
         SetLayerRecursively(ghost, 2); // Ignore Raycast
 
@@ -84,41 +177,30 @@ public class TowerPlacementController : MonoBehaviour
 
         ghostRenderers = ghost.GetComponentsInChildren<Renderer>(true);
 
-        // Decide valid material
         validMatRuntime = ghostMaterial;
-
-        // If no valid material provided, use the first renderer's current material as baseline
         if (validMatRuntime == null && ghostRenderers != null && ghostRenderers.Length > 0)
             validMatRuntime = ghostRenderers[0].sharedMaterial;
 
-        // Decide invalid material (prefer user-provided)
         if (invalidGhostMaterial != null)
         {
             invalidMatRuntime = invalidGhostMaterial;
         }
-        else
+        else if (validMatRuntime != null)
         {
-            // Create a red-tinted copy of the valid material if possible
-            if (validMatRuntime != null)
-            {
-                invalidMatRuntime = new Material(validMatRuntime);
-                if (invalidMatRuntime.HasProperty("_Color"))
-                    invalidMatRuntime.color = new Color(1f, 0.2f, 0.2f, 0.75f);
-            }
+            invalidMatRuntime = new Material(validMatRuntime);
+            if (invalidMatRuntime.HasProperty("_Color"))
+                invalidMatRuntime.color = new Color(1f, 0.2f, 0.2f, 0.75f);
         }
 
         ghost.SetActive(false);
     }
 
-    private void UpdateHoverTile()
+    private void UpdateHoverTileCenterScreen()
     {
         hoveredTile = null;
+        if (cam == null) return;
 
-        if (Mouse.current == null || cam == null) return;
-
-        Vector2 mousePos = Mouse.current.position.ReadValue();
-        Ray ray = cam.ScreenPointToRay(mousePos);
-
+        Ray ray = cam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
         if (Physics.Raycast(ray, out RaycastHit hit, maxDistance, tileMask, QueryTriggerInteraction.Ignore))
         {
             hoveredTile = hit.collider.GetComponent<GridTile>();
@@ -129,13 +211,12 @@ public class TowerPlacementController : MonoBehaviour
     {
         if (ghost == null) return;
 
-        if (hoveredTile == null || towerPrefab == null)
+        if (hoveredTile == null)
         {
             ghost.SetActive(false);
             return;
         }
 
-        // IMPORTANT: no ghost on occupied tiles (prevents overlap confusion)
         if (hoveredTile.IsOccupied)
         {
             ghost.SetActive(false);
@@ -149,9 +230,6 @@ public class TowerPlacementController : MonoBehaviour
         ghost.transform.position = pos;
         ghost.transform.rotation = Quaternion.identity;
 
-        // Recompute validity only when needed:
-        // - hovered tile changed
-        // - path version changed (tower placements)
         bool tileChanged = hoveredTile != lastTile;
         bool pathChanged = PathChangeBroadcaster.Version != lastSeenPathVersion;
 
@@ -167,23 +245,23 @@ public class TowerPlacementController : MonoBehaviour
 
     private bool IsPlacementValid(GridTile tile)
     {
-        TowerCost costComp = towerPrefab.GetComponent<TowerCost>();
+        if (selectedTowerPrefab == null) return false;
+        if (tile == null) return false;
+
+        // terrain that doesn't allow placement -> invalid
+        if (!tile.IsBuildable) return false;
+        if (tile.Terrain == TerrainType.Blocked) return false;
+        if (!tile.CanPlaceTower) return false;
+
+        // money check
+        TowerCost costComp = selectedTowerPrefab.GetComponent<TowerCost>();
         if (costComp != null && economy != null)
         {
             if (economy.Money < costComp.Cost)
                 return false;
         }
 
-        if (tile == null) return false;
-
-        // non-buildable or blocked terrain is invalid (but we still show red ghost)
-        if (!tile.IsBuildable) return false;
-        if (tile.Terrain == TerrainType.Blocked) return false;
-
-        // if CanPlaceTower is false here, it would only be occupancy (we already hid ghost on occupied),
-        // but keep the check anyway
-        if (!tile.CanPlaceTower) return false;
-
+        // path rule
         if (enforcePath && towersBlockEnemies)
         {
             if (!WouldStillHavePathIfPlacedHere(tile))
@@ -198,10 +276,7 @@ public class TowerPlacementController : MonoBehaviour
         if (ghostRenderers == null || ghostRenderers.Length == 0) return;
 
         Material m = valid ? validMatRuntime : invalidMatRuntime;
-
-        // If invalidMatRuntime couldn't be created, fall back to valid material
         if (m == null) m = validMatRuntime;
-
         if (m == null) return;
 
         for (int i = 0; i < ghostRenderers.Length; i++)
@@ -211,17 +286,13 @@ public class TowerPlacementController : MonoBehaviour
     private void TryPlace()
     {
         if (hoveredTile == null) return;
-        if (towerPrefab == null) return;
-
-        // if occupied, no placement
+        if (selectedTowerPrefab == null) return;
         if (hoveredTile.IsOccupied) return;
 
-        // must be valid (includes money check via IsPlacementValid)
         if (!IsPlacementValid(hoveredTile))
             return;
 
-        // ONLY spend after we know placement will succeed
-        TowerCost costComp = towerPrefab.GetComponent<TowerCost>();
+        TowerCost costComp = selectedTowerPrefab.GetComponent<TowerCost>();
         if (costComp != null && economy != null)
         {
             if (!economy.TrySpendMoney(costComp.Cost))
@@ -229,17 +300,17 @@ public class TowerPlacementController : MonoBehaviour
         }
 
         Vector3 pos = hoveredTile.transform.position;
-        Instantiate(towerPrefab, pos, Quaternion.identity);
+        GameObject towerObj = Instantiate(selectedTowerPrefab, pos, Quaternion.identity);
+
+        if (towerObj.GetComponent<Tower>() == null)
+            towerObj.AddComponent<Tower>();
 
         hoveredTile.SetOccupied(true);
         if (towersBlockEnemies)
             hoveredTile.SetBlocksEnemies(true);
 
         PathChangeBroadcaster.Bump();
-
-        ghost.SetActive(false);
     }
-
 
     private bool WouldStillHavePathIfPlacedHere(GridTile tile)
     {
@@ -261,6 +332,19 @@ public class TowerPlacementController : MonoBehaviour
         tile.SetBlocksEnemies(!wasPassable);
 
         return path != null && path.Count > 0;
+    }
+
+    private Tower RaycastTowerCenterScreen()
+    {
+        if (cam == null) return null;
+
+        Ray ray = cam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
+        if (Physics.Raycast(ray, out RaycastHit hit, maxDistance, towerMask, QueryTriggerInteraction.Ignore))
+        {
+            return hit.collider.GetComponentInParent<Tower>();
+        }
+
+        return null;
     }
 
     private void SetLayerRecursively(GameObject obj, int layer)

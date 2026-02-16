@@ -15,31 +15,45 @@ public class GameHUDController : MonoBehaviour
     [SerializeField] private BaseHealth baseHealth;
     [SerializeField] private WaveSpawner waveSpawner;
 
+    private int totalWaves;
+    private int currentWaveInProgress = 0;
+    private int nextWaveToStart = 1;
+
     private void Awake()
     {
         if (economy == null) economy = FindFirstObjectByType<EconomyManager>();
         if (baseHealth == null) baseHealth = FindFirstObjectByType<BaseHealth>();
         if (waveSpawner == null) waveSpawner = FindFirstObjectByType<WaveSpawner>();
+
+        totalWaves = (waveSpawner != null) ? waveSpawner.TotalWaves : 0;
+
+        RefreshMoney();
+        RefreshHP(baseHealth != null ? baseHealth.HP : 0, baseHealth != null ? baseHealth.MaxHP : 0);
+        RefreshWaveAndStatus();
     }
 
     private void OnEnable()
     {
-        if (economy != null) economy.OnMoneyChanged += OnMoneyChanged;
-        if (baseHealth != null) baseHealth.OnHealthChanged += OnHealthChanged;
+        if (economy != null)
+            economy.OnMoneyChanged += OnMoneyChanged;
+
+        if (baseHealth != null)
+            baseHealth.OnHealthChanged += OnHealthChanged;
 
         if (waveSpawner != null)
         {
             waveSpawner.OnWaveStarted += OnWaveStarted;
             waveSpawner.OnWaveCompleted += OnWaveCompleted;
         }
-
-        RefreshAll();
     }
 
     private void OnDisable()
     {
-        if (economy != null) economy.OnMoneyChanged -= OnMoneyChanged;
-        if (baseHealth != null) baseHealth.OnHealthChanged -= OnHealthChanged;
+        if (economy != null)
+            economy.OnMoneyChanged -= OnMoneyChanged;
+
+        if (baseHealth != null)
+            baseHealth.OnHealthChanged -= OnHealthChanged;
 
         if (waveSpawner != null)
         {
@@ -52,80 +66,76 @@ public class GameHUDController : MonoBehaviour
     {
         if (PauseState.IsPaused) return;
 
-        // Press Enter to start next wave IF not currently in progress
         var kb = Keyboard.current;
         if (kb != null && kb.enterKey.wasPressedThisFrame)
         {
-            if (waveSpawner != null && !waveSpawner.IsWaveInProgress)
+            if (waveSpawner != null && currentWaveInProgress == 0 && nextWaveToStart <= totalWaves)
             {
                 waveSpawner.StartNextWave();
-                RefreshWaveAndStatus(); // immediate UI update
             }
         }
     }
 
-    private void OnMoneyChanged(int newMoney) => RefreshMoney();
-    private void OnHealthChanged(int hp, int maxHp) => RefreshHP();
+    // --- Event Handlers ---
+
+    private void OnMoneyChanged(int newMoney)
+    {
+        RefreshMoney();
+    }
+
+    private void OnHealthChanged(int hp, int maxHp)
+    {
+        RefreshHP(hp, maxHp);
+    }
 
     private void OnWaveStarted(int waveNumber)
     {
+        currentWaveInProgress = waveNumber;
         RefreshWaveAndStatus();
     }
 
     private void OnWaveCompleted(int waveNumber, int reward)
     {
-        // Grant per-wave reward on completion
-        if (economy != null && reward > 0)
-            economy.AddMoney(reward);
+        currentWaveInProgress = 0;
+
+        nextWaveToStart = Mathf.Min(waveNumber + 1, totalWaves);
 
         RefreshWaveAndStatus();
     }
 
-    private void RefreshAll()
-    {
-        RefreshMoney();
-        RefreshHP();
-        RefreshWaveAndStatus();
-    }
+    // --- UI Refresh Methods ---
 
     private void RefreshMoney()
     {
         if (moneyText == null) return;
-
-        if (economy == null) moneyText.text = "Money: ?";
-        else moneyText.text = $"Money: {economy.Money}";
+        moneyText.text = economy != null ? $"Money: {economy.Money}" : "Money: ?";
     }
 
-    private void RefreshHP()
+    private void RefreshHP(int hp, int maxHp)
     {
         if (hpText == null) return;
-
-        if (baseHealth == null) hpText.text = "HP: ?";
-        else hpText.text = $"HP: {baseHealth.HP}";
+        hpText.text = $"HP: {hp}";
     }
 
     private void RefreshWaveAndStatus()
     {
-        if (waveSpawner == null)
-        {
-            if (waveText != null) waveText.text = "Wave: ? / ?";
-            if (statusText != null) statusText.text = "";
-            return;
-        }
-
-        int total = waveSpawner.TotalWaves;
-        int next = waveSpawner.NextWaveNumber;
-
-        // Your requested format: "Wave: X / Y" where X is the wave about to start
         if (waveText != null)
-            waveText.text = $"Wave: {next} / {total}";
+        {
+            int displayWave = (currentWaveInProgress != 0)
+                ? currentWaveInProgress
+                : nextWaveToStart;
+
+            if (totalWaves > 0)
+                displayWave = Mathf.Clamp(displayWave, 1, totalWaves);
+
+            waveText.text = $"Wave: {displayWave} / {totalWaves}";
+        }
 
         if (statusText != null)
         {
-            if (waveSpawner.IsWaveInProgress)
-                statusText.text = "Wave in Progress";
-            else
-                statusText.text = "Start Wave (Press Enter)";
+            statusText.text = (currentWaveInProgress != 0)
+                ? "Wave in Progress"
+                : "Start Wave (Press Enter)";
         }
     }
 }

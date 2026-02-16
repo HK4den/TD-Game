@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class WaveSpawner : MonoBehaviour
@@ -20,13 +21,15 @@ public class WaveSpawner : MonoBehaviour
     public class Wave
     {
         public string name = "Wave";
-        public int completionReward = 50;   // NEW: per-wave reward
+        public int completionReward = 50;   // per-wave reward
         public SpawnGroup[] groups;
     }
 
     [Header("Refs")]
     [SerializeField] private GridManager grid;
     [SerializeField] private GridPathfinder pathfinder;
+    [SerializeField] private EconomyManager economy;
+    [SerializeField] private BaseHealth baseHealth;
 
     [Header("Spawn/Goal")]
     [SerializeField] private Vector2Int spawnCoord = new Vector2Int(0, 0);
@@ -36,11 +39,11 @@ public class WaveSpawner : MonoBehaviour
     [Header("Waves")]
     [SerializeField] private Wave[] waves;
 
-    public event Action<int> OnWaveStarted;                 // wave # (1-based)
-    public event Action<int, int> OnWaveCompleted;          // wave #, reward $
+    public event Action<int> OnWaveStarted;            // wave # (1-based)
+    public event Action<int, int> OnWaveCompleted;     // wave #, reward $
 
     public int TotalWaves => waves != null ? waves.Length : 0;
-    public int NextWaveNumber => Mathf.Clamp(waveIndex + 1, 1, Mathf.Max(1, TotalWaves)); // UI convenience
+    public int NextWaveNumber => Mathf.Clamp(waveIndex + 1, 1, Mathf.Max(1, TotalWaves));
     public bool IsSpawning => running != null;
     public int AliveEnemiesThisWave => aliveThisWave;
 
@@ -53,8 +56,13 @@ public class WaveSpawner : MonoBehaviour
     private int aliveThisWave = 0;
     private bool spawningFinished = false;
 
+    // Track EXACT enemies spawned for the current wave (prevents wrong counting)
+    private readonly HashSet<EnemyAgent> spawnedThisWave = new HashSet<EnemyAgent>();
+
     private void Awake()
     {
+        if (economy == null) economy = FindFirstObjectByType<EconomyManager>();
+        if (baseHealth == null) baseHealth = FindFirstObjectByType<BaseHealth>();
         if (grid == null) grid = FindFirstObjectByType<GridManager>();
         if (pathfinder == null) pathfinder = FindFirstObjectByType<GridPathfinder>();
     }
@@ -80,6 +88,7 @@ public class WaveSpawner : MonoBehaviour
 
         aliveThisWave = 0;
         spawningFinished = false;
+        spawnedThisWave.Clear();
 
         int startedWaveNumber = waveIndex + 1;
         OnWaveStarted?.Invoke(startedWaveNumber);
@@ -111,7 +120,7 @@ public class WaveSpawner : MonoBehaviour
                 if (group.spawnInterval > 0f)
                     yield return new WaitForSeconds(group.spawnInterval);
                 else
-                    yield return null;
+                    yield return null; // allow a frame if interval is 0
             }
 
             if (group.delayAfterGroup > 0f)
@@ -136,17 +145,28 @@ public class WaveSpawner : MonoBehaviour
 
         EnemyAgent enemy = Instantiate(prefab, pos, Quaternion.identity);
 
+        // IMPORTANT: ensure enemies always damage the correct base (no FindFirst randomness)
+        if (enemy != null)
+            enemy.SetBaseHealth(baseHealth);
+
+        // Speed comes from enemy type (prefab instance)
         float speed = 2.5f;
         EnemyStats stats = enemy.GetComponent<EnemyStats>();
         if (stats != null) speed = stats.MoveSpeed;
 
         enemy.Init(grid, pathfinder, goalCoord, speed);
 
+        // Track + count
+        spawnedThisWave.Add(enemy);
         aliveThisWave++;
     }
 
     private void HandleEnemyRemoved(EnemyAgent enemy)
     {
+        // Only count enemies that were spawned in THIS wave
+        if (!spawnedThisWave.Remove(enemy))
+            return;
+
         if (aliveThisWave <= 0) return;
 
         aliveThisWave--;
@@ -162,11 +182,15 @@ public class WaveSpawner : MonoBehaviour
         if (!spawningFinished) return;
         if (aliveThisWave != 0) return;
 
-        // Reward is tied to the wave that just completed: waveNumber (1-based) -> index waveNumber-1
         int idx = waveNumber - 1;
         int reward = 50;
+
         if (waves != null && idx >= 0 && idx < waves.Length)
             reward = waves[idx].completionReward;
+
+        // Grant reward here (game logic), not in the HUD
+        if (economy != null && reward > 0)
+            economy.AddMoney(reward);
 
         OnWaveCompleted?.Invoke(waveNumber, reward);
     }

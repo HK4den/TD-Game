@@ -131,7 +131,7 @@ MonoBehaviour:
   pathfinder: {fileID: 7387158980045677629, guid: be0b0b5192c67cc42a594bd8f372d6c1, type: 3}
   goalCoord: {x: 19, y: 19}
   baseDamage: 1
-  baseHealth: {fileID: 4819427277669306352, guid: 8c8ea03baf7d29e4f949e5a52f33bbae, type: 3}
+  baseHealth: {fileID: 0}
   nodeArriveDist: 0.08
   yOffset: 0
   speed: 2.5
@@ -148,3 +148,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
   maxHP: 10
+  rewardMoney: 5

@@ -31,14 +31,20 @@ public class EnemyAgent : MonoBehaviour
     private bool hasReachedGoal;
     private bool spawnedEventFired;
 
+    /// <summary>
+    /// Called by WaveSpawner right after Instantiate so this enemy always damages the correct base.
+    /// </summary>
+    public void SetBaseHealth(BaseHealth bh)
+    {
+        baseHealth = bh;
+    }
+
     public void Init(GridManager g, GridPathfinder pf, Vector2Int goal, float moveSpeed)
     {
         grid = g;
         pathfinder = pf;
         goalCoord = goal;
         speed = moveSpeed;
-
-        if (baseHealth == null) baseHealth = FindFirstObjectByType<BaseHealth>();
 
         FireSpawnedIfNeeded();
         ForceRepath();
@@ -48,7 +54,10 @@ public class EnemyAgent : MonoBehaviour
     {
         if (grid == null) grid = FindFirstObjectByType<GridManager>();
         if (pathfinder == null) pathfinder = FindFirstObjectByType<GridPathfinder>();
-        if (baseHealth == null) baseHealth = FindFirstObjectByType<BaseHealth>();
+
+        // Intentionally NOT auto-finding BaseHealth here anymore.
+        // WaveSpawner should assign it via SetBaseHealth().
+        Debug.Log($"[EnemyAgent] Awake baseHealth={(baseHealth ? baseHealth.name : "NULL")}");
     }
 
     private void Start()
@@ -149,8 +158,12 @@ public class EnemyAgent : MonoBehaviour
         if (hasReachedGoal) return;
         hasReachedGoal = true;
 
+        Debug.Log($"[EnemyAgent] ArriveAtGoal baseHealth={(baseHealth ? baseHealth.name : "NULL")} dmg={baseDamage}");
+
         if (baseHealth != null)
             baseHealth.TakeDamage(baseDamage);
+        else
+            Debug.LogWarning("[EnemyAgent] No BaseHealth assigned! Did WaveSpawner call SetBaseHealth()?");
 
         Destroy(gameObject);
     }

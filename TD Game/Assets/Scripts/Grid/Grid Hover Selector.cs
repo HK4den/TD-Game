@@ -7,11 +7,11 @@ public class GridHoverSelector : MonoBehaviour
     [SerializeField] private Camera cam;
 
     [Header("Raycast")]
-    [SerializeField] private float maxDistance = 6f;
+    [SerializeField] private float maxDistance = 8f;
     [SerializeField] private LayerMask tileMask;
 
     [Header("Highlight Prefab")]
-    [SerializeField] private GameObject hoverHighlightPrefab; // drag prefab
+    [SerializeField] private GameObject hoverHighlightPrefab;
     [SerializeField] private float yOffset = 0.02f;
     [SerializeField] private float scalePadding = 1.02f;
 
@@ -21,9 +21,13 @@ public class GridHoverSelector : MonoBehaviour
     private Transform hoverHighlight;
     private float suppressUntilUnscaledTime;
 
+    private PlayerControls controls;
+
     private void Awake()
     {
         if (cam == null) cam = Camera.main;
+
+        controls = new PlayerControls();
 
         if (hoverHighlightPrefab != null)
         {
@@ -39,32 +43,45 @@ public class GridHoverSelector : MonoBehaviour
         }
     }
 
+    private void OnEnable()
+    {
+        controls.Enable();
+
+        // Requires you to have PrimaryClick in your input actions (you do)
+        controls.Player.PrimaryClick.performed += OnPrimaryClick;
+    }
+
+    private void OnDisable()
+    {
+        controls.Player.PrimaryClick.performed -= OnPrimaryClick;
+        controls.Disable();
+    }
+
     private void Update()
     {
-        // Blink the highlight off briefly when clicking
-        if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
-            suppressUntilUnscaledTime = Time.unscaledTime + clickBlinkDuration;
-
         UpdateHover();
+    }
+
+    private void OnPrimaryClick(InputAction.CallbackContext ctx)
+    {
+        suppressUntilUnscaledTime = Time.unscaledTime + clickBlinkDuration;
     }
 
     private void UpdateHover()
     {
-        // During blink, force off
         if (Time.unscaledTime < suppressUntilUnscaledTime)
         {
             SetHighlightActive(false);
             return;
         }
 
-        if (Mouse.current == null || cam == null || hoverHighlight == null)
+        if (cam == null || hoverHighlight == null)
         {
             SetHighlightActive(false);
             return;
         }
 
-        Vector2 mousePos = Mouse.current.position.ReadValue();
-        Ray ray = cam.ScreenPointToRay(mousePos);
+        Ray ray = cam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
 
         if (Physics.Raycast(ray, out RaycastHit hit, maxDistance, tileMask, QueryTriggerInteraction.Ignore))
         {
