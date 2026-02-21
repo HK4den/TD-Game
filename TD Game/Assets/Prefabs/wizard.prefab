@@ -15,6 +15,8 @@ GameObject:
   - component: {fileID: 8531513847695294043}
   - component: {fileID: -6372878388460448235}
   - component: {fileID: 6825880120995313783}
+  - component: {fileID: -2177105339483779199}
+  - component: {fileID: 9198767423989168895}
   m_Layer: 6
   m_Name: wizard
   m_TagString: Tower
@@ -160,3 +162,31 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 792db0a5ba32a2e43844c030ec9e437b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tower
+--- !u!114 &-2177105339483779199
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1937534747383321431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4a19a91366db874c9bdb2c6a84843d4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TowerIdentity
+  displayName: Wizard
+  icon: {fileID: 21300000, guid: fb11ff56642c4774ea2ac4c12063c691, type: 3}
+--- !u!114 &9198767423989168895
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1937534747383321431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b017d1163a12565449ef5c655fb61e62, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TowerUpgradeState
+  canUpgrade: 1
+  hasTwoPaths: 0
