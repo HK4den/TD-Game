@@ -11,5 +11,7 @@ public class TowerUpgradeState : MonoBehaviour
     public bool CanUpgrade => canUpgrade;
     public bool HasTwoPaths => hasTwoPaths;
 
+    public void RequestUpgrade(int pathIndex) { /* stub for now */ }
+
     // Later you can add: current level, max level, costs, etc.
 }

@@ -3,84 +3,142 @@ using UnityEngine.UI;
 
 public class InspectPanelUI : MonoBehaviour
 {
+    [Header("Panel Root")]
+    [SerializeField] private RectTransform panelRoot;
+
+    [Header("Panel Positions")]
+    [SerializeField] private RectTransform panelRect;              // usually same as panelRoot
+    [SerializeField] private Vector2 hiddenAnchoredPos;            // where it sits when nothing selected
+    [SerializeField] private Vector2 shownAnchoredPos;             // where it sits when something selected
+    [SerializeField] private float moveDuration = 0.15f;
+
     [Header("Terrain UI")]
     [SerializeField] private Text terrainTypeText;
     [SerializeField] private Text terrainDescText;
 
     [Header("Tower UI")]
-    [SerializeField] private GameObject towerSectionRoot; // parent to hide/show tower UI
+    [SerializeField] private GameObject towerSectionRoot;
     [SerializeField] private Text towerNameText;
     [SerializeField] private Image towerIconImage;
 
-    [Header("Upgrade Buttons")]
-    [SerializeField] private Button upgradeButtonA;
-    [SerializeField] private Button upgradeButtonB; // optional second path
-    [SerializeField] private Text upgradeButtonAText; // optional label
-    [SerializeField] private Text upgradeButtonBText; // optional label
+    [Header("Upgrade UI (Keyboard-controlled)")]
+    [SerializeField] private GameObject upgradeRoot;       // parent for upgrade UI
+    [SerializeField] private Text upgradeAIndicatorText;    // e.g. "> Upgrade A" / "  Upgrade A"
+    [SerializeField] private Text upgradeBIndicatorText;    // e.g. "> Upgrade B"
+    [SerializeField] private GameObject upgradeBRowRoot;    // hides row if not two-path
 
-    [Header("Terrain Descriptions")]
+    [Header("Terrain Descriptions (optional)")]
     [SerializeField] private TerrainDescriptionsSO terrainDescriptions;
 
+    private GridTile selectedTile;
     private TowerIdentity selectedTower;
     private TowerUpgradeState selectedUpgradeState;
-    private GridTile selectedTile;
+
+    private bool hasSelection;
+
+    private float moveT;
+    private Vector2 moveFrom;
+    private Vector2 moveTo;
+
+    private int selectedUpgradeIndex = 0; // 0 = A, 1 = B
 
     private void Awake()
     {
-        // Start hidden/clean
+        if (panelRoot != null) panelRoot.gameObject.SetActive(true);
+        if (panelRect == null) panelRect = panelRoot;
+
+        // Start "hidden"
+        hasSelection = false;
+        ForceMoveTo(hiddenAnchoredPos);
+
         ApplyTerrain(null);
         ApplyTower(null, null);
+        ApplyUpgradeSelectionVisuals();
     }
 
-    /// <summary>
-    /// Select a tile (terrain-only selection).
-    /// </summary>
+    private void Update()
+    {
+        // Smooth move between hidden/shown positions
+        if (panelRect == null) return;
+
+        if (moveT < 1f)
+        {
+            moveT += (moveDuration <= 0f) ? 1f : (Time.unscaledDeltaTime / moveDuration);
+            float t = Mathf.Clamp01(moveT);
+            panelRect.anchoredPosition = Vector2.Lerp(moveFrom, moveTo, t);
+        }
+    }
+
+    // -------------------------
+    // Public API used by tools
+    // -------------------------
+
+    public void ClearSelection()
+    {
+        selectedTile = null;
+        selectedTower = null;
+        selectedUpgradeState = null;
+        hasSelection = false;
+
+        ApplyTerrain(null);
+        ApplyTower(null, null);
+
+        StartMove(hiddenAnchoredPos);
+    }
+
     public void SetSelectedTile(GridTile tile)
     {
         selectedTile = tile;
         selectedTower = null;
         selectedUpgradeState = null;
+        hasSelection = tile != null;
 
         ApplyTerrain(tile);
         ApplyTower(null, null);
+
+        StartMove(hasSelection ? shownAnchoredPos : hiddenAnchoredPos);
     }
 
-    /// <summary>
-    /// Select a tower (also shows terrain underneath the tower).
-    /// </summary>
     public void SetSelectedTower(TowerIdentity tower, TowerUpgradeState upgradeState, GridTile tileUnderTower)
     {
         selectedTower = tower;
         selectedUpgradeState = upgradeState;
         selectedTile = tileUnderTower;
+        hasSelection = tower != null || tileUnderTower != null;
 
         ApplyTerrain(tileUnderTower);
         ApplyTower(tower, upgradeState);
+
+        StartMove(hasSelection ? shownAnchoredPos : hiddenAnchoredPos);
     }
+
+    // Called by your tool input: R toggles selection
+    public void ToggleUpgradeSelection()
+    {
+        // Only if B exists
+        bool twoPaths = selectedUpgradeState != null && selectedUpgradeState.HasTwoPaths;
+        if (!twoPaths) { selectedUpgradeIndex = 0; ApplyUpgradeSelectionVisuals(); return; }
+
+        selectedUpgradeIndex = 1 - selectedUpgradeIndex;
+        ApplyUpgradeSelectionVisuals();
+    }
+
+    public int GetSelectedUpgradeIndex() => selectedUpgradeIndex;
+
+    // -------------------------
+    // Internals
+    // -------------------------
 
     private void ApplyTerrain(GridTile tile)
     {
         if (terrainTypeText != null)
-        {
             terrainTypeText.text = tile != null ? $"Terrain: {tile.Terrain}" : "Terrain: (none)";
-        }
 
         if (terrainDescText != null)
         {
-            if (tile == null)
-            {
-                terrainDescText.text = "";
-            }
-            else if (terrainDescriptions != null)
-            {
-                // You said leave blank for now; you’ll fill in the SO later.
-                terrainDescText.text = terrainDescriptions.GetDescription(tile.Terrain);
-            }
-            else
-            {
-                // No SO assigned: keep blank (your request)
-                terrainDescText.text = "";
-            }
+            if (tile == null) terrainDescText.text = "";
+            else if (terrainDescriptions != null) terrainDescText.text = terrainDescriptions.GetDescription(tile.Terrain);
+            else terrainDescText.text = ""; // your request: blank if no SO
         }
     }
 
@@ -92,7 +150,10 @@ public class InspectPanelUI : MonoBehaviour
             towerSectionRoot.SetActive(hasTower);
 
         if (!hasTower)
+        {
+            if (upgradeRoot != null) upgradeRoot.SetActive(false);
             return;
+        }
 
         if (towerNameText != null)
             towerNameText.text = tower.DisplayName;
@@ -103,24 +164,45 @@ public class InspectPanelUI : MonoBehaviour
             towerIconImage.sprite = tower.Icon;
         }
 
-        // Upgrade button visibility rules (your spec)
         bool canUpgrade = upgradeState != null && upgradeState.CanUpgrade;
         bool twoPaths = upgradeState != null && upgradeState.HasTwoPaths;
 
-        if (upgradeButtonA != null)
-            upgradeButtonA.gameObject.SetActive(canUpgrade);
+        if (upgradeRoot != null)
+            upgradeRoot.SetActive(canUpgrade);
 
-        if (upgradeButtonB != null)
-            upgradeButtonB.gameObject.SetActive(canUpgrade && twoPaths);
+        if (upgradeBRowRoot != null)
+            upgradeBRowRoot.SetActive(canUpgrade && twoPaths);
 
-        // Optional button labels
-        if (upgradeButtonAText != null)
-            upgradeButtonAText.text = "Upgrade";
+        if (!canUpgrade) selectedUpgradeIndex = 0;
 
-        if (upgradeButtonBText != null)
-            upgradeButtonBText.text = "Upgrade (Alt Path)";
+        ApplyUpgradeSelectionVisuals();
+    }
 
-        // IMPORTANT: we are NOT implementing upgrade logic yet.
-        // Buttons can be wired later to call tower.UpgradePathA / UpgradePathB.
+    private void ApplyUpgradeSelectionVisuals()
+    {
+        if (upgradeAIndicatorText != null)
+            upgradeAIndicatorText.text = (selectedUpgradeIndex == 0) ? "> Upgrade A" : "  Upgrade A";
+
+        if (upgradeBIndicatorText != null)
+            upgradeBIndicatorText.text = (selectedUpgradeIndex == 1) ? "> Upgrade B" : "  Upgrade B";
+    }
+
+    private void StartMove(Vector2 target)
+    {
+        if (panelRect == null) return;
+
+        moveFrom = panelRect.anchoredPosition;
+        moveTo = target;
+        moveT = 0f;
+    }
+
+    private void ForceMoveTo(Vector2 pos)
+    {
+        if (panelRect == null) return;
+
+        panelRect.anchoredPosition = pos;
+        moveFrom = pos;
+        moveTo = pos;
+        moveT = 1f;
     }
 }

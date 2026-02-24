@@ -24,9 +24,12 @@ public class TowerPlacementController : MonoBehaviour
     [SerializeField] private GridPathfinder pathfinder;
 
     [Header("Ghost Preview")]
-    [SerializeField] private Material ghostMaterial;         // valid material (optional)
-    [SerializeField] private Material invalidGhostMaterial;  // invalid material (red) (optional)
+    [SerializeField] private Material ghostMaterial;
+    [SerializeField] private Material invalidGhostMaterial;
     [SerializeField] private float ghostYOffset = 0.05f;
+
+    [Header("Inspect Panel (tile-based)")]
+    [SerializeField] private InspectPanelUI inspectPanel; // NEW
 
     private GameObject ghost;
     private GridTile hoveredTile;
@@ -41,9 +44,6 @@ public class TowerPlacementController : MonoBehaviour
 
     private EconomyManager economy;
 
-    // NEW: when money changes, we force validity recompute even if cursor didn't move
-    private bool forceRecheckGhost;
-
     private void Awake()
     {
         economy = FindFirstObjectByType<EconomyManager>();
@@ -51,6 +51,7 @@ public class TowerPlacementController : MonoBehaviour
         if (cam == null) cam = Camera.main;
         if (grid == null) grid = FindFirstObjectByType<GridManager>();
         if (pathfinder == null) pathfinder = FindFirstObjectByType<GridPathfinder>();
+        if (inspectPanel == null) inspectPanel = FindFirstObjectByType<InspectPanelUI>();
 
         CreateGhost();
     }
@@ -58,24 +59,28 @@ public class TowerPlacementController : MonoBehaviour
     private void OnEnable()
     {
         if (economy != null)
-            economy.OnMoneyChanged += OnMoneyChanged;
+            economy.OnMoneyChanged += HandleMoneyChanged;
     }
 
     private void OnDisable()
     {
         if (economy != null)
-            economy.OnMoneyChanged -= OnMoneyChanged;
+            economy.OnMoneyChanged -= HandleMoneyChanged;
     }
 
-    private void OnMoneyChanged(int newMoney)
+    // NEW: make ghost update even if mouse doesn't move
+    private void HandleMoneyChanged(int _)
     {
-        // money affects IsPlacementValid, so refresh ghost material immediately
-        ForceGhostRefresh();
-    }
+        if (ghost == null || !ghost.activeSelf) return;
+        if (hoveredTile == null) return;
 
-    private void ForceGhostRefresh()
-    {
-        forceRecheckGhost = true;
+        // Re-evaluate and apply material immediately
+        bool nowValid = IsPlacementValid(hoveredTile);
+        if (nowValid != lastWasValid)
+        {
+            lastWasValid = nowValid;
+            ApplyGhostMaterial(lastWasValid);
+        }
     }
 
     private void Update()
@@ -90,7 +95,42 @@ public class TowerPlacementController : MonoBehaviour
         UpdateGhostVisualsAndPosition();
 
         if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+        {
+            // TILE-BASED: click on a tile with a tower => INSPECT instead of place
+            if (hoveredTile != null && hoveredTile.OccupiedTower != null)
+            {
+                InspectHoveredTile();
+                return;
+            }
+
             TryPlace();
+        }
+    }
+
+    private void InspectHoveredTile()
+    {
+        if (inspectPanel == null || hoveredTile == null) return;
+
+        // Try to find identity/upgrade components on the tower
+        var towerGo = hoveredTile.OccupiedTower;
+        var id = towerGo != null ? towerGo.GetComponentInChildren<TowerIdentity>() : null;
+        var up = towerGo != null ? towerGo.GetComponentInChildren<TowerUpgradeState>() : null;
+
+        if (id != null)
+            inspectPanel.SetSelectedTower(id, up, hoveredTile);
+        else
+            inspectPanel.SetSelectedTile(hoveredTile); // fallback: still show terrain
+    }
+
+    public void ClearSelectionAndHideGhost()
+    {
+        hoveredTile = null;
+        lastTile = null;
+        lastSeenPathVersion = -1;
+        lastWasValid = false;
+
+        if (ghost != null)
+            ghost.SetActive(false);
     }
 
     private void CreateGhost()
@@ -109,27 +149,19 @@ public class TowerPlacementController : MonoBehaviour
 
         ghostRenderers = ghost.GetComponentsInChildren<Renderer>(true);
 
-        // Decide valid material
         validMatRuntime = ghostMaterial;
-
-        // If no valid material provided, use the first renderer's current material as baseline
         if (validMatRuntime == null && ghostRenderers != null && ghostRenderers.Length > 0)
             validMatRuntime = ghostRenderers[0].sharedMaterial;
 
-        // Decide invalid material (prefer user-provided)
         if (invalidGhostMaterial != null)
         {
             invalidMatRuntime = invalidGhostMaterial;
         }
-        else
+        else if (validMatRuntime != null)
         {
-            // Create a red-tinted copy of the valid material if possible
-            if (validMatRuntime != null)
-            {
-                invalidMatRuntime = new Material(validMatRuntime);
-                if (invalidMatRuntime.HasProperty("_Color"))
-                    invalidMatRuntime.color = new Color(1f, 0.2f, 0.2f, 0.75f);
-            }
+            invalidMatRuntime = new Material(validMatRuntime);
+            if (invalidMatRuntime.HasProperty("_Color"))
+                invalidMatRuntime.color = new Color(1f, 0.2f, 0.2f, 0.75f);
         }
 
         ghost.SetActive(false);
@@ -145,9 +177,7 @@ public class TowerPlacementController : MonoBehaviour
         Ray ray = cam.ScreenPointToRay(mousePos);
 
         if (Physics.Raycast(ray, out RaycastHit hit, maxDistance, tileMask, QueryTriggerInteraction.Ignore))
-        {
             hoveredTile = hit.collider.GetComponent<GridTile>();
-        }
     }
 
     private void UpdateGhostVisualsAndPosition()
@@ -160,7 +190,7 @@ public class TowerPlacementController : MonoBehaviour
             return;
         }
 
-        // IMPORTANT: no ghost on occupied tiles (prevents overlap confusion)
+        // No ghost on occupied tile
         if (hoveredTile.IsOccupied)
         {
             ghost.SetActive(false);
@@ -174,17 +204,11 @@ public class TowerPlacementController : MonoBehaviour
         ghost.transform.position = pos;
         ghost.transform.rotation = Quaternion.identity;
 
-        // Recompute validity when needed:
-        // - hovered tile changed
-        // - path version changed (tower placements)
-        // - money changed (NEW)
         bool tileChanged = hoveredTile != lastTile;
         bool pathChanged = PathChangeBroadcaster.Version != lastSeenPathVersion;
 
-        if (tileChanged || pathChanged || forceRecheckGhost)
+        if (tileChanged || pathChanged)
         {
-            forceRecheckGhost = false;
-
             lastTile = hoveredTile;
             lastSeenPathVersion = PathChangeBroadcaster.Version;
 
@@ -195,6 +219,9 @@ public class TowerPlacementController : MonoBehaviour
 
     private bool IsPlacementValid(GridTile tile)
     {
+        if (tile == null) return false;
+
+        // money check
         TowerCost costComp = towerPrefab.GetComponent<TowerCost>();
         if (costComp != null && economy != null)
         {
@@ -202,12 +229,8 @@ public class TowerPlacementController : MonoBehaviour
                 return false;
         }
 
-        if (tile == null) return false;
-
-        // non-buildable or blocked terrain is invalid (but we still show red ghost)
         if (!tile.IsBuildable) return false;
         if (tile.Terrain == TerrainType.Blocked) return false;
-
         if (!tile.CanPlaceTower) return false;
 
         if (enforcePath && towersBlockEnemies)
@@ -224,7 +247,6 @@ public class TowerPlacementController : MonoBehaviour
         if (ghostRenderers == null || ghostRenderers.Length == 0) return;
 
         Material m = valid ? validMatRuntime : invalidMatRuntime;
-
         if (m == null) m = validMatRuntime;
         if (m == null) return;
 
@@ -238,9 +260,7 @@ public class TowerPlacementController : MonoBehaviour
         if (towerPrefab == null) return;
 
         if (hoveredTile.IsOccupied) return;
-
-        if (!IsPlacementValid(hoveredTile))
-            return;
+        if (!IsPlacementValid(hoveredTile)) return;
 
         TowerCost costComp = towerPrefab.GetComponent<TowerCost>();
         if (costComp != null && economy != null)
@@ -250,16 +270,27 @@ public class TowerPlacementController : MonoBehaviour
         }
 
         Vector3 pos = hoveredTile.transform.position;
-        Instantiate(towerPrefab, pos, Quaternion.identity);
+        GameObject placed = Instantiate(towerPrefab, pos, Quaternion.identity);
 
-        hoveredTile.SetOccupied(true);
+        // store tower on tile for tile-based inspection
+        hoveredTile.SetOccupiedTower(placed);
+
         if (towersBlockEnemies)
             hoveredTile.SetBlocksEnemies(true);
 
         PathChangeBroadcaster.Bump();
 
-        // After spending money, the ghost might need to flip back to red if you can’t afford another.
-        ForceGhostRefresh();
+        // Auto-inspect after placing
+        if (inspectPanel != null)
+        {
+            var id = placed.GetComponentInChildren<TowerIdentity>();
+            var up = placed.GetComponentInChildren<TowerUpgradeState>();
+            if (id != null) inspectPanel.SetSelectedTower(id, up, hoveredTile);
+            else inspectPanel.SetSelectedTile(hoveredTile);
+        }
+
+        // Force ghost refresh next frame
+        lastTile = null;
     }
 
     private bool WouldStillHavePathIfPlacedHere(GridTile tile)
@@ -290,25 +321,4 @@ public class TowerPlacementController : MonoBehaviour
         foreach (Transform child in obj.transform)
             SetLayerRecursively(child.gameObject, layer);
     }
-
-    public void ClearSelectionAndHideGhost()
-    {
-        // Clear currently selected tower (if you're using selection later)
-        // If you only have one towerPrefab, you can remove selection logic.
-        // Leaving it future-proof.
-
-        // If you implement multiple tower types later, reset selection here.
-        // selectedTowerPrefab = null;
-        // selectedIndex = -1;
-
-        if (ghost != null)
-        {
-            ghost.SetActive(false);
-        }
-
-        hoveredTile = null;
-        lastTile = null;
-        forceRecheckGhost = false;
-    }
-
 }

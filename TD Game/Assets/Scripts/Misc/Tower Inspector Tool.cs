@@ -8,7 +8,6 @@ public class TowerInspectorTool : MonoBehaviour
     [SerializeField] private float maxDistance = 8f;
 
     [Header("Raycast")]
-    [SerializeField] private LayerMask towerMask;
     [SerializeField] private LayerMask tileMask;
 
     [Header("UI")]
@@ -20,13 +19,14 @@ public class TowerInspectorTool : MonoBehaviour
     {
         if (cam == null) cam = Camera.main;
         if (inspectPanel == null) inspectPanel = FindFirstObjectByType<InspectPanelUI>();
-
         controls = new PlayerControls();
     }
 
     private void OnEnable()
     {
         controls.Enable();
+        // If your inputactions doesn't have PrimaryClick yet, DON'T compile this way.
+        // Replace this binding with whatever action you actually have for click.
         controls.Player.PrimaryClick.performed += OnPrimaryClick;
     }
 
@@ -39,49 +39,36 @@ public class TowerInspectorTool : MonoBehaviour
     private void OnPrimaryClick(InputAction.CallbackContext ctx)
     {
         if (PauseState.IsPaused) return;
-
-        TrySelect();
-    }
-
-    private void TrySelect()
-    {
         if (cam == null || inspectPanel == null) return;
 
         Ray ray = cam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
 
-        // 1️⃣ Check for tower first
-        if (Physics.Raycast(ray, out RaycastHit towerHit, maxDistance, towerMask, QueryTriggerInteraction.Ignore))
+        if (Physics.Raycast(ray, out RaycastHit hit, maxDistance, tileMask, QueryTriggerInteraction.Ignore))
         {
-            TowerIdentity identity = towerHit.collider.GetComponentInParent<TowerIdentity>();
-            TowerUpgradeState upgradeState = towerHit.collider.GetComponentInParent<TowerUpgradeState>();
-            GridTile tileUnder = FindTileUnderObject(towerHit.collider.transform.position);
-
-            if (identity != null)
+            GridTile tile = hit.collider.GetComponent<GridTile>();
+            if (tile == null)
             {
-                inspectPanel.SetSelectedTower(identity, upgradeState, tileUnder);
+                inspectPanel.ClearSelection(); // you’ll add this method below
                 return;
             }
-        }
 
-        // 2️⃣ Otherwise check for terrain tile
-        if (Physics.Raycast(ray, out RaycastHit tileHit, maxDistance, tileMask, QueryTriggerInteraction.Ignore))
-        {
-            GridTile tile = tileHit.collider.GetComponent<GridTile>();
-            if (tile != null)
+            // Tile-based: tower info is determined by what's stored on the tile
+            if (tile.OccupiedTower != null)
+            {
+                var id = tile.OccupiedTower.GetComponentInChildren<TowerIdentity>();
+                var up = tile.OccupiedTower.GetComponentInChildren<TowerUpgradeState>();
+                if (id != null) inspectPanel.SetSelectedTower(id, up, tile);
+                else inspectPanel.SetSelectedTile(tile);
+            }
+            else
             {
                 inspectPanel.SetSelectedTile(tile);
-                return;
             }
         }
-    }
-
-    private GridTile FindTileUnderObject(Vector3 worldPos)
-    {
-        Ray down = new Ray(worldPos + Vector3.up * 2f, Vector3.down);
-        if (Physics.Raycast(down, out RaycastHit hit, 10f, tileMask, QueryTriggerInteraction.Ignore))
+        else
         {
-            return hit.collider.GetComponent<GridTile>();
+            // click did NOT hit a reachable tile => close
+            inspectPanel.ClearSelection();
         }
-        return null;
     }
 }
