@@ -6,6 +6,7 @@ public class TowerPlacementController : MonoBehaviour
     [Header("References")]
     [SerializeField] private Camera cam;
     [SerializeField] private GridManager grid;
+    private PlayerControls controls;
 
     [Header("Raycast")]
     [SerializeField] private float maxDistance = 6f;
@@ -54,18 +55,26 @@ public class TowerPlacementController : MonoBehaviour
         if (inspectPanel == null) inspectPanel = FindFirstObjectByType<InspectPanelUI>();
 
         CreateGhost();
+
+        controls = new PlayerControls();
     }
 
     private void OnEnable()
     {
         if (economy != null)
             economy.OnMoneyChanged += HandleMoneyChanged;
+
+        controls.Enable();
+        controls.Player.PrimaryClick.performed += OnPrimaryClick;
     }
 
     private void OnDisable()
     {
         if (economy != null)
             economy.OnMoneyChanged -= HandleMoneyChanged;
+
+        controls.Player.PrimaryClick.performed -= OnPrimaryClick;
+        controls.Disable();
     }
 
     // NEW: make ghost update even if mouse doesn't move
@@ -93,20 +102,19 @@ public class TowerPlacementController : MonoBehaviour
 
         UpdateHoverTile();
         UpdateGhostVisualsAndPosition();
-
-        if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
-        {
-            // TILE-BASED: click on a tile with a tower => INSPECT instead of place
-            if (hoveredTile != null && hoveredTile.OccupiedTower != null)
-            {
-                InspectHoveredTile();
-                return;
-            }
-
-            TryPlace();
-        }
     }
+    private void OnPrimaryClick(InputAction.CallbackContext ctx)
+    {
+        if (PauseState.IsPaused) return;
 
+        if (hoveredTile != null && hoveredTile.OccupiedTower != null)
+        {
+            InspectHoveredTile();
+            return;
+        }
+
+        TryPlace();
+    }
     private void InspectHoveredTile()
     {
         if (inspectPanel == null || hoveredTile == null) return;
@@ -305,12 +313,12 @@ public class TowerPlacementController : MonoBehaviour
 
         if (tile.Terrain == TerrainType.Blocked) return false;
 
-        bool wasPassable = tile.IsPassableForEnemies;
+        bool originalBlocksEnemies = tile.BlocksEnemies;
 
         tile.SetBlocksEnemies(true);
         var path = pathfinder.FindPathAStar(startTile, goalTile);
 
-        tile.SetBlocksEnemies(!wasPassable);
+        tile.SetBlocksEnemies(originalBlocksEnemies);
 
         return path != null && path.Count > 0;
     }

@@ -18,7 +18,7 @@ GameObject:
   - component: {fileID: -2177105339483779199}
   - component: {fileID: 9198767423989168895}
   m_Layer: 6
-  m_Name: wizard
+  m_Name: wizard upg1
   m_TagString: Tower
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -34,7 +34,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.37561, y: 0.37561, z: 0.37561}
+  m_LocalScale: {x: 0.37561, y: 0.44, z: 0.37561}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -193,7 +193,7 @@ MonoBehaviour:
   displayLevel: 1
   upgradeADescription: Increased Fire Rate & Damage
   upgradeACost: 100
-  upgradeAPrefab: {fileID: 1937534747383321431, guid: ffd5b89fb7f7e0745aeac0122574159e, type: 3}
+  upgradeAPrefab: {fileID: 0}
   upgradeBDescription: 
   upgradeBCost: 0
   upgradeBPrefab: {fileID: 0}

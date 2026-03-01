@@ -19,7 +19,8 @@ public class GridTile : MonoBehaviour
     [Header("Occupancy (runtime)")]
     [SerializeField] private bool occupied;
     [SerializeField] private GameObject occupiedTower;
-    
+    public bool BlocksEnemies => blocksEnemies;
+
 
     // ... (your existing visuals fields)
 
@@ -42,10 +43,16 @@ public class GridTile : MonoBehaviour
 
     public void SetOccupied(bool value) => occupied = value;
 
-    public void SetOccupiedTower(GameObject towerGo)
+    public void SetOccupiedTower(GameObject towerGO)
     {
-        occupiedTower = towerGo;
-        occupied = (towerGo != null);
+        occupiedTower = towerGO;
+        occupied = (towerGO != null);
+    }
+
+    public void ClearOccupiedTower()
+    {
+        occupiedTower = null;
+        occupied = false;
     }
 
     private void Awake()

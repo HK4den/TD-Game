@@ -154,6 +154,24 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Upgrade"",
+                    ""type"": ""Button"",
+                    ""id"": ""66aeaf83-3f2e-4738-84ae-92070fb0a511"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""SwapUpgrade"",
+                    ""type"": ""Button"",
+                    ""id"": ""06250bac-bd29-43a3-aac4-9bcadf801043"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -299,6 +317,28 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""action"": ""SecondaryClick"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""6fc058db-4504-4524-93be-ede74abfb1a4"",
+                    ""path"": ""<Keyboard>/e"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Upgrade"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""59e95388-2e58-46ec-aa0d-a4f5029d6ae5"",
+                    ""path"": ""<Keyboard>/r"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""SwapUpgrade"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -314,6 +354,8 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         m_Player_Escape = m_Player.FindAction("Escape", throwIfNotFound: true);
         m_Player_PrimaryClick = m_Player.FindAction("PrimaryClick", throwIfNotFound: true);
         m_Player_SecondaryClick = m_Player.FindAction("SecondaryClick", throwIfNotFound: true);
+        m_Player_Upgrade = m_Player.FindAction("Upgrade", throwIfNotFound: true);
+        m_Player_SwapUpgrade = m_Player.FindAction("SwapUpgrade", throwIfNotFound: true);
     }
 
     ~@PlayerControls()
@@ -401,6 +443,8 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_Escape;
     private readonly InputAction m_Player_PrimaryClick;
     private readonly InputAction m_Player_SecondaryClick;
+    private readonly InputAction m_Player_Upgrade;
+    private readonly InputAction m_Player_SwapUpgrade;
     /// <summary>
     /// Provides access to input actions defined in input action map "Player".
     /// </summary>
@@ -440,6 +484,14 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Player/SecondaryClick".
         /// </summary>
         public InputAction @SecondaryClick => m_Wrapper.m_Player_SecondaryClick;
+        /// <summary>
+        /// Provides access to the underlying input action "Player/Upgrade".
+        /// </summary>
+        public InputAction @Upgrade => m_Wrapper.m_Player_Upgrade;
+        /// <summary>
+        /// Provides access to the underlying input action "Player/SwapUpgrade".
+        /// </summary>
+        public InputAction @SwapUpgrade => m_Wrapper.m_Player_SwapUpgrade;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -487,6 +539,12 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @SecondaryClick.started += instance.OnSecondaryClick;
             @SecondaryClick.performed += instance.OnSecondaryClick;
             @SecondaryClick.canceled += instance.OnSecondaryClick;
+            @Upgrade.started += instance.OnUpgrade;
+            @Upgrade.performed += instance.OnUpgrade;
+            @Upgrade.canceled += instance.OnUpgrade;
+            @SwapUpgrade.started += instance.OnSwapUpgrade;
+            @SwapUpgrade.performed += instance.OnSwapUpgrade;
+            @SwapUpgrade.canceled += instance.OnSwapUpgrade;
         }
 
         /// <summary>
@@ -519,6 +577,12 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @SecondaryClick.started -= instance.OnSecondaryClick;
             @SecondaryClick.performed -= instance.OnSecondaryClick;
             @SecondaryClick.canceled -= instance.OnSecondaryClick;
+            @Upgrade.started -= instance.OnUpgrade;
+            @Upgrade.performed -= instance.OnUpgrade;
+            @Upgrade.canceled -= instance.OnUpgrade;
+            @SwapUpgrade.started -= instance.OnSwapUpgrade;
+            @SwapUpgrade.performed -= instance.OnSwapUpgrade;
+            @SwapUpgrade.canceled -= instance.OnSwapUpgrade;
         }
 
         /// <summary>
@@ -608,5 +672,19 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnSecondaryClick(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Upgrade" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnUpgrade(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "SwapUpgrade" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnSwapUpgrade(InputAction.CallbackContext context);
     }
 }

@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using DamageNumbersPro;
 
 public class InspectPanelUI : MonoBehaviour
 {
@@ -7,9 +8,9 @@ public class InspectPanelUI : MonoBehaviour
     [SerializeField] private RectTransform panelRoot;
 
     [Header("Panel Positions")]
-    [SerializeField] private RectTransform panelRect;              // usually same as panelRoot
-    [SerializeField] private Vector2 hiddenAnchoredPos;            // where it sits when nothing selected
-    [SerializeField] private Vector2 shownAnchoredPos;             // where it sits when something selected
+    [SerializeField] private RectTransform panelRect;
+    [SerializeField] private Vector2 hiddenAnchoredPos;
+    [SerializeField] private Vector2 shownAnchoredPos;
     [SerializeField] private float moveDuration = 0.15f;
 
     [Header("Terrain UI")]
@@ -21,11 +22,31 @@ public class InspectPanelUI : MonoBehaviour
     [SerializeField] private Text towerNameText;
     [SerializeField] private Image towerIconImage;
 
+    [Header("Tower Level UI (NEW)")]
+    [SerializeField] private Text towerLevelText; // e.g. "Level: 1"
+
     [Header("Upgrade UI (Keyboard-controlled)")]
-    [SerializeField] private GameObject upgradeRoot;       // parent for upgrade UI
-    [SerializeField] private Text upgradeAIndicatorText;    // e.g. "> Upgrade A" / "  Upgrade A"
-    [SerializeField] private Text upgradeBIndicatorText;    // e.g. "> Upgrade B"
-    [SerializeField] private GameObject upgradeBRowRoot;    // hides row if not two-path
+    [SerializeField] private GameObject upgradeRoot;
+    [SerializeField] private Text upgradeAIndicatorText;
+    [SerializeField] private Text upgradeBIndicatorText;
+    [SerializeField] private GameObject upgradeBRowRoot;
+
+    [Header("Upgrade Descriptions + Costs (NEW)")]
+    [SerializeField] private Text upgradeADescText;
+    [SerializeField] private Text upgradeBDescText;
+    [SerializeField] private Text upgradeACostText;
+    [SerializeField] private Text upgradeBCostText;
+
+    [Header("Upgrade Available Icon (NEW)")]
+    [SerializeField] private GameObject upgradeAvailableIcon; // show if CanUpgrade
+
+    [Header("Insufficient Funds Popup (GUI DNP)")]
+    [Tooltip("Damage Numbers Pro GUI prefab (your 'Insufficient Fund Text'). Should already say 'Insufficient Funds' via Prefix/Text in the prefab.")]
+    [SerializeField] private DamageNumber insufficientFundsGuiPrefab;
+
+    [Tooltip("Where the popup should appear (screen-space overlay). Put this on the selected upgrade row/button area.")]
+    [SerializeField] private RectTransform insufficientFundsAnchorA;
+    [SerializeField] private RectTransform insufficientFundsAnchorB;
 
     [Header("Terrain Descriptions (optional)")]
     [SerializeField] private TerrainDescriptionsSO terrainDescriptions;
@@ -33,8 +54,6 @@ public class InspectPanelUI : MonoBehaviour
     private GridTile selectedTile;
     private TowerIdentity selectedTower;
     private TowerUpgradeState selectedUpgradeState;
-
-    private bool hasSelection;
 
     private float moveT;
     private Vector2 moveFrom;
@@ -47,8 +66,6 @@ public class InspectPanelUI : MonoBehaviour
         if (panelRoot != null) panelRoot.gameObject.SetActive(true);
         if (panelRect == null) panelRect = panelRoot;
 
-        // Start "hidden"
-        hasSelection = false;
         ForceMoveTo(hiddenAnchoredPos);
 
         ApplyTerrain(null);
@@ -58,7 +75,6 @@ public class InspectPanelUI : MonoBehaviour
 
     private void Update()
     {
-        // Smooth move between hidden/shown positions
         if (panelRect == null) return;
 
         if (moveT < 1f)
@@ -78,7 +94,6 @@ public class InspectPanelUI : MonoBehaviour
         selectedTile = null;
         selectedTower = null;
         selectedUpgradeState = null;
-        hasSelection = false;
 
         ApplyTerrain(null);
         ApplyTower(null, null);
@@ -91,12 +106,11 @@ public class InspectPanelUI : MonoBehaviour
         selectedTile = tile;
         selectedTower = null;
         selectedUpgradeState = null;
-        hasSelection = tile != null;
 
         ApplyTerrain(tile);
         ApplyTower(null, null);
 
-        StartMove(hasSelection ? shownAnchoredPos : hiddenAnchoredPos);
+        StartMove(tile != null ? shownAnchoredPos : hiddenAnchoredPos);
     }
 
     public void SetSelectedTower(TowerIdentity tower, TowerUpgradeState upgradeState, GridTile tileUnderTower)
@@ -104,26 +118,54 @@ public class InspectPanelUI : MonoBehaviour
         selectedTower = tower;
         selectedUpgradeState = upgradeState;
         selectedTile = tileUnderTower;
-        hasSelection = tower != null || tileUnderTower != null;
 
         ApplyTerrain(tileUnderTower);
         ApplyTower(tower, upgradeState);
 
-        StartMove(hasSelection ? shownAnchoredPos : hiddenAnchoredPos);
+        StartMove((tower != null || tileUnderTower != null) ? shownAnchoredPos : hiddenAnchoredPos);
     }
 
-    // Called by your tool input: R toggles selection
     public void ToggleUpgradeSelection()
     {
-        // Only if B exists
         bool twoPaths = selectedUpgradeState != null && selectedUpgradeState.HasTwoPaths;
-        if (!twoPaths) { selectedUpgradeIndex = 0; ApplyUpgradeSelectionVisuals(); return; }
+        if (!twoPaths)
+        {
+            selectedUpgradeIndex = 0;
+            ApplyUpgradeSelectionVisuals();
+            return;
+        }
 
         selectedUpgradeIndex = 1 - selectedUpgradeIndex;
         ApplyUpgradeSelectionVisuals();
     }
 
     public int GetSelectedUpgradeIndex() => selectedUpgradeIndex;
+
+    public bool TryGetSelectedTower(out TowerIdentity tower, out TowerUpgradeState upgradeState, out GridTile tile)
+    {
+        tower = selectedTower;
+        upgradeState = selectedUpgradeState;
+        tile = selectedTile;
+        return tower != null && tile != null;
+    }
+
+    public void ShowInsufficientFundsPopup()
+    {
+        if (insufficientFundsGuiPrefab == null) return;
+
+        RectTransform anchor = (selectedUpgradeIndex == 1) ? insufficientFundsAnchorB : insufficientFundsAnchorA;
+        if (anchor == null) anchor = insufficientFundsAnchorA != null ? insufficientFundsAnchorA : insufficientFundsAnchorB;
+        if (anchor == null) return;
+
+        // Screen Space - Overlay => use screen pixel position
+        Vector3 screen = RectTransformUtility.WorldToScreenPoint(null, anchor.position);
+        // GUI prefab should be text-only; we spawn "0" just to trigger it.
+        insufficientFundsGuiPrefab.SpawnGUI(
+    (selectedUpgradeIndex == 1 ? insufficientFundsAnchorB : insufficientFundsAnchorA),
+    Vector2.zero,
+    0
+);
+    }
 
     // -------------------------
     // Internals
@@ -138,7 +180,7 @@ public class InspectPanelUI : MonoBehaviour
         {
             if (tile == null) terrainDescText.text = "";
             else if (terrainDescriptions != null) terrainDescText.text = terrainDescriptions.GetDescription(tile.Terrain);
-            else terrainDescText.text = ""; // your request: blank if no SO
+            else terrainDescText.text = "";
         }
     }
 
@@ -151,7 +193,9 @@ public class InspectPanelUI : MonoBehaviour
 
         if (!hasTower)
         {
+            if (towerLevelText != null) towerLevelText.text = "";
             if (upgradeRoot != null) upgradeRoot.SetActive(false);
+            if (upgradeAvailableIcon != null) upgradeAvailableIcon.SetActive(false);
             return;
         }
 
@@ -164,16 +208,48 @@ public class InspectPanelUI : MonoBehaviour
             towerIconImage.sprite = tower.Icon;
         }
 
+        if (towerLevelText != null)
+        {
+            int lvl = (upgradeState != null) ? upgradeState.DisplayLevel : 1;
+            towerLevelText.text = $"Level: {lvl}";
+        }
+
         bool canUpgrade = upgradeState != null && upgradeState.CanUpgrade;
         bool twoPaths = upgradeState != null && upgradeState.HasTwoPaths;
 
         if (upgradeRoot != null)
             upgradeRoot.SetActive(canUpgrade);
 
+        if (upgradeAvailableIcon != null)
+            upgradeAvailableIcon.SetActive(canUpgrade);
+
         if (upgradeBRowRoot != null)
             upgradeBRowRoot.SetActive(canUpgrade && twoPaths);
 
         if (!canUpgrade) selectedUpgradeIndex = 0;
+
+        // Descriptions + costs
+        if (upgradeADescText != null)
+            upgradeADescText.text = canUpgrade && upgradeState != null ? upgradeState.UpgradeADescription : "";
+
+        if (upgradeBDescText != null)
+        {
+            if (canUpgrade && twoPaths && upgradeState != null)
+                upgradeBDescText.text = upgradeState.UpgradeBDescription;
+            else
+                upgradeBDescText.text = "";
+        }
+
+        if (upgradeACostText != null)
+            upgradeACostText.text = canUpgrade && upgradeState != null ? $"Cost: {upgradeState.UpgradeACost}" : "";
+
+        if (upgradeBCostText != null)
+        {
+            if (canUpgrade && twoPaths && upgradeState != null)
+                upgradeBCostText.text = $"Cost: {upgradeState.UpgradeBCost}";
+            else
+                upgradeBCostText.text = "";
+        }
 
         ApplyUpgradeSelectionVisuals();
     }
