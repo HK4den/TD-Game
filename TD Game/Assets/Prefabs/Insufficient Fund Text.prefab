@@ -26,7 +26,7 @@ RectTransform:
   m_GameObject: {fileID: 2363759818847889793}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 10}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.7, y: 0.6, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4375524372205822423}
@@ -51,7 +51,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: DamageNumbersPro::DamageNumbersPro.DamageNumberGUI
   permanent: 0
-  lifetime: 2
+  lifetime: 1.5
   unscaledTime: 0
   enable3DGame: 0
   faceCameraView: 1
@@ -103,7 +103,7 @@ MonoBehaviour:
     suffixDecimalChar: .
     suffixHideZeros: 0
   enableLeftText: 1
-  leftText: Level
+  leftText: Insufficient Funds
   leftTextSettings:
     bold: 0
     italic: 0
@@ -150,7 +150,7 @@ MonoBehaviour:
     vertical: 0
     characterSpacing: 0
     size: 0
-  enableBottomText: 1
+  enableBottomText: 0
   bottomText: 
   bottomTextSettings:
     bold: 0
@@ -166,7 +166,7 @@ MonoBehaviour:
     vertical: 0
     characterSpacing: 0
     size: 0
-  enableColorByNumber: 1
+  enableColorByNumber: 0
   colorByNumberSettings:
     colorGradient:
       serializedVersion: 2
@@ -202,19 +202,19 @@ MonoBehaviour:
     toNumber: 100
   durationFadeIn: 0.2
   enableOffsetFadeIn: 0
-  offsetFadeIn: {x: 0, y: 0.5}
+  offsetFadeIn: {x: 0.5, y: 0}
   enableScaleFadeIn: 1
-  scaleFadeIn: {x: 0.5, y: 2}
+  scaleFadeIn: {x: -1.5, y: 2}
   enableCrossScaleFadeIn: 0
   crossScaleFadeIn: {x: 1, y: 1.5}
-  enableShakeFadeIn: 1
+  enableShakeFadeIn: 0
   shakeOffsetFadeIn: {x: 0, y: 1.5}
-  shakeFrequencyFadeIn: 2
+  shakeFrequencyFadeIn: 4
   durationFadeOut: 0.2
-  enableOffsetFadeOut: 1
+  enableOffsetFadeOut: 0
   offsetFadeOut: {x: 0.5, y: 0}
-  enableScaleFadeOut: 0
-  scaleFadeOut: {x: 2, y: 2}
+  enableScaleFadeOut: 1
+  scaleFadeOut: {x: 0.4, y: 0.4}
   enableCrossScaleFadeOut: 0
   crossScaleFadeOut: {x: 1, y: 1.5}
   enableShakeFadeOut: 0
@@ -225,8 +225,8 @@ MonoBehaviour:
     speed: 5
     minX: -0.4
     maxX: 0.4
-    minY: 0.5
-    maxY: 1
+    minY: 0.4
+    maxY: 0.7
     randomFlip: 0
   enableVelocity: 0
   velocitySettings:
@@ -332,7 +332,7 @@ MonoBehaviour:
   defaultOrthographicSize: 5
   maxOrthographicSize: 1.5
   orthographicCamera: {fileID: 0}
-  spamGroup: 
+  spamGroup: Default
   enableCombination: 0
   combinationSettings:
     method: 0
@@ -411,10 +411,10 @@ MonoBehaviour:
     absorberScaleFade: 15
     instantGain: 0
     bonusLifetime: 1
-  enableDestruction: 0
+  enableDestruction: 1
   destructionSettings:
     maxDistance: 2
-    spawnDelay: 0.2
+    spawnDelay: 0.3
     duration: 0.3
     scaleCurve:
       serializedVersion: 2
@@ -464,15 +464,15 @@ MonoBehaviour:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-  enableCollision: 0
+  enableCollision: 1
   collisionSettings:
-    radius: 0.5
-    pushFactor: 1
-    desiredDirection: {x: 0, y: 0, z: 0}
+    radius: 2
+    pushFactor: 0.5
+    desiredDirection: {x: 0, y: 2, z: 0}
   enablePush: 0
   pushSettings:
-    radius: 4
-    pushOffset: 0.8
+    radius: 3
+    pushOffset: 1
   updateDelay: 0.0125
   enablePooling: 0
   poolSize: 50
@@ -544,14 +544,12 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Level
-
-'
+  m_text: Insufficient Funds
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: a50e85261c47743468fb8649eced36e7, type: 2}
+  m_sharedMaterial: {fileID: -178917677106001470, guid: a50e85261c47743468fb8649eced36e7, type: 2}
   m_fontSharedMaterials:
-  - {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  - {fileID: -178917677106001470, guid: a50e85261c47743468fb8649eced36e7, type: 2}
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
@@ -569,7 +567,7 @@ MonoBehaviour:
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 0
+  m_TextStyleHashCode: -1183493901
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2
@@ -683,20 +681,18 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Level
-
-'
+  m_text: Insufficient Funds
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: a50e85261c47743468fb8649eced36e7, type: 2}
+  m_sharedMaterial: {fileID: -178917677106001470, guid: a50e85261c47743468fb8649eced36e7, type: 2}
   m_fontSharedMaterials:
   - {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
-  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+    rgba: 4279440369
+  m_fontColor: {r: 0.9433962, g: 0.07564971, b: 0.07564971, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -708,7 +704,7 @@ MonoBehaviour:
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 0
+  m_TextStyleHashCode: -1183493901
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2

@@ -17,7 +17,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &6673482768837518802
 RectTransform:
   m_ObjectHideFlags: 0
@@ -296,7 +296,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 1.371, z: 10}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.1, y: 0.1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 6673482768837518802}
@@ -466,21 +466,21 @@ MonoBehaviour:
       m_NumAlphaKeys: 2
     fromNumber: 10
     toNumber: 100
-  durationFadeIn: 0.25
-  enableOffsetFadeIn: 1
-  offsetFadeIn: {x: 0, y: 0.5}
+  durationFadeIn: 0.2
+  enableOffsetFadeIn: 0
+  offsetFadeIn: {x: 0.5, y: 0}
   enableScaleFadeIn: 1
-  scaleFadeIn: {x: 0.5, y: 2}
-  enableCrossScaleFadeIn: 1
+  scaleFadeIn: {x: -1.5, y: 2}
+  enableCrossScaleFadeIn: 0
   crossScaleFadeIn: {x: 1, y: 1.5}
-  enableShakeFadeIn: 1
-  shakeOffsetFadeIn: {x: 0, y: 2.5}
+  enableShakeFadeIn: 0
+  shakeOffsetFadeIn: {x: 0, y: 1.5}
   shakeFrequencyFadeIn: 4
   durationFadeOut: 0.2
-  enableOffsetFadeOut: 1
+  enableOffsetFadeOut: 0
   offsetFadeOut: {x: 0.5, y: 0}
-  enableScaleFadeOut: 0
-  scaleFadeOut: {x: 2, y: 2}
+  enableScaleFadeOut: 1
+  scaleFadeOut: {x: -0.3, y: 1}
   enableCrossScaleFadeOut: 0
   crossScaleFadeOut: {x: 1, y: 1.5}
   enableShakeFadeOut: 0
@@ -491,8 +491,8 @@ MonoBehaviour:
     speed: 5
     minX: -0.4
     maxX: 0.4
-    minY: 0.5
-    maxY: 1
+    minY: 0.4
+    maxY: 0.7
     randomFlip: 0
   enableVelocity: 0
   velocitySettings:
@@ -598,7 +598,7 @@ MonoBehaviour:
   defaultOrthographicSize: 5
   maxOrthographicSize: 1.5
   orthographicCamera: {fileID: 0}
-  spamGroup: 
+  spamGroup: Default
   enableCombination: 0
   combinationSettings:
     method: 0
@@ -677,10 +677,10 @@ MonoBehaviour:
     absorberScaleFade: 15
     instantGain: 0
     bonusLifetime: 1
-  enableDestruction: 0
+  enableDestruction: 1
   destructionSettings:
     maxDistance: 2
-    spawnDelay: 0.2
+    spawnDelay: 0.3
     duration: 0.3
     scaleCurve:
       serializedVersion: 2
@@ -730,15 +730,15 @@ MonoBehaviour:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-  enableCollision: 0
+  enableCollision: 1
   collisionSettings:
-    radius: 0.5
-    pushFactor: 1
-    desiredDirection: {x: 0, y: 0, z: 0}
+    radius: 2
+    pushFactor: 0.5
+    desiredDirection: {x: 0, y: 2, z: 0}
   enablePush: 0
   pushSettings:
-    radius: 4
-    pushOffset: 0.8
+    radius: 3
+    pushOffset: 1
   updateDelay: 0.0125
   enablePooling: 0
   poolSize: 50

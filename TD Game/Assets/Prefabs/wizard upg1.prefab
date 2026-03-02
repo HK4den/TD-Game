@@ -197,5 +197,5 @@ MonoBehaviour:
   upgradeBDescription: 
   upgradeBCost: 0
   upgradeBPrefab: {fileID: 0}
-  levelUpTextPrefab: {fileID: 566350937206865270, guid: f4e4e691f3e388e48961918037be075a, type: 3}
-  levelUpYOffset: 2
+  levelUpTextPrefab: {fileID: 8985348834640522180, guid: 717c04aa96991dd43925ff0960dfe6fb, type: 3}
+  levelUpYOffset: 0
