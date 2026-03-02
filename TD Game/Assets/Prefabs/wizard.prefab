@@ -194,7 +194,7 @@ MonoBehaviour:
   upgradeADescription: Increased Fire Rate & Damage
   upgradeACost: 1
   upgradeAPrefab: {fileID: 1937534747383321431}
-  upgradeBDescription: evil rape building
+  upgradeBDescription: This is different from Upgrade A I swear
   upgradeBCost: 2
   upgradeBPrefab: {fileID: 1937534747383321431, guid: ffd5b89fb7f7e0745aeac0122574159e, type: 3}
   levelUpTextPrefab: {fileID: 8985348834640522180, guid: 717c04aa96991dd43925ff0960dfe6fb, type: 3}
