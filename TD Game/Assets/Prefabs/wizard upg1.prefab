@@ -130,11 +130,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1c40f0f5da041c74b9f8f906f37acdaa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TowerShooter
-  range: 2
+  range: 2.5
   enemyMask:
     serializedVersion: 2
     m_Bits: 128
-  fireRate: 2
+  fireRate: 4
   damage: 2
   muzzle: {fileID: 0}
 --- !u!114 &-6372878388460448235
