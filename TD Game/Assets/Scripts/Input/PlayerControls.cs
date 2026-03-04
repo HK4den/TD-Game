@@ -172,6 +172,15 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Sell"",
+                    ""type"": ""Button"",
+                    ""id"": ""3fd94edb-e7d3-411c-bd39-c1f7e4d701e0"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -339,6 +348,17 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""action"": ""SwapUpgrade"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""3172a7be-dbb6-401d-ab95-3bfe5d7c4d4b"",
+                    ""path"": ""<Keyboard>/q"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Sell"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -356,6 +376,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         m_Player_SecondaryClick = m_Player.FindAction("SecondaryClick", throwIfNotFound: true);
         m_Player_Upgrade = m_Player.FindAction("Upgrade", throwIfNotFound: true);
         m_Player_SwapUpgrade = m_Player.FindAction("SwapUpgrade", throwIfNotFound: true);
+        m_Player_Sell = m_Player.FindAction("Sell", throwIfNotFound: true);
     }
 
     ~@PlayerControls()
@@ -445,6 +466,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_SecondaryClick;
     private readonly InputAction m_Player_Upgrade;
     private readonly InputAction m_Player_SwapUpgrade;
+    private readonly InputAction m_Player_Sell;
     /// <summary>
     /// Provides access to input actions defined in input action map "Player".
     /// </summary>
@@ -492,6 +514,10 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Player/SwapUpgrade".
         /// </summary>
         public InputAction @SwapUpgrade => m_Wrapper.m_Player_SwapUpgrade;
+        /// <summary>
+        /// Provides access to the underlying input action "Player/Sell".
+        /// </summary>
+        public InputAction @Sell => m_Wrapper.m_Player_Sell;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -545,6 +571,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @SwapUpgrade.started += instance.OnSwapUpgrade;
             @SwapUpgrade.performed += instance.OnSwapUpgrade;
             @SwapUpgrade.canceled += instance.OnSwapUpgrade;
+            @Sell.started += instance.OnSell;
+            @Sell.performed += instance.OnSell;
+            @Sell.canceled += instance.OnSell;
         }
 
         /// <summary>
@@ -583,6 +612,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @SwapUpgrade.started -= instance.OnSwapUpgrade;
             @SwapUpgrade.performed -= instance.OnSwapUpgrade;
             @SwapUpgrade.canceled -= instance.OnSwapUpgrade;
+            @Sell.started -= instance.OnSell;
+            @Sell.performed -= instance.OnSell;
+            @Sell.canceled -= instance.OnSell;
         }
 
         /// <summary>
@@ -686,5 +718,12 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnSwapUpgrade(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Sell" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnSell(InputAction.CallbackContext context);
     }
 }

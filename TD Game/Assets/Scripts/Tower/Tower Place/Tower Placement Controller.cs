@@ -270,15 +270,24 @@ public class TowerPlacementController : MonoBehaviour
         if (hoveredTile.IsOccupied) return;
         if (!IsPlacementValid(hoveredTile)) return;
 
+        int paidCost = 0;
+
         TowerCost costComp = towerPrefab.GetComponent<TowerCost>();
         if (costComp != null && economy != null)
         {
-            if (!economy.TrySpendMoney(costComp.Cost))
+            paidCost = Mathf.Max(0, costComp.Cost);
+
+            if (!economy.TrySpendMoney(paidCost))
                 return;
         }
 
         Vector3 pos = hoveredTile.transform.position;
         GameObject placed = Instantiate(towerPrefab, pos, Quaternion.identity);
+
+        // Ensure ledger exists and record ACTUAL money paid
+        TowerValueLedger ledger = placed.GetComponent<TowerValueLedger>();
+        if (ledger == null) ledger = placed.AddComponent<TowerValueLedger>();
+        ledger.AddSpend(paidCost);
 
         // store tower on tile for tile-based inspection
         hoveredTile.SetOccupiedTower(placed);

@@ -22,7 +22,7 @@ public class InspectPanelUI : MonoBehaviour
     [SerializeField] private Text towerNameText;
     [SerializeField] private Image towerIconImage;
 
-    [Header("Tower Level UI (NEW)")]
+    [Header("Tower Level UI)")]
     [SerializeField] private Text towerLevelText; // e.g. "Level: 1"
 
     [Header("Upgrade UI (Keyboard-controlled)")]
@@ -31,13 +31,13 @@ public class InspectPanelUI : MonoBehaviour
     [SerializeField] private Text upgradeBIndicatorText;
     [SerializeField] private GameObject upgradeBRowRoot;
 
-    [Header("Upgrade Descriptions + Costs (NEW)")]
+    [Header("Upgrade Descriptions + Costs")]
     [SerializeField] private Text upgradeADescText;
     [SerializeField] private Text upgradeBDescText;
     [SerializeField] private Text upgradeACostText;
     [SerializeField] private Text upgradeBCostText;
 
-    [Header("Upgrade Available Icon (NEW)")]
+    [Header("Upgrade Available Icon")]
     [SerializeField] private GameObject upgradeAvailableIcon; // show if CanUpgrade
 
     [Header("Insufficient Funds Popup (GUI DNP)")]
@@ -47,6 +47,11 @@ public class InspectPanelUI : MonoBehaviour
     [Tooltip("Where the popup should appear (screen-space overlay). Put this on the selected upgrade row/button area.")]
     [SerializeField] private RectTransform insufficientFundsAnchorA;
     [SerializeField] private RectTransform insufficientFundsAnchorB;
+
+    [Header("Sell UI")]
+    [SerializeField] private GameObject sellRoot;   // optional container
+    [SerializeField] private Text sellPriceText;    // e.g. "Sell: $123 (Q)"
+    [SerializeField] private float sellRefundRate = 0.75f;
 
     [Header("Terrain Descriptions (optional)")]
     [SerializeField] private TerrainDescriptionsSO terrainDescriptions;
@@ -99,6 +104,15 @@ public class InspectPanelUI : MonoBehaviour
         ApplyTower(null, null);
 
         StartMove(hiddenAnchoredPos);
+    }
+
+    public bool HasSelection => selectedTile != null || selectedTower != null;
+
+    public Vector3 GetSelectionWorldPos()
+    {
+        if (selectedTile != null) return selectedTile.transform.position;
+        if (selectedTower != null) return selectedTower.transform.position;
+        return Vector3.zero;
     }
 
     public void SetSelectedTile(GridTile tile)
@@ -157,14 +171,11 @@ public class InspectPanelUI : MonoBehaviour
         if (anchor == null) anchor = insufficientFundsAnchorA != null ? insufficientFundsAnchorA : insufficientFundsAnchorB;
         if (anchor == null) return;
 
-        // Screen Space - Overlay => use screen pixel position
-        Vector3 screen = RectTransformUtility.WorldToScreenPoint(null, anchor.position);
-        // GUI prefab should be text-only; we spawn "0" just to trigger it.
-        insufficientFundsGuiPrefab.SpawnGUI(
-    (selectedUpgradeIndex == 1 ? insufficientFundsAnchorB : insufficientFundsAnchorA),
-    Vector2.zero,
-    0
-);
+        // Spawn a GUI damage number instance (no number passed)
+        DamageNumber dn = insufficientFundsGuiPrefab.Spawn(Vector3.zero);
+
+        // Attach it to the UI element and center it
+        dn.SetAnchoredPosition(anchor, Vector2.zero);
     }
 
     // -------------------------
@@ -191,14 +202,22 @@ public class InspectPanelUI : MonoBehaviour
         if (towerSectionRoot != null)
             towerSectionRoot.SetActive(hasTower);
 
+        // ---- No tower selected: clear/hide tower-related UI ----
         if (!hasTower)
         {
             if (towerLevelText != null) towerLevelText.text = "";
+
             if (upgradeRoot != null) upgradeRoot.SetActive(false);
             if (upgradeAvailableIcon != null) upgradeAvailableIcon.SetActive(false);
+
+            // Sell UI (hide/clear)
+            if (sellRoot != null) sellRoot.SetActive(false);
+            if (sellPriceText != null) sellPriceText.text = "";
+
             return;
         }
 
+        // ---- Tower selected: show identity ----
         if (towerNameText != null)
             towerNameText.text = tower.DisplayName;
 
@@ -214,8 +233,25 @@ public class InspectPanelUI : MonoBehaviour
             towerLevelText.text = $"Level: {lvl}";
         }
 
+        // ---- Sell UI (show + compute refund) ----
+        if (sellRoot != null) sellRoot.SetActive(true);
+
+        if (sellPriceText != null)
+        {
+            TowerValueLedger ledger = tower.GetComponentInParent<TowerValueLedger>();
+            if (ledger == null) ledger = tower.GetComponentInChildren<TowerValueLedger>();
+
+            int refund = (ledger != null) ? ledger.GetRefund(sellRefundRate) : 0;
+            sellPriceText.text = $"Sell: ${refund} (Q)";
+        }
+
+        // ---- Upgrades ----
         bool canUpgrade = upgradeState != null && upgradeState.CanUpgrade;
         bool twoPaths = upgradeState != null && upgradeState.HasTwoPaths;
+
+        // If tower doesn't have path B, force selection back to A
+        if (!twoPaths) selectedUpgradeIndex = 0;
+        if (!canUpgrade) selectedUpgradeIndex = 0;
 
         if (upgradeRoot != null)
             upgradeRoot.SetActive(canUpgrade);
@@ -225,8 +261,6 @@ public class InspectPanelUI : MonoBehaviour
 
         if (upgradeBRowRoot != null)
             upgradeBRowRoot.SetActive(canUpgrade && twoPaths);
-
-        if (!canUpgrade) selectedUpgradeIndex = 0;
 
         // Descriptions + costs
         if (upgradeADescText != null)

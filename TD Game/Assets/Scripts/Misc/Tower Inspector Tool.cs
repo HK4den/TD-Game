@@ -6,12 +6,16 @@ public class TowerInspectorTool : MonoBehaviour
     [Header("Refs")]
     [SerializeField] private Camera cam;
     [SerializeField] private float maxDistance = 8f;
+    [SerializeField] private float deselectDistance = 8f;
 
     [Header("Raycast")]
     [SerializeField] private LayerMask tileMask;
 
     [Header("UI")]
     [SerializeField] private InspectPanelUI inspectPanel;
+
+    [Header("Sell Settings")]
+    [SerializeField] private float sellRefundRate = 0.75f;
 
     private PlayerControls controls;
     private EconomyManager economy;
@@ -28,19 +32,36 @@ public class TowerInspectorTool : MonoBehaviour
     private void OnEnable()
     {
         controls.Enable();
-        controls.Player.PrimaryClick.performed += OnPrimaryClick;
 
-        // New actions you created
+        // Hook input actions
+        controls.Player.PrimaryClick.performed += OnPrimaryClick;
         controls.Player.Upgrade.performed += OnUpgrade;
         controls.Player.SwapUpgrade.performed += OnSwapUpgrade;
+        controls.Player.Sell.performed += OnSell;
     }
 
     private void OnDisable()
     {
+        // Unhook input actions
         controls.Player.PrimaryClick.performed -= OnPrimaryClick;
         controls.Player.Upgrade.performed -= OnUpgrade;
         controls.Player.SwapUpgrade.performed -= OnSwapUpgrade;
+        controls.Player.Sell.performed -= OnSell;
+
         controls.Disable();
+    }
+
+    private void Update()
+    {
+        if (PauseState.IsPaused) return;
+        if (inspectPanel == null || cam == null) return;
+        if (!inspectPanel.HasSelection) return;
+
+        Vector3 p = inspectPanel.GetSelectionWorldPos();
+        float d = Vector3.Distance(cam.transform.position, p);
+
+        if (d > deselectDistance)
+            inspectPanel.ClearSelection();
     }
 
     private void OnPrimaryClick(InputAction.CallbackContext ctx)
@@ -85,7 +106,6 @@ public class TowerInspectorTool : MonoBehaviour
         if (PauseState.IsPaused) return;
         if (inspectPanel == null) return;
 
-        // Only toggles if the selected tower actually has two paths (handled inside InspectPanelUI)
         inspectPanel.ToggleUpgradeSelection();
     }
 
@@ -112,9 +132,6 @@ public class TowerInspectorTool : MonoBehaviour
 
         if (!upgraded)
         {
-            // If failed due to money, EconomyManager already logged it; we show popup.
-            // This will also trigger if prefab missing, etc—fine for now.
-            // If you want strict "money only", we can check economy.Money < requiredCost when requiredCost > 0.
             if (requiredCost > 0 && economy != null && economy.Money < requiredCost)
                 inspectPanel.ShowInsufficientFundsPopup();
 
@@ -133,5 +150,36 @@ public class TowerInspectorTool : MonoBehaviour
             if (newId != null) inspectPanel.SetSelectedTower(newId, newUp, tile);
             else inspectPanel.SetSelectedTile(tile);
         }
+    }
+
+    private void OnSell(InputAction.CallbackContext ctx)
+    {
+        if (PauseState.IsPaused) return;
+        if (inspectPanel == null) return;
+
+        if (!inspectPanel.TryGetSelectedTower(out TowerIdentity tower, out TowerUpgradeState upgradeState, out GridTile tile))
+            return;
+
+        if (tile == null || tile.OccupiedTower == null) return;
+
+        GameObject towerGO = tile.OccupiedTower;
+
+        // Compute refund from ledger (tracks actual money spent)
+        TowerValueLedger ledger = towerGO.GetComponent<TowerValueLedger>();
+        int refund = (ledger != null) ? ledger.GetRefund(sellRefundRate) : 0;
+
+        if (economy != null && refund > 0)
+            economy.AddMoney(refund);
+
+        // Clear tile occupancy + unblock enemies
+        tile.ClearOccupiedTower();
+        if (tile.BlocksEnemies) tile.SetBlocksEnemies(false);
+
+        // If selling changes pathing, bump the version
+        PathChangeBroadcaster.Bump();
+
+        // Clear UI selection and destroy tower
+        inspectPanel.ClearSelection();
+        Destroy(towerGO);
     }
 }

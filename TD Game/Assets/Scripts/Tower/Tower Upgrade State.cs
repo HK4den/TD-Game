@@ -80,6 +80,10 @@ public class TowerUpgradeState : MonoBehaviour
         if (!economy.TrySpendMoney(requiredCost))
             return false;
 
+        // Capture current ledger total BEFORE swapping
+        TowerValueLedger oldLedger = GetComponent<TowerValueLedger>();
+        int carrySpent = oldLedger != null ? oldLedger.TotalSpent : 0;
+
         // Swap prefab in-place WITHOUT clearing tile occupancy.
         Transform oldT = transform;
         Vector3 pos = oldT.position;
@@ -87,31 +91,27 @@ public class TowerUpgradeState : MonoBehaviour
 
         GameObject swapped = Instantiate(targetPrefab, pos, rot);
 
+        // Ensure new tower has ledger, carry over, then add THIS upgrade cost
+        TowerValueLedger newLedger = swapped.GetComponent<TowerValueLedger>();
+        if (newLedger == null) newLedger = swapped.AddComponent<TowerValueLedger>();
+
+        newLedger.SetTotalSpent(carrySpent);
+        newLedger.AddSpend(requiredCost);
+
         // Keep tile occupied by new tower immediately
         tileUnderTower.SetOccupiedTower(swapped);
-
-        // If your towersBlockEnemies setting is controlled by tile, we DO NOT change it here.
-        // (Upgraded prefab should not change blocking behavior unless you decide otherwise later.)
 
         // Destroy old tower last
         Destroy(gameObject);
 
         // New level comes from new prefab's TowerUpgradeState if present; otherwise +1 fallback.
         TowerUpgradeState newState = swapped.GetComponent<TowerUpgradeState>();
-        if (newState != null)
-        {
-            newLevel = newState.DisplayLevel;
-            // If new tower cannot upgrade anymore, it should have canUpgrade = false in its prefab.
-        }
-        else
-        {
-            newLevel = displayLevel + 1;
-        }
+        if (newState != null) newLevel = newState.DisplayLevel;
+        else newLevel = displayLevel + 1;
 
         // Spawn "Level X" popup (Mesh)
         if (levelUpTextPrefab != null)
         {
-            // Prefab should have Prefix "Level " and show number.
             levelUpTextPrefab.Spawn(pos + Vector3.up * levelUpYOffset, newLevel);
         }
 

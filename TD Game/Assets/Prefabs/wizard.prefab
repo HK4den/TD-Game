@@ -17,6 +17,7 @@ GameObject:
   - component: {fileID: 6825880120995313783}
   - component: {fileID: -2177105339483779199}
   - component: {fileID: 9198767423989168895}
+  - component: {fileID: 4221621356532786706}
   m_Layer: 6
   m_Name: wizard
   m_TagString: Tower
@@ -199,3 +200,16 @@ MonoBehaviour:
   upgradeBPrefab: {fileID: 1937534747383321431, guid: ffd5b89fb7f7e0745aeac0122574159e, type: 3}
   levelUpTextPrefab: {fileID: 8985348834640522180, guid: 717c04aa96991dd43925ff0960dfe6fb, type: 3}
   levelUpYOffset: 0
+--- !u!114 &4221621356532786706
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1937534747383321431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: de72ed71a9a43e14bae74409d3606792, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TowerValueLedger
+  totalSpent: 0
