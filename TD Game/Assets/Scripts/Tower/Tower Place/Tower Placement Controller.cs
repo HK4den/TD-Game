@@ -6,9 +6,13 @@ public class TowerPlacementController : MonoBehaviour
     [Header("References")]
     [SerializeField] private Camera cam;
     [SerializeField] private GridManager grid;
-    private PlayerControls controls;
+    [SerializeField] private GridPathfinder pathfinder;
+    [SerializeField] private InspectPanelUI inspectPanel; // optional (auto-inspect after placing)
 
-    [Header("Raycast")]
+    private PlayerControls controls;
+    private EconomyManager economy;
+
+    [Header("Raycast (CENTER RAY)")]
     [SerializeField] private float maxDistance = 6f;
     [SerializeField] private LayerMask tileMask;
 
@@ -22,15 +26,11 @@ public class TowerPlacementController : MonoBehaviour
     [Header("Path Check")]
     [SerializeField] private Vector2Int startCoord = new Vector2Int(0, 0);
     [SerializeField] private Vector2Int goalCoord = new Vector2Int(19, 19);
-    [SerializeField] private GridPathfinder pathfinder;
 
     [Header("Ghost Preview")]
     [SerializeField] private Material ghostMaterial;
     [SerializeField] private Material invalidGhostMaterial;
     [SerializeField] private float ghostYOffset = 0.05f;
-
-    [Header("Inspect Panel (tile-based)")]
-    [SerializeField] private InspectPanelUI inspectPanel; // NEW
 
     private GameObject ghost;
     private GridTile hoveredTile;
@@ -43,8 +43,6 @@ public class TowerPlacementController : MonoBehaviour
     private int lastSeenPathVersion = -1;
     private bool lastWasValid;
 
-    private EconomyManager economy;
-
     private void Awake()
     {
         economy = FindFirstObjectByType<EconomyManager>();
@@ -54,9 +52,9 @@ public class TowerPlacementController : MonoBehaviour
         if (pathfinder == null) pathfinder = FindFirstObjectByType<GridPathfinder>();
         if (inspectPanel == null) inspectPanel = FindFirstObjectByType<InspectPanelUI>();
 
-        CreateGhost();
-
         controls = new PlayerControls();
+
+        CreateGhost();
     }
 
     private void OnEnable()
@@ -77,57 +75,41 @@ public class TowerPlacementController : MonoBehaviour
         controls.Disable();
     }
 
-    // NEW: make ghost update even if mouse doesn't move
+    private void Update()
+    {
+        if (PauseState.IsPaused)
+        {
+            if (ghost != null) ghost.SetActive(false);
+            hoveredTile = null;
+            return;
+        }
+
+        UpdateHoverTileCenterRay();
+        UpdateGhostVisualsAndPosition();
+    }
+
+    private void OnPrimaryClick(InputAction.CallbackContext ctx)
+    {
+        if (PauseState.IsPaused) return;
+
+        // Place-only: if occupied, do nothing (inspector tool handles inspect/upgrade/sell)
+        if (hoveredTile == null) return;
+        if (hoveredTile.IsOccupied) return;
+
+        TryPlace();
+    }
+
     private void HandleMoneyChanged(int _)
     {
         if (ghost == null || !ghost.activeSelf) return;
         if (hoveredTile == null) return;
 
-        // Re-evaluate and apply material immediately
         bool nowValid = IsPlacementValid(hoveredTile);
         if (nowValid != lastWasValid)
         {
             lastWasValid = nowValid;
             ApplyGhostMaterial(lastWasValid);
         }
-    }
-
-    private void Update()
-    {
-        if (PauseState.IsPaused)
-        {
-            if (ghost != null) ghost.SetActive(false);
-            return;
-        }
-
-        UpdateHoverTile();
-        UpdateGhostVisualsAndPosition();
-    }
-    private void OnPrimaryClick(InputAction.CallbackContext ctx)
-    {
-        if (PauseState.IsPaused) return;
-
-        if (hoveredTile != null && hoveredTile.OccupiedTower != null)
-        {
-            InspectHoveredTile();
-            return;
-        }
-
-        TryPlace();
-    }
-    private void InspectHoveredTile()
-    {
-        if (inspectPanel == null || hoveredTile == null) return;
-
-        // Try to find identity/upgrade components on the tower
-        var towerGo = hoveredTile.OccupiedTower;
-        var id = towerGo != null ? towerGo.GetComponentInChildren<TowerIdentity>() : null;
-        var up = towerGo != null ? towerGo.GetComponentInChildren<TowerUpgradeState>() : null;
-
-        if (id != null)
-            inspectPanel.SetSelectedTower(id, up, hoveredTile);
-        else
-            inspectPanel.SetSelectedTile(hoveredTile); // fallback: still show terrain
     }
 
     public void ClearSelectionAndHideGhost()
@@ -175,17 +157,16 @@ public class TowerPlacementController : MonoBehaviour
         ghost.SetActive(false);
     }
 
-    private void UpdateHoverTile()
+    private void UpdateHoverTileCenterRay()
     {
         hoveredTile = null;
+        if (cam == null) return;
 
-        if (Mouse.current == null || cam == null) return;
-
-        Vector2 mousePos = Mouse.current.position.ReadValue();
-        Ray ray = cam.ScreenPointToRay(mousePos);
-
+        Ray ray = cam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
         if (Physics.Raycast(ray, out RaycastHit hit, maxDistance, tileMask, QueryTriggerInteraction.Ignore))
-            hoveredTile = hit.collider.GetComponent<GridTile>();
+        {
+            hoveredTile = hit.collider.GetComponentInParent<GridTile>();
+        }
     }
 
     private void UpdateGhostVisualsAndPosition()
@@ -276,7 +257,6 @@ public class TowerPlacementController : MonoBehaviour
         if (costComp != null && economy != null)
         {
             paidCost = Mathf.Max(0, costComp.Cost);
-
             if (!economy.TrySpendMoney(paidCost))
                 return;
         }
@@ -284,12 +264,11 @@ public class TowerPlacementController : MonoBehaviour
         Vector3 pos = hoveredTile.transform.position;
         GameObject placed = Instantiate(towerPrefab, pos, Quaternion.identity);
 
-        // Ensure ledger exists and record ACTUAL money paid
+        // ledger: record actual money paid (supports discounts/free towers)
         TowerValueLedger ledger = placed.GetComponent<TowerValueLedger>();
         if (ledger == null) ledger = placed.AddComponent<TowerValueLedger>();
         ledger.AddSpend(paidCost);
 
-        // store tower on tile for tile-based inspection
         hoveredTile.SetOccupiedTower(placed);
 
         if (towersBlockEnemies)
@@ -297,7 +276,7 @@ public class TowerPlacementController : MonoBehaviour
 
         PathChangeBroadcaster.Bump();
 
-        // Auto-inspect after placing
+        // Optional: auto-inspect after placing (only if you want it)
         if (inspectPanel != null)
         {
             var id = placed.GetComponentInChildren<TowerIdentity>();
@@ -306,8 +285,7 @@ public class TowerPlacementController : MonoBehaviour
             else inspectPanel.SetSelectedTile(hoveredTile);
         }
 
-        // Force ghost refresh next frame
-        lastTile = null;
+        lastTile = null; // force refresh next frame
     }
 
     private bool WouldStillHavePathIfPlacedHere(GridTile tile)

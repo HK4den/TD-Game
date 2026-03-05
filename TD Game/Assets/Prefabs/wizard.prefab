@@ -192,11 +192,11 @@ MonoBehaviour:
   canUpgrade: 1
   hasTwoPaths: 1
   displayLevel: 1
-  upgradeADescription: Increased Fire Rate & Damage
+  upgradeADescription: lets you spam upgrade for fun
   upgradeACost: 1
   upgradeAPrefab: {fileID: 1937534747383321431}
-  upgradeBDescription: This is different from Upgrade A I swear
-  upgradeBCost: 2
+  upgradeBDescription: Increased Fire Rate & Damage
+  upgradeBCost: 65
   upgradeBPrefab: {fileID: 1937534747383321431, guid: ffd5b89fb7f7e0745aeac0122574159e, type: 3}
   levelUpTextPrefab: {fileID: 8985348834640522180, guid: 717c04aa96991dd43925ff0960dfe6fb, type: 3}
   levelUpYOffset: 0

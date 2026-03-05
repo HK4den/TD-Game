@@ -16,9 +16,13 @@ public class TowerInspectorTool : MonoBehaviour
 
     [Header("Sell Settings")]
     [SerializeField] private float sellRefundRate = 0.75f;
+    [SerializeField] private float sellHoldDuration = 0.35f;
 
     private PlayerControls controls;
     private EconomyManager economy;
+
+    private bool isHoldingSell;
+    private float sellHoldTimer;
 
     private void Awake()
     {
@@ -33,20 +37,23 @@ public class TowerInspectorTool : MonoBehaviour
     {
         controls.Enable();
 
-        // Hook input actions
         controls.Player.PrimaryClick.performed += OnPrimaryClick;
         controls.Player.Upgrade.performed += OnUpgrade;
         controls.Player.SwapUpgrade.performed += OnSwapUpgrade;
-        controls.Player.Sell.performed += OnSell;
+
+        // Hold-to-sell: started + canceled
+        controls.Player.Sell.started += OnSellStarted;
+        controls.Player.Sell.canceled += OnSellCanceled;
     }
 
     private void OnDisable()
     {
-        // Unhook input actions
         controls.Player.PrimaryClick.performed -= OnPrimaryClick;
         controls.Player.Upgrade.performed -= OnUpgrade;
         controls.Player.SwapUpgrade.performed -= OnSwapUpgrade;
-        controls.Player.Sell.performed -= OnSell;
+
+        controls.Player.Sell.started -= OnSellStarted;
+        controls.Player.Sell.canceled -= OnSellCanceled;
 
         controls.Disable();
     }
@@ -55,19 +62,57 @@ public class TowerInspectorTool : MonoBehaviour
     {
         if (PauseState.IsPaused) return;
         if (inspectPanel == null || cam == null) return;
-        if (!inspectPanel.HasSelection) return;
 
-        Vector3 p = inspectPanel.GetSelectionWorldPos();
-        float d = Vector3.Distance(cam.transform.position, p);
+        // Auto-deselect if too far
+        if (inspectPanel.HasSelection)
+        {
+            Vector3 p = inspectPanel.GetSelectionWorldPos();
+            float d = Vector3.Distance(cam.transform.position, p);
+            if (d > deselectDistance)
+            {
+                StopSellHoldUI();
+                inspectPanel.ClearSelection();
+                return;
+            }
+        }
 
-        if (d > deselectDistance)
-            inspectPanel.ClearSelection();
+        // Hold-to-sell fill
+        if (isHoldingSell)
+        {
+            // If selection changed / cleared during hold, cancel
+            if (!inspectPanel.TryGetSelectedTower(out _, out _, out GridTile tile) || tile == null || tile.OccupiedTower == null)
+            {
+                StopSellHoldUI();
+                return;
+            }
+
+            // Must still be sellable
+            TowerValueLedger ledger = tile.OccupiedTower.GetComponent<TowerValueLedger>();
+            if (ledger == null || !ledger.CanSell)
+            {
+                StopSellHoldUI();
+                return;
+            }
+
+            sellHoldTimer += Time.unscaledDeltaTime;
+
+            float t = (sellHoldDuration <= 0f) ? 1f : Mathf.Clamp01(sellHoldTimer / sellHoldDuration);
+            inspectPanel.SetSellHoldFill(t);
+
+            if (sellHoldTimer >= sellHoldDuration)
+            {
+                PerformSell(tile, ledger);
+                StopSellHoldUI(); // clears bar + restores text
+            }
+        }
     }
 
     private void OnPrimaryClick(InputAction.CallbackContext ctx)
     {
         if (PauseState.IsPaused) return;
         if (cam == null || inspectPanel == null) return;
+
+        StopSellHoldUI();
 
         Ray ray = cam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
 
@@ -106,6 +151,7 @@ public class TowerInspectorTool : MonoBehaviour
         if (PauseState.IsPaused) return;
         if (inspectPanel == null) return;
 
+        StopSellHoldUI();
         inspectPanel.ToggleUpgradeSelection();
     }
 
@@ -113,6 +159,8 @@ public class TowerInspectorTool : MonoBehaviour
     {
         if (PauseState.IsPaused) return;
         if (inspectPanel == null) return;
+
+        StopSellHoldUI();
 
         if (!inspectPanel.TryGetSelectedTower(out TowerIdentity tower, out TowerUpgradeState upgradeState, out GridTile tile))
             return;
@@ -134,7 +182,6 @@ public class TowerInspectorTool : MonoBehaviour
         {
             if (requiredCost > 0 && economy != null && economy.Money < requiredCost)
                 inspectPanel.ShowInsufficientFundsPopup();
-
             return;
         }
 
@@ -152,34 +199,70 @@ public class TowerInspectorTool : MonoBehaviour
         }
     }
 
-    private void OnSell(InputAction.CallbackContext ctx)
+    private void OnSellStarted(InputAction.CallbackContext ctx)
     {
         if (PauseState.IsPaused) return;
         if (inspectPanel == null) return;
 
-        if (!inspectPanel.TryGetSelectedTower(out TowerIdentity tower, out TowerUpgradeState upgradeState, out GridTile tile))
+        if (!inspectPanel.TryGetSelectedTower(out _, out _, out GridTile tile))
             return;
 
+        if (tile == null || tile.OccupiedTower == null)
+            return;
+
+        TowerValueLedger ledger = tile.OccupiedTower.GetComponent<TowerValueLedger>();
+        if (ledger == null || !ledger.CanSell)
+            return;
+
+        isHoldingSell = true;
+        sellHoldTimer = 0f;
+        inspectPanel.SetSellHoldFill(0f);
+    }
+
+    private void OnSellCanceled(InputAction.CallbackContext ctx)
+    {
+        StopSellHoldUI();
+    }
+
+    private void StopSellHoldUI()
+    {
+        if (!isHoldingSell) return;
+
+        isHoldingSell = false;
+        sellHoldTimer = 0f;
+
+        if (inspectPanel != null)
+        {
+            inspectPanel.ClearSellHoldFill();
+            inspectPanel.RestoreSellText();
+        }
+    }
+
+    private void PerformSell(GridTile tile, TowerValueLedger ledger)
+    {
         if (tile == null || tile.OccupiedTower == null) return;
+        if (ledger == null || !ledger.CanSell) return;
 
         GameObject towerGO = tile.OccupiedTower;
 
-        // Compute refund from ledger (tracks actual money spent)
-        TowerValueLedger ledger = towerGO.GetComponent<TowerValueLedger>();
-        int refund = (ledger != null) ? ledger.GetRefund(sellRefundRate) : 0;
-
+        int refund = ledger.GetRefund(sellRefundRate);
         if (economy != null && refund > 0)
             economy.AddMoney(refund);
 
-        // Clear tile occupancy + unblock enemies
         tile.ClearOccupiedTower();
-        if (tile.BlocksEnemies) tile.SetBlocksEnemies(false);
 
-        // If selling changes pathing, bump the version
+        if (tile.BlocksEnemies)
+            tile.SetBlocksEnemies(false);
+
         PathChangeBroadcaster.Bump();
 
-        // Clear UI selection and destroy tower
-        inspectPanel.ClearSelection();
+        // Clear selection first (also hides sell UI)
+        if (inspectPanel != null)
+        {
+            inspectPanel.ClearSellHoldFill();
+            inspectPanel.ClearSelection();
+        }
+
         Destroy(towerGO);
     }
 }

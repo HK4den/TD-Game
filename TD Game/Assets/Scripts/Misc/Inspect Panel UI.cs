@@ -52,6 +52,8 @@ public class InspectPanelUI : MonoBehaviour
     [SerializeField] private GameObject sellRoot;   // optional container
     [SerializeField] private Text sellPriceText;    // e.g. "Sell: $123 (Q)"
     [SerializeField] private float sellRefundRate = 0.75f;
+    [SerializeField] private RectTransform sellFillRect; // your "copied sell button" rect
+    [SerializeField] private float sellFillFullWidth = 384.02f; // full width when filled
 
     [Header("Terrain Descriptions (optional)")]
     [SerializeField] private TerrainDescriptionsSO terrainDescriptions;
@@ -63,6 +65,8 @@ public class InspectPanelUI : MonoBehaviour
     private float moveT;
     private Vector2 moveFrom;
     private Vector2 moveTo;
+
+    private string sellBaseText = "";
 
     private int selectedUpgradeIndex = 0; // 0 = A, 1 = B
 
@@ -171,11 +175,37 @@ public class InspectPanelUI : MonoBehaviour
         if (anchor == null) anchor = insufficientFundsAnchorA != null ? insufficientFundsAnchorA : insufficientFundsAnchorB;
         if (anchor == null) return;
 
-        // Spawn a GUI damage number instance (no number passed)
         DamageNumber dn = insufficientFundsGuiPrefab.Spawn(Vector3.zero);
-
-        // Attach it to the UI element and center it
         dn.SetAnchoredPosition(anchor, Vector2.zero);
+    }
+
+    public void SetSellHoldFill(float normalized01)
+    {
+        if (sellFillRect == null) return;
+
+        float t = Mathf.Clamp01(normalized01);
+
+        float w = sellFillFullWidth * t;
+        float x = w * 0.5f;
+
+        Vector2 size = sellFillRect.sizeDelta;
+        size.x = w;
+        sellFillRect.sizeDelta = size;
+
+        Vector2 pos = sellFillRect.anchoredPosition;
+        pos.x = x;
+        sellFillRect.anchoredPosition = pos;
+    }
+
+    public void ClearSellHoldFill()
+    {
+        SetSellHoldFill(0f);
+    }
+
+    public void RestoreSellText()
+    {
+        if (sellPriceText == null) return;
+        sellPriceText.text = sellBaseText;
     }
 
     // -------------------------
@@ -202,7 +232,6 @@ public class InspectPanelUI : MonoBehaviour
         if (towerSectionRoot != null)
             towerSectionRoot.SetActive(hasTower);
 
-        // ---- No tower selected: clear/hide tower-related UI ----
         if (!hasTower)
         {
             if (towerLevelText != null) towerLevelText.text = "";
@@ -210,14 +239,14 @@ public class InspectPanelUI : MonoBehaviour
             if (upgradeRoot != null) upgradeRoot.SetActive(false);
             if (upgradeAvailableIcon != null) upgradeAvailableIcon.SetActive(false);
 
-            // Sell UI (hide/clear)
             if (sellRoot != null) sellRoot.SetActive(false);
             if (sellPriceText != null) sellPriceText.text = "";
+            sellBaseText = "";
 
+            ClearSellHoldFill();
             return;
         }
 
-        // ---- Tower selected: show identity ----
         if (towerNameText != null)
             towerNameText.text = tower.DisplayName;
 
@@ -233,23 +262,37 @@ public class InspectPanelUI : MonoBehaviour
             towerLevelText.text = $"Level: {lvl}";
         }
 
-        // ---- Sell UI (show + compute refund) ----
-        if (sellRoot != null) sellRoot.SetActive(true);
+        // ---- Sell UI (show only if sellable) ----
+        TowerValueLedger ledger = tower.GetComponentInParent<TowerValueLedger>();
+        if (ledger == null) ledger = tower.GetComponentInChildren<TowerValueLedger>();
+
+        bool canSell = ledger != null && ledger.CanSell;
+
+        if (sellRoot != null) sellRoot.SetActive(canSell);
 
         if (sellPriceText != null)
         {
-            TowerValueLedger ledger = tower.GetComponentInParent<TowerValueLedger>();
-            if (ledger == null) ledger = tower.GetComponentInChildren<TowerValueLedger>();
+            if (canSell)
+            {
+                int refund = ledger.GetRefund(sellRefundRate);
+                sellBaseText = $"Sell: ${refund} (Q)";
+                sellPriceText.text = sellBaseText;
 
-            int refund = (ledger != null) ? ledger.GetRefund(sellRefundRate) : 0;
-            sellPriceText.text = $"Sell: ${refund} (Q)";
+                // reset bar when selecting a tower
+                ClearSellHoldFill();
+            }
+            else
+            {
+                sellBaseText = "";
+                sellPriceText.text = "";
+                ClearSellHoldFill();
+            }
         }
 
         // ---- Upgrades ----
         bool canUpgrade = upgradeState != null && upgradeState.CanUpgrade;
         bool twoPaths = upgradeState != null && upgradeState.HasTwoPaths;
 
-        // If tower doesn't have path B, force selection back to A
         if (!twoPaths) selectedUpgradeIndex = 0;
         if (!canUpgrade) selectedUpgradeIndex = 0;
 
@@ -262,7 +305,6 @@ public class InspectPanelUI : MonoBehaviour
         if (upgradeBRowRoot != null)
             upgradeBRowRoot.SetActive(canUpgrade && twoPaths);
 
-        // Descriptions + costs
         if (upgradeADescText != null)
             upgradeADescText.text = canUpgrade && upgradeState != null ? upgradeState.UpgradeADescription : "";
 
