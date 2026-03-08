@@ -14,6 +14,9 @@ public class TowerInspectorTool : MonoBehaviour
     [Header("UI")]
     [SerializeField] private InspectPanelUI inspectPanel;
 
+    [Header("Selection Rules")]
+    [SerializeField] private bool allowEmptyTileSelection = true;
+
     [Header("Sell Settings")]
     [SerializeField] private float sellRefundRate = 0.75f;
     [SerializeField] private float sellHoldDuration = 0.35f;
@@ -40,8 +43,6 @@ public class TowerInspectorTool : MonoBehaviour
         controls.Player.PrimaryClick.performed += OnPrimaryClick;
         controls.Player.Upgrade.performed += OnUpgrade;
         controls.Player.SwapUpgrade.performed += OnSwapUpgrade;
-
-        // Hold-to-sell: started + canceled
         controls.Player.Sell.started += OnSellStarted;
         controls.Player.Sell.canceled += OnSellCanceled;
     }
@@ -51,11 +52,15 @@ public class TowerInspectorTool : MonoBehaviour
         controls.Player.PrimaryClick.performed -= OnPrimaryClick;
         controls.Player.Upgrade.performed -= OnUpgrade;
         controls.Player.SwapUpgrade.performed -= OnSwapUpgrade;
-
         controls.Player.Sell.started -= OnSellStarted;
         controls.Player.Sell.canceled -= OnSellCanceled;
 
         controls.Disable();
+    }
+
+    public void SetAllowEmptyTileSelection(bool allow)
+    {
+        allowEmptyTileSelection = allow;
     }
 
     private void Update()
@@ -79,14 +84,12 @@ public class TowerInspectorTool : MonoBehaviour
         // Hold-to-sell fill
         if (isHoldingSell)
         {
-            // If selection changed / cleared during hold, cancel
             if (!inspectPanel.TryGetSelectedTower(out _, out _, out GridTile tile) || tile == null || tile.OccupiedTower == null)
             {
                 StopSellHoldUI();
                 return;
             }
 
-            // Must still be sellable
             TowerValueLedger ledger = tile.OccupiedTower.GetComponent<TowerValueLedger>();
             if (ledger == null || !ledger.CanSell)
             {
@@ -102,7 +105,7 @@ public class TowerInspectorTool : MonoBehaviour
             if (sellHoldTimer >= sellHoldDuration)
             {
                 PerformSell(tile, ledger);
-                StopSellHoldUI(); // clears bar + restores text
+                StopSellHoldUI();
             }
         }
     }
@@ -129,6 +132,7 @@ public class TowerInspectorTool : MonoBehaviour
             return;
         }
 
+        // Occupied tiles are always selectable
         if (tile.OccupiedTower != null)
         {
             TowerIdentity id = tile.OccupiedTower.GetComponent<TowerIdentity>();
@@ -139,10 +143,18 @@ public class TowerInspectorTool : MonoBehaviour
 
             if (id != null) inspectPanel.SetSelectedTower(id, up, tile);
             else inspectPanel.SetSelectedTile(tile);
+
+            return;
+        }
+
+        // Empty tile selection depends on active tool mode
+        if (allowEmptyTileSelection)
+        {
+            inspectPanel.SetSelectedTile(tile);
         }
         else
         {
-            inspectPanel.SetSelectedTile(tile);
+            inspectPanel.ClearSelection();
         }
     }
 
@@ -185,7 +197,6 @@ public class TowerInspectorTool : MonoBehaviour
             return;
         }
 
-        // Keep selection on the new tower immediately
         if (newTowerGO != null)
         {
             TowerIdentity newId = newTowerGO.GetComponent<TowerIdentity>();
@@ -256,7 +267,6 @@ public class TowerInspectorTool : MonoBehaviour
 
         PathChangeBroadcaster.Bump();
 
-        // Clear selection first (also hides sell UI)
         if (inspectPanel != null)
         {
             inspectPanel.ClearSellHoldFill();

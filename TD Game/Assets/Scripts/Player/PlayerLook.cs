@@ -26,8 +26,13 @@ public class PlayerLook : MonoBehaviour
     [SerializeField] private float sprintFOV = 82f;
     [SerializeField] private float fovSmoothSpeed = 10f;
 
+    [Header("Strafe Tilt")]
+    [SerializeField] private float maxTiltAngle = 4f;
+    [SerializeField] private float tiltLerpSpeed = 8f;
+
     private float bobTimer;
     private Vector3 pivotStartLocalPos;
+    private float currentTilt;
 
     private void Awake()
     {
@@ -67,10 +72,10 @@ public class PlayerLook : MonoBehaviour
         pitch -= look.y * mouseSensitivity;
         pitch = Mathf.Clamp(pitch, minPitch, maxPitch);
 
-        cameraPivot.localRotation = Quaternion.Euler(pitch, 0f, 0f);
-
         HandleCameraBob();
         HandleSprintFOV();
+        HandleStrafeTilt();
+        ApplyCameraRotation();
     }
 
     private void LockCursor()
@@ -117,5 +122,25 @@ public class PlayerLook : MonoBehaviour
             target,
             1f - Mathf.Exp(-fovSmoothSpeed * Time.deltaTime)
         );
+    }
+
+    private void HandleStrafeTilt()
+    {
+        Vector2 move = controls.Player.Move.ReadValue<Vector2>();
+
+        // move.x = left/right input
+        // positive x = right, negative x = left
+        float targetTilt = -move.x * maxTiltAngle;
+
+        currentTilt = Mathf.Lerp(
+            currentTilt,
+            targetTilt,
+            1f - Mathf.Exp(-tiltLerpSpeed * Time.deltaTime)
+        );
+    }
+
+    private void ApplyCameraRotation()
+    {
+        cameraPivot.localRotation = Quaternion.Euler(pitch, 0f, currentTilt);
     }
 }

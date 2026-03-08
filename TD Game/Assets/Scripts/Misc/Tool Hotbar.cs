@@ -109,7 +109,18 @@ public class ToolHotbar : MonoBehaviour
 
         AutoWireSlotsIfNeeded();
 
-        currentSlotIndex = FindNearestOwnedSlot(Mathf.Clamp(startSlotIndex, 0, Mathf.Max(0, slots.Length - 1)));
+        if (placementTool != null)
+            placementTool.enabled = false;
+
+        if (inspectTool != null)
+            inspectTool.enabled = false;
+
+        if (hoverSelector != null)
+            hoverSelector.enabled = false;
+
+        currentSlotIndex = FindNearestOwnedSlot(
+            Mathf.Clamp(startSlotIndex, 0, Mathf.Max(0, slots.Length - 1)));
+
         ApplySlot(currentSlotIndex);
     }
 
@@ -221,10 +232,8 @@ public class ToolHotbar : MonoBehaviour
             placementTool.ClearSelectionAndHideGhost();
         }
 
-        if (inspectTool != null)
-        {
-            inspectTool.enabled = false;
-        }
+        // Do NOT disable inspectTool here.
+        // It remains the global inspection / upgrade / sell authority.
 
         if (hoverSelector != null)
         {
@@ -233,8 +242,12 @@ public class ToolHotbar : MonoBehaviour
 
         if (slots != null && currentSlotIndex >= 0 && currentSlotIndex < slots.Length)
         {
-            if (slots[currentSlotIndex].toolBehaviour != null)
+            if (slots[currentSlotIndex].toolBehaviour != null &&
+                slots[currentSlotIndex].toolBehaviour != placementTool &&
+                slots[currentSlotIndex].toolBehaviour != inspectTool)
+            {
                 slots[currentSlotIndex].toolBehaviour.enabled = false;
+            }
         }
     }
 
@@ -244,6 +257,10 @@ public class ToolHotbar : MonoBehaviour
             return;
 
         Slot slot = slots[index];
+
+        // Inspector stays active globally so upgrades/sell/deselect still work.
+        if (inspectTool != null)
+            inspectTool.enabled = true;
 
         bool wantsHover =
             slot.kind == ToolKind.Placement ||
@@ -257,27 +274,32 @@ public class ToolHotbar : MonoBehaviour
         switch (slot.kind)
         {
             case ToolKind.Empty:
+                if (placementTool != null) placementTool.enabled = false;
+                if (inspectTool != null) inspectTool.SetAllowEmptyTileSelection(false);
                 break;
 
             case ToolKind.Placement:
                 if (placementTool != null) placementTool.enabled = true;
+                if (inspectTool != null) inspectTool.SetAllowEmptyTileSelection(false);
                 break;
 
             case ToolKind.Inspect:
-                if (inspectTool != null) inspectTool.enabled = true;
+                if (placementTool != null) placementTool.enabled = false;
+                if (inspectTool != null) inspectTool.SetAllowEmptyTileSelection(true);
                 break;
 
             case ToolKind.Mining:
             case ToolKind.Targeting:
-                if (slot.toolBehaviour != null) slot.toolBehaviour.enabled = true;
-                break;
-        }
+                if (placementTool != null) placementTool.enabled = false;
+                if (inspectTool != null) inspectTool.SetAllowEmptyTileSelection(false);
 
-        if (slot.toolBehaviour != null &&
-            slot.toolBehaviour != placementTool &&
-            slot.toolBehaviour != inspectTool)
-        {
-            slot.toolBehaviour.enabled = true;
+                if (slot.toolBehaviour != null &&
+                    slot.toolBehaviour != placementTool &&
+                    slot.toolBehaviour != inspectTool)
+                {
+                    slot.toolBehaviour.enabled = true;
+                }
+                break;
         }
 
         if (debugLogSwitching)

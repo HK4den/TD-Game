@@ -92,8 +92,9 @@ public class TowerPlacementController : MonoBehaviour
     {
         if (PauseState.IsPaused) return;
 
-        // Place-only: if occupied, do nothing (inspector tool handles inspect/upgrade/sell)
         if (hoveredTile == null) return;
+
+        // If tower exists, inspector system will handle selection.
         if (hoveredTile.IsOccupied) return;
 
         TryPlace();
