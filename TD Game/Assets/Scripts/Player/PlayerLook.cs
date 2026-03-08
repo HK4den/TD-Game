@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -34,6 +35,10 @@ public class PlayerLook : MonoBehaviour
     private Vector3 pivotStartLocalPos;
     private float currentTilt;
 
+    private Coroutine fovOverrideRoutine;
+    private bool hasFOVOverride;
+    private float overriddenFOV;
+
     private void Awake()
     {
         controls = new PlayerControls();
@@ -60,15 +65,12 @@ public class PlayerLook : MonoBehaviour
 
     private void Update()
     {
-        // Stop ALL look-related behavior while paused
         if (PauseState.IsPaused) return;
 
         Vector2 look = controls.Player.Look.ReadValue<Vector2>();
 
-        // Yaw (left/right)
         transform.Rotate(Vector3.up * look.x * mouseSensitivity);
 
-        // Pitch (up/down)
         pitch -= look.y * mouseSensitivity;
         pitch = Mathf.Clamp(pitch, minPitch, maxPitch);
 
@@ -115,7 +117,16 @@ public class PlayerLook : MonoBehaviour
     {
         if (playerCamera == null) return;
 
-        float target = controls.Player.Sprint.IsPressed() ? sprintFOV : baseFOV;
+        float target;
+
+        if (hasFOVOverride)
+        {
+            target = overriddenFOV;
+        }
+        else
+        {
+            target = controls.Player.Sprint.IsPressed() ? sprintFOV : baseFOV;
+        }
 
         playerCamera.fieldOfView = Mathf.Lerp(
             playerCamera.fieldOfView,
@@ -128,8 +139,6 @@ public class PlayerLook : MonoBehaviour
     {
         Vector2 move = controls.Player.Move.ReadValue<Vector2>();
 
-        // move.x = left/right input
-        // positive x = right, negative x = left
         float targetTilt = -move.x * maxTiltAngle;
 
         currentTilt = Mathf.Lerp(
@@ -142,5 +151,24 @@ public class PlayerLook : MonoBehaviour
     private void ApplyCameraRotation()
     {
         cameraPivot.localRotation = Quaternion.Euler(pitch, 0f, currentTilt);
+    }
+
+    public void StartFOVOverride(float fov, float duration)
+    {
+        if (fovOverrideRoutine != null)
+            StopCoroutine(fovOverrideRoutine);
+
+        fovOverrideRoutine = StartCoroutine(FOVOverrideRoutine(fov, duration));
+    }
+
+    private IEnumerator FOVOverrideRoutine(float fov, float duration)
+    {
+        hasFOVOverride = true;
+        overriddenFOV = fov;
+
+        yield return new WaitForSeconds(duration);
+
+        hasFOVOverride = false;
+        fovOverrideRoutine = null;
     }
 }
