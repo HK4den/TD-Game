@@ -297,8 +297,8 @@ MonoBehaviour:
     y: 0
     width: 425
     height: 933
-  m_MinSize: {x: 275, y: 50}
-  m_MaxSize: {x: 4000, y: 4000}
+  m_MinSize: {x: 276, y: 76}
+  m_MaxSize: {x: 4001, y: 4026}
   m_ActualView: {fileID: 18}
   m_Panes:
   - {fileID: 18}
@@ -429,7 +429,7 @@ MonoBehaviour:
   m_Pos:
     serializedVersion: 2
     x: 0
-    y: 79
+    y: 24
     width: 283
     height: 590
   m_SerializedDataModeController:
@@ -494,8 +494,8 @@ MonoBehaviour:
     m_TextWithWhitespace: "Scene\u200B"
   m_Pos:
     serializedVersion: 2
-    x: 284
-    y: 79
+    x: 285
+    y: 24
     width: 1209
     height: 590
   m_SerializedDataModeController:
@@ -1004,7 +1004,7 @@ MonoBehaviour:
   m_Rotation:
     m_Target: {x: 0.22495429, y: 0.64500755, z: -0.20719157, w: 0.7003176}
     speed: 2
-    m_Value: {x: 0.22495292, y: 0.6450036, z: -0.2071903, w: 0.7003134}
+    m_Value: {x: 0.22495429, y: 0.6450075, z: -0.20719157, w: 0.7003176}
   m_Size:
     m_Target: 0.8660254
     speed: 2
@@ -1064,7 +1064,7 @@ MonoBehaviour:
   m_Pos:
     serializedVersion: 2
     x: 0
-    y: 695
+    y: 640
     width: 1494
     height: 291
   m_SerializedDataModeController:
@@ -1108,7 +1108,7 @@ MonoBehaviour:
     scrollPos: {x: 0, y: 79}
     m_SelectedIDs: d4d10000
     m_LastClickedID: 53716
-    m_ExpandedIDs: 0000000048d000004ad000004cd000004ed00000c4d0000000ca9a3b
+    m_ExpandedIDs: 00000000bed00000c0d00000c2d00000c4d00000c6d00000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -1137,7 +1137,7 @@ MonoBehaviour:
     scrollPos: {x: 0, y: 0}
     m_SelectedIDs: 
     m_LastClickedID: 0
-    m_ExpandedIDs: 0000000048d000004ad000004cd000004ed00000c4d0000000ca9a3b
+    m_ExpandedIDs: 00000000bed00000c0d00000c2d00000c4d00000c6d00000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -1252,8 +1252,8 @@ MonoBehaviour:
     m_TextWithWhitespace: "Inspector\u200B"
   m_Pos:
     serializedVersion: 2
-    x: 1495
-    y: 79
+    x: 1496
+    y: 24
     width: 424
     height: 907
   m_SerializedDataModeController:
