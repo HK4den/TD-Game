@@ -6,6 +6,7 @@ public class PlayerLook : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private Transform cameraPivot;
+    [SerializeField] private PlayerMovement playerMovement;
 
     [Header("Settings")]
     [SerializeField] private float mouseSensitivity = 0.1f;
@@ -25,6 +26,7 @@ public class PlayerLook : MonoBehaviour
     [SerializeField] private Camera playerCamera;
     [SerializeField] private float baseFOV = 75f;
     [SerializeField] private float sprintFOV = 82f;
+    [SerializeField] private float boostFOV = 92f;
     [SerializeField] private float fovSmoothSpeed = 10f;
 
     [Header("Strafe Tilt")]
@@ -35,9 +37,10 @@ public class PlayerLook : MonoBehaviour
     private Vector3 pivotStartLocalPos;
     private float currentTilt;
 
+    // Legacy/manual override support so older scripts still compile if they call this.
     private Coroutine fovOverrideRoutine;
-    private bool hasFOVOverride;
-    private float overriddenFOV;
+    private bool hasManualFOVOverride;
+    private float manualOverriddenFOV;
 
     private void Awake()
     {
@@ -46,6 +49,9 @@ public class PlayerLook : MonoBehaviour
 
         if (playerCamera != null)
             playerCamera.fieldOfView = baseFOV;
+
+        if (playerMovement == null)
+            playerMovement = GetComponentInParent<PlayerMovement>();
     }
 
     private void OnEnable()
@@ -102,7 +108,10 @@ public class PlayerLook : MonoBehaviour
             return;
         }
 
-        bool sprinting = controls.Player.Sprint.IsPressed();
+        bool sprinting = false;
+
+        if (playerMovement != null)
+            sprinting = playerMovement.IsBoostActive || playerMovement.IsSprinting;
 
         float speed = sprinting ? sprintBobSpeed : walkBobSpeed;
         float amount = sprinting ? sprintBobAmount : walkBobAmount;
@@ -119,13 +128,18 @@ public class PlayerLook : MonoBehaviour
 
         float target;
 
-        if (hasFOVOverride)
+        if (hasManualFOVOverride)
         {
-            target = overriddenFOV;
+            target = manualOverriddenFOV;
+        }
+        else if (playerMovement != null && playerMovement.IsBoostActive)
+        {
+            target = boostFOV;
         }
         else
         {
-            target = controls.Player.Sprint.IsPressed() ? sprintFOV : baseFOV;
+            bool sprinting = playerMovement != null && playerMovement.IsSprinting;
+            target = sprinting ? sprintFOV : baseFOV;
         }
 
         playerCamera.fieldOfView = Mathf.Lerp(
@@ -153,6 +167,7 @@ public class PlayerLook : MonoBehaviour
         cameraPivot.localRotation = Quaternion.Euler(pitch, 0f, currentTilt);
     }
 
+    // Legacy/manual override support
     public void StartFOVOverride(float fov, float duration)
     {
         if (fovOverrideRoutine != null)
@@ -163,12 +178,12 @@ public class PlayerLook : MonoBehaviour
 
     private IEnumerator FOVOverrideRoutine(float fov, float duration)
     {
-        hasFOVOverride = true;
-        overriddenFOV = fov;
+        hasManualFOVOverride = true;
+        manualOverriddenFOV = fov;
 
         yield return new WaitForSeconds(duration);
 
-        hasFOVOverride = false;
+        hasManualFOVOverride = false;
         fovOverrideRoutine = null;
     }
 }

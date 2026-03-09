@@ -1,4 +1,3 @@
-using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -15,9 +14,13 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float walkSpeed = 5f;
     [SerializeField] private float sprintSpeed = 8f;
 
-    [Header("Movement Smoothing")]
-    [SerializeField] private float acceleration = 12f;
-    [SerializeField] private float deceleration = 16f;
+    [Header("Ground Movement Smoothing")]
+    [SerializeField] private float groundAcceleration = 90f;
+    [SerializeField] private float groundDeceleration = 100f;
+
+    [Header("Air Movement Smoothing")]
+    [SerializeField] private float airAcceleration = 20f;
+    [SerializeField] private float airDeceleration = 8f;
 
     [Header("Jump/Grav")]
     [SerializeField] private float jumpHeight = 1.5f;
@@ -40,18 +43,21 @@ public class PlayerMovement : MonoBehaviour
 
     private bool isSprinting;
     private bool isGrounded;
+    private bool wasGroundedLastFrame;
+    private bool hadMoveInputLastFrame;
 
     private float coyoteTimer;
     private float jumpBufferTimer;
 
     private MovementMode movementMode = MovementMode.Normal;
 
-    // Temporary speed override (boost pads, etc.)
-    private Coroutine speedOverrideRoutine;
+    // Boost override state
     private bool hasSpeedOverride;
     private float overriddenMoveSpeed;
+    private float boostRemainingTime;
+    private float boostMaxDuration;
 
-    // Forced movement support (for future launch crystals)
+    // Forced movement support (future launch crystals)
     private Vector3 forcedWorldVelocity;
 
     public bool IsGrounded => isGrounded;
@@ -59,6 +65,16 @@ public class PlayerMovement : MonoBehaviour
     public Vector3 HorizontalVelocity => horizontalVelocity;
     public bool IsMovementLocked => movementMode == MovementMode.ForcedMovement;
     public bool HasSpeedOverride => hasSpeedOverride;
+    public bool IsSprinting => isSprinting;
+
+    // Boost UI hooks
+    public bool IsBoostActive => hasSpeedOverride;
+    public float CurrentBoostRemaining => boostRemainingTime;
+    public float CurrentBoostMaxDuration => boostMaxDuration;
+    public float BoostNormalized =>
+        (hasSpeedOverride && boostMaxDuration > 0f)
+            ? Mathf.Clamp01(boostRemainingTime / boostMaxDuration)
+            : 0f;
 
     private void Awake()
     {
@@ -70,14 +86,12 @@ public class PlayerMovement : MonoBehaviour
     {
         controls.Enable();
         controls.Player.Sprint.performed += OnSprintPerformed;
-        controls.Player.Sprint.canceled += OnSprintCanceled;
         controls.Player.Jump.performed += OnJumpPerformed;
     }
 
     private void OnDisable()
     {
         controls.Player.Sprint.performed -= OnSprintPerformed;
-        controls.Player.Sprint.canceled -= OnSprintCanceled;
         controls.Player.Jump.performed -= OnJumpPerformed;
         controls.Disable();
     }
@@ -85,18 +99,21 @@ public class PlayerMovement : MonoBehaviour
     private void Update()
     {
         UpdateGrounded();
+        UpdateBoostTimer();
         UpdateTimersAndJump();
 
+        bool hasMoveInputThisFrame = HasMoveInput();
+        HandleSprintAutoCancel(hasMoveInputThisFrame);
+
         if (movementMode == MovementMode.ForcedMovement)
-        {
             HandleForcedMovement();
-        }
         else
-        {
             HandleMovement();
-        }
 
         ApplyGravityAndMove();
+
+        hadMoveInputLastFrame = hasMoveInputThisFrame;
+        wasGroundedLastFrame = isGrounded;
     }
 
     private void UpdateGrounded()
@@ -119,6 +136,33 @@ public class PlayerMovement : MonoBehaviour
 
         if (controller.isGrounded)
             isGrounded = true;
+    }
+
+    private void UpdateBoostTimer()
+    {
+        if (!hasSpeedOverride)
+            return;
+
+        boostRemainingTime -= Time.deltaTime;
+
+        if (boostRemainingTime > 0f)
+            return;
+
+        hasSpeedOverride = false;
+        overriddenMoveSpeed = 0f;
+        boostRemainingTime = 0f;
+        boostMaxDuration = 0f;
+
+        // When boost ends:
+        // - grounded + no input = no sprint
+        // - otherwise sprint on
+        if (movementMode == MovementMode.Normal)
+        {
+            if (isGrounded && !HasMoveInput())
+                isSprinting = false;
+            else
+                isSprinting = true;
+        }
     }
 
     private void UpdateTimersAndJump()
@@ -155,7 +199,21 @@ public class PlayerMovement : MonoBehaviour
         float baseTargetSpeed = GetCurrentTargetSpeed();
         Vector3 targetVelocity = inputDir * baseTargetSpeed;
 
-        float smoothRate = inputDir.sqrMagnitude > 0.01f ? acceleration : deceleration;
+        float accelerationRate;
+        float decelerationRate;
+
+        if (isGrounded)
+        {
+            accelerationRate = groundAcceleration;
+            decelerationRate = groundDeceleration;
+        }
+        else
+        {
+            accelerationRate = airAcceleration;
+            decelerationRate = airDeceleration;
+        }
+
+        float smoothRate = inputDir.sqrMagnitude > 0.01f ? accelerationRate : decelerationRate;
 
         horizontalVelocity = Vector3.MoveTowards(
             horizontalVelocity,
@@ -185,6 +243,32 @@ public class PlayerMovement : MonoBehaviour
         return isSprinting ? sprintSpeed : walkSpeed;
     }
 
+    private bool HasMoveInput()
+    {
+        Vector2 moveInput = controls.Player.Move.ReadValue<Vector2>();
+        return moveInput.sqrMagnitude > 0.0001f;
+    }
+
+    private void HandleSprintAutoCancel(bool hasMoveInputThisFrame)
+    {
+        if (hasSpeedOverride)
+            return;
+
+        if (movementMode != MovementMode.Normal)
+            return;
+
+        bool justLanded = !wasGroundedLastFrame && isGrounded;
+
+        if (isGrounded)
+        {
+            bool stoppedMovingThisFrame = hadMoveInputLastFrame && !hasMoveInputThisFrame;
+            bool landedWithoutInput = justLanded && !hasMoveInputThisFrame;
+
+            if (stoppedMovingThisFrame || landedWithoutInput)
+                isSprinting = false;
+        }
+    }
+
     public void ApplyLaunch(Vector3 launchVelocity, bool replaceHorizontal = true, bool replaceVertical = true)
     {
         if (replaceHorizontal)
@@ -204,34 +288,37 @@ public class PlayerMovement : MonoBehaviour
             velocity.y += launchVelocity.y;
 
         movementMode = MovementMode.Normal;
+        isSprinting = true;
     }
 
-    public void StartSpeedOverride(float speed, float duration)
+    // Returns true only if the boost was actually applied/replaced.
+    public bool TryStartSpeedOverride(float speed, float duration)
     {
-        if (speedOverrideRoutine != null)
-            StopCoroutine(speedOverrideRoutine);
+        if (duration <= 0f)
+            return false;
 
-        speedOverrideRoutine = StartCoroutine(SpeedOverrideRoutine(speed, duration));
-    }
+        // Only replace if this cloud gives MORE remaining boost time
+        if (hasSpeedOverride && duration <= boostRemainingTime)
+            return false;
 
-    private IEnumerator SpeedOverrideRoutine(float speed, float duration)
-    {
         hasSpeedOverride = true;
         overriddenMoveSpeed = speed;
+        boostRemainingTime = duration;
+        boostMaxDuration = duration;
 
-        yield return new WaitForSeconds(duration);
+        return true;
+    }
 
-        hasSpeedOverride = false;
-        overriddenMoveSpeed = 0f;
-        speedOverrideRoutine = null;
+    // Compatibility wrapper so older scripts still compile
+    public void StartSpeedOverride(float speed, float duration)
+    {
+        TryStartSpeedOverride(speed, duration);
     }
 
     public void StartForcedMovement(Vector3 worldVelocity)
     {
         movementMode = MovementMode.ForcedMovement;
         forcedWorldVelocity = worldVelocity;
-
-        // Optional: clear normal horizontal movement so it doesn't resume weirdly after
         horizontalVelocity = Vector3.zero;
     }
 
@@ -256,15 +343,13 @@ public class PlayerMovement : MonoBehaviour
 
     private void OnSprintPerformed(InputAction.CallbackContext ctx)
     {
-        if (hasSpeedOverride || movementMode != MovementMode.Normal)
+        if (hasSpeedOverride)
             return;
 
-        isSprinting = true;
-    }
+        if (movementMode != MovementMode.Normal)
+            return;
 
-    private void OnSprintCanceled(InputAction.CallbackContext ctx)
-    {
-        isSprinting = false;
+        isSprinting = !isSprinting;
     }
 
     private void OnDrawGizmosSelected()
