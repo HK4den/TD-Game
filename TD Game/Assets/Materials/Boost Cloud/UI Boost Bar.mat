@@ -42,6 +42,7 @@ Material:
     m_Ints: []
     m_Floats:
     - _Alpha_Strength: 1
+    - _Aspect_Compensation: 0.2
     - _ColorMask: 15
     - _Noise_Scale: 6
     - _Stencil: 0
