@@ -42,7 +42,7 @@ Material:
     m_Ints: []
     m_Floats:
     - _Alpha_Strength: 1
-    - _Aspect_Compensation: 0.2
+    - _Aspect_Compensation: 0.25
     - _ColorMask: 15
     - _Noise_Scale: 6
     - _Stencil: 0
@@ -54,7 +54,7 @@ Material:
     - _Swirl_Speed_Pink: 0.15
     - _UIMaskSoftnessX: 1
     - _UIMaskSoftnessY: 1
-    - _X_Compensation: 0.4
+    - _X_Compensation: 0.3
     m_Colors:
     - _ClipRect: {r: 0, g: 0, b: 0, a: 0}
     - _Cloud_Color_Blue: {r: 0.54509807, g: 0.772549, b: 1, a: 1}

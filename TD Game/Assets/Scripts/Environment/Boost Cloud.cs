@@ -16,6 +16,16 @@ public class BoostCloud : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
+        TryBoostPlayer(other);
+    }
+
+    private void OnTriggerStay(Collider other)
+    {
+        TryBoostPlayer(other);
+    }
+
+    private void TryBoostPlayer(Collider other)
+    {
         PlayerMovement playerMovement = other.GetComponent<PlayerMovement>();
         if (playerMovement == null)
             playerMovement = other.GetComponentInParent<PlayerMovement>();
@@ -23,12 +33,7 @@ public class BoostCloud : MonoBehaviour
         if (playerMovement == null)
             return;
 
-        bool applied = playerMovement.TryStartSpeedOverride(BOOST_SPEED, boostDuration);
-
-        // If applied is false, this cloud gave less or equal time than
-        // the player already had left, so it does nothing.
-        if (!applied)
-            return;
+        playerMovement.SustainSpeedOverride(BOOST_SPEED, boostDuration);
 
         // Later:
         // - trigger particle burst

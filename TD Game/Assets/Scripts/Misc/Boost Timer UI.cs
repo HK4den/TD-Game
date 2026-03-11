@@ -15,21 +15,17 @@ public class BoostTimerUI : MonoBehaviour
     [SerializeField] private Vector2 shownAnchoredPos;
     [SerializeField] private float moveDuration = 0.15f;
 
-    [Header("Boost Fill")]
-    [SerializeField] private RectTransform fillRect;
-    [SerializeField] private float fillFullHeight = 300f;
+    [Header("Mask (this is what shrinks)")]
+    [SerializeField] private RectTransform maskRect;
+    [SerializeField] private float fullMaskHeight = 300f;
 
-    [Header("Boost Fill Shader")]
-    [SerializeField] private Image fillImage;
-    [SerializeField] private string aspectPropertyName = "_AspectCompensation";
-    [SerializeField] private float minAspectCompensation = 0.0001f;
+    [Header("Fill (this stays full size)")]
+    [SerializeField] private RectTransform fillRect;
 
     private float moveT;
     private Vector2 moveFrom;
     private Vector2 moveTo;
-
     private bool wasVisibleLastFrame;
-    private Material runtimeMaterial;
 
     private void Awake()
     {
@@ -39,23 +35,16 @@ public class BoostTimerUI : MonoBehaviour
         if (playerMovement == null)
             playerMovement = FindFirstObjectByType<PlayerMovement>();
 
-        if (fillImage == null && fillRect != null)
-            fillImage = fillRect.GetComponent<Image>();
-
-        // Make sure this UI gets its own runtime material instance
-        // so we don't modify the shared material asset/project-wide.
-        if (fillImage != null && fillImage.material != null)
-            runtimeMaterial = fillImage.material = new Material(fillImage.material);
-
         ForceMoveTo(hiddenAnchoredPos);
         SetBoostFill(0f);
         wasVisibleLastFrame = false;
-    }
 
-    private void OnDestroy()
-    {
-        if (runtimeMaterial != null)
-            Destroy(runtimeMaterial);
+        if (fillRect != null)
+        {
+            Vector2 fillSize = fillRect.sizeDelta;
+            fillSize.y = fullMaskHeight;
+            fillRect.sizeDelta = fillSize;
+        }
     }
 
     private void Update()
@@ -86,36 +75,19 @@ public class BoostTimerUI : MonoBehaviour
 
     public void SetBoostFill(float normalized01)
     {
-        if (fillRect == null)
+        if (maskRect == null)
             return;
 
         float t = Mathf.Clamp01(normalized01);
 
-        Vector2 size = fillRect.sizeDelta;
-        size.y = fillFullHeight * t;
-        fillRect.sizeDelta = size;
-
-        UpdateShaderAspectCompensation();
+        Vector2 maskSize = maskRect.sizeDelta;
+        maskSize.y = fullMaskHeight * t;
+        maskRect.sizeDelta = maskSize;
     }
 
     public void ClearBoostFill()
     {
         SetBoostFill(0f);
-    }
-
-    private void UpdateShaderAspectCompensation()
-    {
-        if (runtimeMaterial == null || fillRect == null)
-            return;
-
-        Rect rect = fillRect.rect;
-
-        float width = Mathf.Max(rect.width, 0.0001f);
-        float height = Mathf.Max(rect.height, 0.0001f);
-
-        float aspectCompensation = Mathf.Max(height / width, minAspectCompensation);
-
-        runtimeMaterial.SetFloat(aspectPropertyName, aspectCompensation);
     }
 
     private void StartMove(Vector2 target)

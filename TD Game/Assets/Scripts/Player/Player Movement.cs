@@ -165,6 +165,16 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    public void SustainSpeedOverride(float speed, float duration)
+    {
+        if (duration <= 0f)
+            return;
+
+        hasSpeedOverride = true;
+        overriddenMoveSpeed = speed;
+        boostRemainingTime = duration;
+        boostMaxDuration = duration;
+    }
     private void UpdateTimersAndJump()
     {
         if (isGrounded)
