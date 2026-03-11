@@ -10,8 +10,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 654d8e92226359b48a90ab8b3ea0755c, type: 3}
-  m_Name: Placement
+  m_Name: Mining
   m_EditorClassIdentifier: Assembly-CSharp::ToolDefinition
-  displayName: Placement Staff
-  icon: {fileID: 21300000, guid: a69954b719a22cf449faffe949520d75, type: 3}
-  toolKind: 1
+  displayName: Miner's Staff
+  icon: {fileID: 21300000, guid: 2ee8c3aefb10cd747a1f89b4accd2a69, type: 3}
+  toolKind: 0

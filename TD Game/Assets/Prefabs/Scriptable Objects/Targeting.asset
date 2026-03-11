@@ -10,8 +10,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 654d8e92226359b48a90ab8b3ea0755c, type: 3}
-  m_Name: Placement
+  m_Name: Targeting
   m_EditorClassIdentifier: Assembly-CSharp::ToolDefinition
-  displayName: Placement Staff
-  icon: {fileID: 21300000, guid: a69954b719a22cf449faffe949520d75, type: 3}
-  toolKind: 1
+  displayName: Targeter's Wand
+  icon: {fileID: 21300000, guid: 6e8a3c1ebf591554d8e909a3f23ab066, type: 3}
+  toolKind: 0

@@ -15,6 +15,7 @@ public class TowerInspectorTool : MonoBehaviour
     [SerializeField] private InspectPanelUI inspectPanel;
 
     [Header("Selection Rules")]
+    [SerializeField] private bool allowTowerSelection = true;
     [SerializeField] private bool allowEmptyTileSelection = true;
 
     [Header("Sell Settings")]
@@ -58,9 +59,10 @@ public class TowerInspectorTool : MonoBehaviour
         controls.Disable();
     }
 
-    public void SetAllowEmptyTileSelection(bool allow)
+    public void SetSelectionPermissions(bool allowTowers, bool allowEmptyTiles)
     {
-        allowEmptyTileSelection = allow;
+        allowTowerSelection = allowTowers;
+        allowEmptyTileSelection = allowEmptyTiles;
     }
 
     private void Update()
@@ -132,9 +134,12 @@ public class TowerInspectorTool : MonoBehaviour
             return;
         }
 
-        // Occupied tiles are always selectable
+        // Tower selection
         if (tile.OccupiedTower != null)
         {
+            if (!allowTowerSelection)
+                return;
+
             TowerIdentity id = tile.OccupiedTower.GetComponent<TowerIdentity>();
             if (id == null) id = tile.OccupiedTower.GetComponentInChildren<TowerIdentity>();
 
@@ -147,7 +152,7 @@ public class TowerInspectorTool : MonoBehaviour
             return;
         }
 
-        // Empty tile selection depends on active tool mode
+        // Empty tile selection
         if (allowEmptyTileSelection)
         {
             inspectPanel.SetSelectedTile(tile);

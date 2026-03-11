@@ -46,15 +46,19 @@ public class GridHoverSelector : MonoBehaviour
     private void OnEnable()
     {
         controls.Enable();
-
-        // Requires you to have PrimaryClick in your input actions (you do)
         controls.Player.PrimaryClick.performed += OnPrimaryClick;
+
+        suppressUntilUnscaledTime = 0f;
+        SetHighlightActive(false);
     }
 
     private void OnDisable()
     {
         controls.Player.PrimaryClick.performed -= OnPrimaryClick;
         controls.Disable();
+
+        suppressUntilUnscaledTime = 0f;
+        SetHighlightActive(false);
     }
 
     private void Update()

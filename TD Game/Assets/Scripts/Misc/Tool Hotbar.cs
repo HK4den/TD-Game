@@ -262,11 +262,11 @@ public class ToolHotbar : MonoBehaviour
         if (inspectTool != null)
             inspectTool.enabled = true;
 
+        //Change this to change what can use the grid hover. Should just be these 3 for right now, maybe more in future.
         bool wantsHover =
-            slot.kind == ToolKind.Placement ||
-            slot.kind == ToolKind.Inspect ||
-            slot.kind == ToolKind.Mining ||
-            slot.kind == ToolKind.Targeting;
+    slot.kind == ToolKind.Placement ||
+    slot.kind == ToolKind.Inspect ||
+    slot.kind == ToolKind.Targeting;
 
         if (hoverSelector != null)
             hoverSelector.enabled = wantsHover;
@@ -274,31 +274,47 @@ public class ToolHotbar : MonoBehaviour
         switch (slot.kind)
         {
             case ToolKind.Empty:
-                if (placementTool != null) placementTool.enabled = false;
-                if (inspectTool != null) inspectTool.SetAllowEmptyTileSelection(false);
+
+                if (placementTool != null)
+                    placementTool.enabled = false;
+
+                if (inspectTool != null)
+                    inspectTool.SetSelectionPermissions(false, false);
+
                 break;
 
             case ToolKind.Placement:
-                if (placementTool != null) placementTool.enabled = true;
-                if (inspectTool != null) inspectTool.SetAllowEmptyTileSelection(false);
+
+                if (placementTool != null)
+                    placementTool.enabled = true;
+
+                if (inspectTool != null)
+                    inspectTool.SetSelectionPermissions(true, false);
+
                 break;
 
             case ToolKind.Inspect:
-                if (placementTool != null) placementTool.enabled = false;
-                if (inspectTool != null) inspectTool.SetAllowEmptyTileSelection(true);
+
+                if (placementTool != null)
+                    placementTool.enabled = false;
+
+                if (inspectTool != null)
+                    inspectTool.SetSelectionPermissions(true, true);
+
                 break;
 
             case ToolKind.Mining:
             case ToolKind.Targeting:
-                if (placementTool != null) placementTool.enabled = false;
-                if (inspectTool != null) inspectTool.SetAllowEmptyTileSelection(false);
 
-                if (slot.toolBehaviour != null &&
-                    slot.toolBehaviour != placementTool &&
-                    slot.toolBehaviour != inspectTool)
-                {
+                if (placementTool != null)
+                    placementTool.enabled = false;
+
+                if (inspectTool != null)
+                    inspectTool.SetSelectionPermissions(false, false);
+
+                if (slot.toolBehaviour != null)
                     slot.toolBehaviour.enabled = true;
-                }
+
                 break;
         }
 
