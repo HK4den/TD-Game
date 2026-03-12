@@ -42,6 +42,10 @@ public class PlayerLook : MonoBehaviour
     private bool hasManualFOVOverride;
     private float manualOverriddenFOV;
 
+    [Header("Runtime State")]
+    [SerializeField] private bool lookBlocked;
+    [SerializeField] private bool cursorUnlockedBySystem;
+
     private void Awake()
     {
         controls = new PlayerControls();
@@ -66,19 +70,23 @@ public class PlayerLook : MonoBehaviour
 
     private void Start()
     {
-        LockCursor();
+        RestoreGameplayCursor();
     }
 
     private void Update()
     {
-        if (PauseState.IsPaused) return;
+        if (PauseState.IsPaused)
+            return;
 
-        Vector2 look = controls.Player.Look.ReadValue<Vector2>();
+        if (!lookBlocked)
+        {
+            Vector2 look = controls.Player.Look.ReadValue<Vector2>();
 
-        transform.Rotate(Vector3.up * look.x * mouseSensitivity);
+            transform.Rotate(Vector3.up * look.x * mouseSensitivity);
 
-        pitch -= look.y * mouseSensitivity;
-        pitch = Mathf.Clamp(pitch, minPitch, maxPitch);
+            pitch -= look.y * mouseSensitivity;
+            pitch = Mathf.Clamp(pitch, minPitch, maxPitch);
+        }
 
         HandleCameraBob();
         HandleSprintFOV();
@@ -86,10 +94,33 @@ public class PlayerLook : MonoBehaviour
         ApplyCameraRotation();
     }
 
-    private void LockCursor()
+    public void SetLookBlocked(bool blocked)
     {
+        lookBlocked = blocked;
+    }
+
+    public bool IsLookBlocked()
+    {
+        return lookBlocked;
+    }
+
+    public void UnlockCursorForUI()
+    {
+        cursorUnlockedBySystem = true;
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+    }
+
+    public void RestoreGameplayCursor()
+    {
+        cursorUnlockedBySystem = false;
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+    }
+
+    public bool WasCursorUnlockedBySystem()
+    {
+        return cursorUnlockedBySystem;
     }
 
     private void HandleCameraBob()

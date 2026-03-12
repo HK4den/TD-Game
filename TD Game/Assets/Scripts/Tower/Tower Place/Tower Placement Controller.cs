@@ -1,13 +1,71 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class TowerPlacementController : MonoBehaviour
 {
+    [Serializable]
+    public class PlaceableTowerEntry
+    {
+        public string displayName;
+        public GameObject towerPrefab;
+        public Sprite overrideIcon;
+
+        public string DisplayName
+        {
+            get
+            {
+                if (!string.IsNullOrWhiteSpace(displayName))
+                    return displayName;
+
+                if (towerPrefab == null)
+                    return "Tower";
+
+                TowerIdentity id = towerPrefab.GetComponent<TowerIdentity>();
+                if (id != null && !string.IsNullOrWhiteSpace(id.DisplayName))
+                    return id.DisplayName;
+
+                return towerPrefab.name;
+            }
+        }
+
+        public Sprite Icon
+        {
+            get
+            {
+                if (overrideIcon != null)
+                    return overrideIcon;
+
+                if (towerPrefab == null)
+                    return null;
+
+                TowerIdentity id = towerPrefab.GetComponent<TowerIdentity>();
+                return id != null ? id.Icon : null;
+            }
+        }
+
+        public int Cost
+        {
+            get
+            {
+                if (towerPrefab == null)
+                    return 0;
+
+                TowerCost cost = towerPrefab.GetComponent<TowerCost>();
+                return cost != null ? Mathf.Max(0, cost.Cost) : 0;
+            }
+        }
+    }
+
     [Header("References")]
     [SerializeField] private Camera cam;
     [SerializeField] private GridManager grid;
     [SerializeField] private GridPathfinder pathfinder;
-    [SerializeField] private InspectPanelUI inspectPanel; // optional (auto-inspect after placing)
+    [SerializeField] private InspectPanelUI inspectPanel;
+    [SerializeField] private PlayerLook playerLook;
+    [SerializeField] private PlacementRadialMenu radialMenu;
+
 
     private PlayerControls controls;
     private EconomyManager economy;
@@ -16,8 +74,8 @@ public class TowerPlacementController : MonoBehaviour
     [SerializeField] private float maxDistance = 6f;
     [SerializeField] private LayerMask tileMask;
 
-    [Header("Tower Prefab")]
-    [SerializeField] private GameObject towerPrefab;
+    [Header("Placeable Towers")]
+    [SerializeField] private List<PlaceableTowerEntry> placeableTowers = new List<PlaceableTowerEntry>();
 
     [Header("Placement Rules")]
     [SerializeField] private bool towersBlockEnemies = true;
@@ -32,6 +90,11 @@ public class TowerPlacementController : MonoBehaviour
     [SerializeField] private Material invalidGhostMaterial;
     [SerializeField] private float ghostYOffset = 0.05f;
 
+    [Header("Radial State Prep")]
+    [SerializeField] private bool radialOpen;
+    [SerializeField] private float radialOpenHoldTime = 0.2f;
+    [SerializeField] private float radialStickDeadzone = 0.35f;
+
     private GameObject ghost;
     private GridTile hoveredTile;
 
@@ -43,6 +106,27 @@ public class TowerPlacementController : MonoBehaviour
     private int lastSeenPathVersion = -1;
     private bool lastWasValid;
 
+    private int selectedTowerIndex = -1;
+
+    private bool secondaryHeld;
+    private bool holdTriggeredRadialOpen;
+    private float secondaryHeldTime;
+
+    public bool HasTowerSelected => selectedTowerIndex >= 0 && selectedTowerIndex < placeableTowers.Count;
+    public bool IsRadialOpen => radialOpen;
+    public int SelectedTowerIndex => selectedTowerIndex;
+
+    public PlaceableTowerEntry SelectedTowerEntry
+    {
+        get
+        {
+            if (!HasTowerSelected)
+                return null;
+
+            return placeableTowers[selectedTowerIndex];
+        }
+    }
+
     private void Awake()
     {
         economy = FindFirstObjectByType<EconomyManager>();
@@ -51,10 +135,16 @@ public class TowerPlacementController : MonoBehaviour
         if (grid == null) grid = FindFirstObjectByType<GridManager>();
         if (pathfinder == null) pathfinder = FindFirstObjectByType<GridPathfinder>();
         if (inspectPanel == null) inspectPanel = FindFirstObjectByType<InspectPanelUI>();
+        if (playerLook == null) playerLook = FindFirstObjectByType<PlayerLook>();
+        if (radialMenu == null) radialMenu = FindFirstObjectByType<PlacementRadialMenu>();
 
         controls = new PlayerControls();
 
-        CreateGhost();
+        CreateGhostIfPossible();
+        HideGhostImmediate();
+
+        if (radialMenu != null)
+            radialMenu.gameObject.SetActive(false);
     }
 
     private void OnEnable()
@@ -62,8 +152,21 @@ public class TowerPlacementController : MonoBehaviour
         if (economy != null)
             economy.OnMoneyChanged += HandleMoneyChanged;
 
+        PauseState.OnPauseChanged += HandlePauseChanged;
+
         controls.Enable();
         controls.Player.PrimaryClick.performed += OnPrimaryClick;
+        controls.Player.SecondaryClick.started += OnSecondaryStarted;
+        controls.Player.SecondaryClick.canceled += OnSecondaryCanceled;
+
+        secondaryHeld = false;
+        holdTriggeredRadialOpen = false;
+        secondaryHeldTime = 0f;
+
+        radialOpen = false;
+        SetLookBlocked(false);
+        RestoreGameplayCursorIfNeeded();
+        HideGhostImmediate();
     }
 
     private void OnDisable()
@@ -71,27 +174,49 @@ public class TowerPlacementController : MonoBehaviour
         if (economy != null)
             economy.OnMoneyChanged -= HandleMoneyChanged;
 
+        PauseState.OnPauseChanged -= HandlePauseChanged;
+
         controls.Player.PrimaryClick.performed -= OnPrimaryClick;
+        controls.Player.SecondaryClick.started -= OnSecondaryStarted;
+        controls.Player.SecondaryClick.canceled -= OnSecondaryCanceled;
         controls.Disable();
+
+        CloseRadialInternal(false);
+        SetLookBlocked(false);
+        RestoreGameplayCursorIfNeeded();
+        HideGhostImmediate();
+        hoveredTile = null;
     }
 
     private void Update()
     {
         if (PauseState.IsPaused)
         {
-            if (ghost != null) ghost.SetActive(false);
             hoveredTile = null;
+            HideGhostImmediate();
             return;
         }
 
-        UpdateHoverTileCenterRay();
+        UpdateSecondaryHold();
+
+        if (!radialOpen)
+        {
+            UpdateHoverTileCenterRay();
+        }
+        else
+        {
+            hoveredTile = null;
+            UpdateRadialHighlight();
+        }
+
         UpdateGhostVisualsAndPosition();
     }
 
     private void OnPrimaryClick(InputAction.CallbackContext ctx)
     {
         if (PauseState.IsPaused) return;
-
+        if (radialOpen) return;
+        if (!HasTowerSelected) return;
         if (hoveredTile == null) return;
 
         // If tower exists, inspector system will handle selection.
@@ -100,10 +225,86 @@ public class TowerPlacementController : MonoBehaviour
         TryPlace();
     }
 
+    private void OnSecondaryStarted(InputAction.CallbackContext ctx)
+    {
+        if (PauseState.IsPaused)
+            return;
+
+        // If a tower is selected, a press of SecondaryClick should deselect immediately,
+        // and not open the radial on the same press.
+        if (HasTowerSelected)
+        {
+            ClearSelectedTower();
+            secondaryHeld = false;
+            holdTriggeredRadialOpen = false;
+            secondaryHeldTime = 0f;
+            return;
+        }
+
+        secondaryHeld = true;
+        holdTriggeredRadialOpen = false;
+        secondaryHeldTime = 0f;
+    }
+
+    private void OnSecondaryCanceled(InputAction.CallbackContext ctx)
+    {
+        if (PauseState.IsPaused)
+            return;
+
+        bool radialWasOpen = radialOpen;
+
+        secondaryHeld = false;
+        secondaryHeldTime = 0f;
+
+        if (radialWasOpen)
+        {
+            holdTriggeredRadialOpen = false;
+            ConfirmRadialSelection();
+            return;
+        }
+
+        holdTriggeredRadialOpen = false;
+    }
+
+    private void UpdateSecondaryHold()
+    {
+        if (!secondaryHeld)
+            return;
+
+        if (HasTowerSelected)
+            return;
+
+        if (radialOpen)
+            return;
+
+        secondaryHeldTime += Time.unscaledDeltaTime;
+
+        if (!holdTriggeredRadialOpen && secondaryHeldTime >= radialOpenHoldTime)
+        {
+            holdTriggeredRadialOpen = true;
+            OpenRadialInternal();
+        }
+    }
+
+    private void HandlePauseChanged(bool paused)
+    {
+        if (!paused)
+            return;
+
+        secondaryHeld = false;
+        holdTriggeredRadialOpen = false;
+        secondaryHeldTime = 0f;
+
+        CloseRadialInternal(false);
+        hoveredTile = null;
+        HideGhostImmediate();
+    }
+
     private void HandleMoneyChanged(int _)
     {
         if (ghost == null || !ghost.activeSelf) return;
         if (hoveredTile == null) return;
+        if (!HasTowerSelected) return;
 
         bool nowValid = IsPlacementValid(hoveredTile);
         if (nowValid != lastWasValid)
@@ -117,50 +318,139 @@ public class TowerPlacementController : MonoBehaviour
     {
         hoveredTile = null;
         lastTile = null;
-        lastSeenPathVersion = -1;
-        lastWasValid = false;
-
-        if (ghost != null)
-            ghost.SetActive(false);
+        ClearSelectedTower();
+        HideGhostImmediate();
     }
 
-    private void CreateGhost()
+    public void SelectTowerByIndex(int index)
     {
-        if (towerPrefab == null) return;
-
-        ghost = Instantiate(towerPrefab);
-        ghost.name = "TowerGhost";
-        SetLayerRecursively(ghost, 2); // Ignore Raycast
-
-        foreach (var c in ghost.GetComponentsInChildren<Collider>(true))
-            c.enabled = false;
-
-        foreach (var mb in ghost.GetComponentsInChildren<MonoBehaviour>(true))
-            mb.enabled = false;
-
-        ghostRenderers = ghost.GetComponentsInChildren<Renderer>(true);
-
-        validMatRuntime = ghostMaterial;
-        if (validMatRuntime == null && ghostRenderers != null && ghostRenderers.Length > 0)
-            validMatRuntime = ghostRenderers[0].sharedMaterial;
-
-        if (invalidGhostMaterial != null)
+        if (index < 0 || index >= placeableTowers.Count)
         {
-            invalidMatRuntime = invalidGhostMaterial;
-        }
-        else if (validMatRuntime != null)
-        {
-            invalidMatRuntime = new Material(validMatRuntime);
-            if (invalidMatRuntime.HasProperty("_Color"))
-                invalidMatRuntime.color = new Color(1f, 0.2f, 0.2f, 0.75f);
+            ClearSelectedTower();
+            return;
         }
 
-        ghost.SetActive(false);
+        if (placeableTowers[index] == null || placeableTowers[index].towerPrefab == null)
+        {
+            ClearSelectedTower();
+            return;
+        }
+
+        selectedTowerIndex = index;
+        RebuildGhostFromSelectedTower();
+        lastTile = null;
+        hoveredTile = null;
+    }
+
+    public void ClearSelectedTower()
+    {
+        selectedTowerIndex = -1;
+        lastTile = null;
+        hoveredTile = null;
+        HideGhostImmediate();
+    }
+
+    public IReadOnlyList<PlaceableTowerEntry> GetPlaceableTowers()
+    {
+        return placeableTowers;
+    }
+
+    private void OpenRadialInternal()
+    {
+        if (PauseState.IsPaused)
+            return;
+
+        if (HasTowerSelected)
+            return;
+
+        radialOpen = true;
+
+        if (inspectPanel != null)
+            inspectPanel.ClearSelection();
+
+        SetLookBlocked(true);
+        UnlockCursorForUIIfNeeded();
+        HideGhostImmediate();
+
+        if (radialMenu != null)
+        {
+            radialMenu.gameObject.SetActive(true);
+            radialMenu.BuildRadial();
+        }
+    }
+
+    private void CloseRadialInternal(bool restoreCursor)
+    {
+        radialOpen = false;
+
+        if (radialMenu != null)
+            radialMenu.gameObject.SetActive(false);
+
+        SetLookBlocked(false);
+
+        if (restoreCursor)
+            RestoreGameplayCursorIfNeeded();
+    }
+
+    private void UpdateRadialHighlight()
+    {
+        if (!radialOpen || radialMenu == null)
+            return;
+
+        Vector2 direction = GetRadialInputDirection();
+        radialMenu.UpdateHighlight(direction);
+    }
+
+    private Vector2 GetRadialInputDirection()
+    {
+        Vector2 stickLook = controls.Player.Look.ReadValue<Vector2>();
+
+        if (stickLook.sqrMagnitude >= radialStickDeadzone * radialStickDeadzone)
+            return stickLook.normalized;
+
+        if (Mouse.current != null)
+        {
+            Vector2 mousePos = Mouse.current.position.ReadValue();
+            Vector2 screenCenter = new Vector2(Screen.width * 0.5f, Screen.height * 0.5f);
+            Vector2 mouseDir = mousePos - screenCenter;
+
+            if (mouseDir.sqrMagnitude > 0.01f)
+                return mouseDir.normalized;
+        }
+
+        return Vector2.zero;
+    }
+
+    private void ConfirmRadialSelection()
+    {
+        if (!radialOpen)
+            return;
+
+        int highlighted = 0;
+
+        if (radialMenu != null)
+            highlighted = radialMenu.GetHighlightedIndex();
+
+        CloseRadialInternal(true);
+
+        // 0 is always Back
+        if (highlighted == 0)
+        {
+            ClearSelectedTower();
+            return;
+        }
+
+        int towerIndex = highlighted - 1;
+        SelectTowerByIndex(towerIndex);
     }
 
     private void UpdateHoverTileCenterRay()
     {
         hoveredTile = null;
+
+        if (!HasTowerSelected)
+            return;
+
         if (cam == null) return;
 
         Ray ray = cam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
@@ -172,62 +462,122 @@ public class TowerPlacementController : MonoBehaviour
 
     private void UpdateGhostVisualsAndPosition()
     {
-        if (ghost == null) return;
-
-        if (hoveredTile == null || towerPrefab == null)
+        if (!HasTowerSelected || radialOpen || PauseState.IsPaused)
         {
-            ghost.SetActive(false);
+            HideGhostImmediate();
             return;
         }
 
-        // No ghost on occupied tile
-        if (hoveredTile.IsOccupied)
+        if (ghost == null)
         {
-            ghost.SetActive(false);
+            CreateGhostIfPossible();
+            if (ghost == null)
+                return;
+        }
+
+        if (hoveredTile == null)
+        {
+            HideGhostImmediate();
             return;
         }
 
         ghost.SetActive(true);
 
-        Vector3 pos = hoveredTile.transform.position;
-        pos.y += ghostYOffset;
-        ghost.transform.position = pos;
-        ghost.transform.rotation = Quaternion.identity;
+        Vector3 tilePos = hoveredTile.transform.position;
+        ghost.transform.position = tilePos + Vector3.up * ghostYOffset;
 
+        int currentPathVersion = PathChangeBroadcaster.Version;
         bool tileChanged = hoveredTile != lastTile;
-        bool pathChanged = PathChangeBroadcaster.Version != lastSeenPathVersion;
+        bool pathChanged = currentPathVersion != lastSeenPathVersion;
 
         if (tileChanged || pathChanged)
         {
             lastTile = hoveredTile;
-            lastSeenPathVersion = PathChangeBroadcaster.Version;
-
+            lastSeenPathVersion = currentPathVersion;
             lastWasValid = IsPlacementValid(hoveredTile);
             ApplyGhostMaterial(lastWasValid);
         }
     }
 
+    private void HideGhostImmediate()
+    {
+        if (ghost != null)
+            ghost.SetActive(false);
+    }
+
+    private void CreateGhostIfPossible()
+    {
+        if (ghost != null)
+            Destroy(ghost);
+
+        ghost = null;
+        ghostRenderers = null;
+
+        GameObject prefab = GetSelectedTowerPrefab();
+        if (prefab == null)
+            return;
+
+        ghost = Instantiate(prefab);
+        ghost.name = prefab.name + "_GhostPreview";
+
+        DestroyComponentsForGhost(ghost);
+
+        SetLayerRecursively(ghost, gameObject.layer);
+
+        ghostRenderers = ghost.GetComponentsInChildren<Renderer>(true);
+
+        if (ghostMaterial != null)
+            validMatRuntime = new Material(ghostMaterial);
+
+        if (invalidGhostMaterial != null)
+            invalidMatRuntime = new Material(invalidGhostMaterial);
+
+        ApplyGhostMaterial(true);
+        ghost.SetActive(false);
+    }
+
+    private void RebuildGhostFromSelectedTower()
+    {
+        CreateGhostIfPossible();
+        HideGhostImmediate();
+    }
+
+    private GameObject GetSelectedTowerPrefab()
+    {
+        if (!HasTowerSelected)
+            return null;
+
+        PlaceableTowerEntry entry = placeableTowers[selectedTowerIndex];
+        return entry != null ? entry.towerPrefab : null;
+    }
+
+    private int GetSelectedTowerCost()
+    {
+        if (!HasTowerSelected)
+            return 0;
+
+        PlaceableTowerEntry entry = placeableTowers[selectedTowerIndex];
+        return entry != null ? entry.Cost : 0;
+    }
+
     private bool IsPlacementValid(GridTile tile)
     {
         if (tile == null) return false;
+        if (!HasTowerSelected) return false;
 
-        // money check
-        TowerCost costComp = towerPrefab.GetComponent<TowerCost>();
-        if (costComp != null && economy != null)
-        {
-            if (economy.Money < costComp.Cost)
-                return false;
-        }
+        GameObject selectedPrefab = GetSelectedTowerPrefab();
+        if (selectedPrefab == null) return false;
 
         if (!tile.IsBuildable) return false;
+        if (tile.IsOccupied) return false;
         if (tile.Terrain == TerrainType.Blocked) return false;
-        if (!tile.CanPlaceTower) return false;
 
-        if (enforcePath && towersBlockEnemies)
-        {
-            if (!WouldStillHavePathIfPlacedHere(tile))
-                return false;
-        }
+        int cost = GetSelectedTowerCost();
+        if (economy != null && economy.Money < cost)
+            return false;
+
+        if (enforcePath && towersBlockEnemies && !WouldStillHavePathIfPlacedHere(tile))
+            return false;
 
         return true;
     }
@@ -247,14 +597,16 @@ public class TowerPlacementController : MonoBehaviour
     private void TryPlace()
     {
         if (hoveredTile == null) return;
-        if (towerPrefab == null) return;
+
+        GameObject selectedPrefab = GetSelectedTowerPrefab();
+        if (selectedPrefab == null) return;
 
         if (hoveredTile.IsOccupied) return;
         if (!IsPlacementValid(hoveredTile)) return;
 
         int paidCost = 0;
 
-        TowerCost costComp = towerPrefab.GetComponent<TowerCost>();
+        TowerCost costComp = selectedPrefab.GetComponent<TowerCost>();
         if (costComp != null && economy != null)
         {
             paidCost = Mathf.Max(0, costComp.Cost);
@@ -263,9 +615,8 @@ public class TowerPlacementController : MonoBehaviour
         }
 
         Vector3 pos = hoveredTile.transform.position;
-        GameObject placed = Instantiate(towerPrefab, pos, Quaternion.identity);
+        GameObject placed = Instantiate(selectedPrefab, pos, Quaternion.identity);
 
-        // ledger: record actual money paid (supports discounts/free towers)
         TowerValueLedger ledger = placed.GetComponent<TowerValueLedger>();
         if (ledger == null) ledger = placed.AddComponent<TowerValueLedger>();
         ledger.AddSpend(paidCost);
@@ -277,7 +628,6 @@ public class TowerPlacementController : MonoBehaviour
 
         PathChangeBroadcaster.Bump();
 
-        // Optional: auto-inspect after placing (only if you want it)
         if (inspectPanel != null)
         {
             var id = placed.GetComponentInChildren<TowerIdentity>();
@@ -286,7 +636,7 @@ public class TowerPlacementController : MonoBehaviour
             else inspectPanel.SetSelectedTile(hoveredTile);
         }
 
-        lastTile = null; // force refresh next frame
+        lastTile = null;
     }
 
     private bool WouldStillHavePathIfPlacedHere(GridTile tile)
@@ -309,6 +659,52 @@ public class TowerPlacementController : MonoBehaviour
         tile.SetBlocksEnemies(originalBlocksEnemies);
 
         return path != null && path.Count > 0;
+    }
+
+    private void DestroyComponentsForGhost(GameObject root)
+    {
+        Collider[] colliders = root.GetComponentsInChildren<Collider>(true);
+        for (int i = 0; i < colliders.Length; i++)
+            Destroy(colliders[i]);
+
+        MonoBehaviour[] behaviours = root.GetComponentsInChildren<MonoBehaviour>(true);
+        for (int i = 0; i < behaviours.Length; i++)
+            Destroy(behaviours[i]);
+
+        Rigidbody[] rigidbodies = root.GetComponentsInChildren<Rigidbody>(true);
+        for (int i = 0; i < rigidbodies.Length; i++)
+            Destroy(rigidbodies[i]);
+    }
+
+    private void SetLookBlocked(bool blocked)
+    {
+        if (playerLook != null)
+            playerLook.SetLookBlocked(blocked);
+    }
+
+    private void UnlockCursorForUIIfNeeded()
+    {
+        if (playerLook != null)
+            playerLook.UnlockCursorForUI();
+        else
+        {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
+    }
+
+    private void RestoreGameplayCursorIfNeeded()
+    {
+        if (PauseState.IsPaused)
+            return;
+
+        if (playerLook != null)
+            playerLook.RestoreGameplayCursor();
+        else
+        {
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+        }
     }
 
     private void SetLayerRecursively(GameObject obj, int layer)
