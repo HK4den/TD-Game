@@ -25,6 +25,15 @@
                     "initialStateCheck": true
                 },
                 {
+                    "name": "RadialSelection",
+                    "type": "Value",
+                    "id": "6453fae3-4252-49ea-b349-1557c0b36ccd",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
                     "name": "Jump",
                     "type": "Button",
                     "id": "3b80ff6c-b518-48e5-8078-88feb12378e2",
@@ -79,6 +88,15 @@
                     "initialStateCheck": false
                 },
                 {
+                    "name": "Sell",
+                    "type": "Button",
+                    "id": "3fd94edb-e7d3-411c-bd39-c1f7e4d701e0",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
                     "name": "SwapUpgrade",
                     "type": "Button",
                     "id": "06250bac-bd29-43a3-aac4-9bcadf801043",
@@ -88,13 +106,22 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Sell",
-                    "type": "Button",
-                    "id": "3fd94edb-e7d3-411c-bd39-c1f7e4d701e0",
+                    "name": "NextSlot",
+                    "type": "Value",
+                    "id": "18f1c305-fec9-4d83-a37c-8f253e9120c4",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
-                    "initialStateCheck": false
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "PrevSlot",
+                    "type": "Value",
+                    "id": "7518e168-d4bc-4f27-aaf0-c3db68054ac2",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
                 },
                 {
                     "name": "Slot1",
@@ -176,24 +203,6 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
-                },
-                {
-                    "name": "NextSlot",
-                    "type": "Value",
-                    "id": "18f1c305-fec9-4d83-a37c-8f253e9120c4",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": true
-                },
-                {
-                    "name": "PrevSlot",
-                    "type": "Value",
-                    "id": "7518e168-d4bc-4f27-aaf0-c3db68054ac2",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": true
                 }
             ],
             "bindings": [
@@ -271,6 +280,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "Look",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "679012c3-069a-48d9-8fa3-7373d2315bfa",
+                    "path": "<Gamepad>/rightStick",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "RadialSelection",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },

@@ -12,6 +12,14 @@ public class PlacementRadialMenu : MonoBehaviour
     [Header("Layout")]
     [SerializeField] private float radius = 150f;
 
+    [Header("Fade")]
+    [SerializeField] private CanvasGroup canvasGroup;
+    [SerializeField] private float fadeSpeed = 12f;
+    [SerializeField] private float shownAlpha = 1f;
+    [SerializeField] private float hiddenAlpha = 0f;
+
+    private bool visible;
+
     private List<PlacementRadialOptionUI> options = new List<PlacementRadialOptionUI>();
     private int highlightedIndex = 0;
 
@@ -22,6 +30,28 @@ public class PlacementRadialMenu : MonoBehaviour
 
         if (economy == null)
             economy = FindFirstObjectByType<EconomyManager>();
+    }
+
+    private void Update()
+    {
+        if (canvasGroup == null)
+            return;
+
+        float target = visible ? shownAlpha : hiddenAlpha;
+        canvasGroup.alpha = Mathf.Lerp(canvasGroup.alpha, target, Time.unscaledDeltaTime * fadeSpeed);
+        canvasGroup.blocksRaycasts = visible;
+        canvasGroup.interactable = visible;
+    }
+
+    public void Show()
+    {
+        visible = true;
+        gameObject.SetActive(true);
+    }
+
+    public void Hide()
+    {
+        visible = false;
     }
     public void BuildRadial()
     {

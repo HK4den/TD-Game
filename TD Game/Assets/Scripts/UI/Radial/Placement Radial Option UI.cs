@@ -6,7 +6,12 @@ public class PlacementRadialOptionUI : MonoBehaviour
     [Header("UI References")]
     [SerializeField] private Image backgroundImage;
     [SerializeField] private Image towerIcon;
+    [SerializeField] private GameObject priceGroup;
+    [SerializeField] private Image priceBackground;
     [SerializeField] private Text priceText;
+
+    [SerializeField] private GameObject nameGroup;
+    [SerializeField] private Image nameBackground;
     [SerializeField] private Text nameText;
 
     [Header("Visuals")]
@@ -16,6 +21,9 @@ public class PlacementRadialOptionUI : MonoBehaviour
     [SerializeField] private float normalScale = 1f;
     [SerializeField] private float selectedScale = 1.4f;
     [SerializeField] private float scaleLerpSpeed = 12f;
+
+    [SerializeField] private Color affordablePriceColor = Color.white;
+    [SerializeField] private Color unaffordablePriceColor = Color.red;
 
     private bool isSelected;
     private float targetScale = 1f;
@@ -35,6 +43,9 @@ public class PlacementRadialOptionUI : MonoBehaviour
 
         if (backgroundImage != null)
             backgroundImage.sprite = selected ? selectedBackground : normalBackground;
+
+        if (selected)
+            transform.SetAsLastSibling();
     }
 
     public void SetupTower(Sprite icon, string name, int price, bool affordable)
@@ -45,14 +56,19 @@ public class PlacementRadialOptionUI : MonoBehaviour
             towerIcon.sprite = icon;
         }
 
+        if (nameGroup != null)
+            nameGroup.SetActive(true);
+
         if (nameText != null)
             nameText.text = name;
 
+        if (priceGroup != null)
+            priceGroup.SetActive(true);
+
         if (priceText != null)
         {
-            priceText.gameObject.SetActive(true);
             priceText.text = price.ToString();
-            priceText.color = affordable ? Color.white : Color.red;
+            priceText.color = affordable ? affordablePriceColor : unaffordablePriceColor;
         }
     }
 
@@ -61,8 +77,11 @@ public class PlacementRadialOptionUI : MonoBehaviour
         if (towerIcon != null)
             towerIcon.enabled = false;
 
-        if (priceText != null)
-            priceText.gameObject.SetActive(false);
+        if (priceGroup != null)
+            priceGroup.SetActive(false);
+
+        if (nameGroup != null)
+            nameGroup.SetActive(true);
 
         if (nameText != null)
             nameText.text = label;

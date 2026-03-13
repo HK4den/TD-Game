@@ -374,8 +374,8 @@ public class TowerPlacementController : MonoBehaviour
 
         if (radialMenu != null)
         {
-            radialMenu.gameObject.SetActive(true);
             radialMenu.BuildRadial();
+            radialMenu.Show();
         }
     }
 
@@ -384,7 +384,7 @@ public class TowerPlacementController : MonoBehaviour
         radialOpen = false;
 
         if (radialMenu != null)
-            radialMenu.gameObject.SetActive(false);
+            radialMenu.Hide();
 
         SetLookBlocked(false);
 
@@ -403,7 +403,7 @@ public class TowerPlacementController : MonoBehaviour
 
     private Vector2 GetRadialInputDirection()
     {
-        Vector2 stickLook = controls.Player.Look.ReadValue<Vector2>();
+        Vector2 stickLook = controls.Player.RadialSelection.ReadValue<Vector2>();
 
         if (stickLook.sqrMagnitude >= radialStickDeadzone * radialStickDeadzone)
             return stickLook.normalized;
@@ -481,6 +481,15 @@ public class TowerPlacementController : MonoBehaviour
             return;
         }
 
+        // HARD BLOCKS (ghost should not appear at all)
+        if (!hoveredTile.IsBuildable || hoveredTile.IsOccupied || hoveredTile.Terrain == TerrainType.Blocked)
+        {
+            HideGhostImmediate();
+            lastTile = hoveredTile;
+            lastSeenPathVersion = PathChangeBroadcaster.Version;
+            return;
+        }
+
         ghost.SetActive(true);
 
         Vector3 tilePos = hoveredTile.transform.position;
@@ -494,8 +503,9 @@ public class TowerPlacementController : MonoBehaviour
         {
             lastTile = hoveredTile;
             lastSeenPathVersion = currentPathVersion;
-            lastWasValid = IsPlacementValid(hoveredTile);
-            ApplyGhostMaterial(lastWasValid);
+
+            bool validPlacement = IsPlacementValid(hoveredTile);
+            ApplyGhostMaterial(validPlacement);
         }
     }
 
@@ -580,6 +590,18 @@ public class TowerPlacementController : MonoBehaviour
             return false;
 
         return true;
+    }
+
+    private bool ShouldHideGhostForTile(GridTile tile)
+    {
+        if (tile == null) return true;
+        if (!HasTowerSelected) return true;
+
+        if (!tile.IsBuildable) return true;
+        if (tile.IsOccupied) return true;
+        if (tile.Terrain == TerrainType.Blocked) return true;
+
+        return false;
     }
 
     private void ApplyGhostMaterial(bool valid)

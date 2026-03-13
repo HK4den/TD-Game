@@ -176,7 +176,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TowerIdentity
   displayName: Wizard
-  icon: {fileID: 21300000, guid: fb11ff56642c4774ea2ac4c12063c691, type: 3}
+  icon: {fileID: 21300000, guid: 63547566a6a728b4f91d249aeb220873, type: 3}
 --- !u!114 &9198767423989168895
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -212,4 +212,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: de72ed71a9a43e14bae74409d3606792, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TowerValueLedger
+  canSell: 1
   totalSpent: 0

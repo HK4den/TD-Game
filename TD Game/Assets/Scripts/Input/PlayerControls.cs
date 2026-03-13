@@ -25,49 +25,49 @@ using UnityEngine.InputSystem.Utilities;
 /// <code>
 /// using namespace UnityEngine;
 /// using UnityEngine.InputSystem;
-/// 
+///
 /// // Example of using an InputActionMap named "Player" from a UnityEngine.MonoBehaviour implementing callback interface.
 /// public class Example : MonoBehaviour, MyActions.IPlayerActions
 /// {
 ///     private MyActions_Actions m_Actions;                  // Source code representation of asset.
 ///     private MyActions_Actions.PlayerActions m_Player;     // Source code representation of action map.
-/// 
+///
 ///     void Awake()
 ///     {
 ///         m_Actions = new MyActions_Actions();              // Create asset object.
 ///         m_Player = m_Actions.Player;                      // Extract action map object.
 ///         m_Player.AddCallbacks(this);                      // Register callback interface IPlayerActions.
 ///     }
-/// 
+///
 ///     void OnDestroy()
 ///     {
 ///         m_Actions.Dispose();                              // Destroy asset object.
 ///     }
-/// 
+///
 ///     void OnEnable()
 ///     {
 ///         m_Player.Enable();                                // Enable all actions within map.
 ///     }
-/// 
+///
 ///     void OnDisable()
 ///     {
 ///         m_Player.Disable();                               // Disable all actions within map.
 ///     }
-/// 
+///
 ///     #region Interface implementation of MyActions.IPlayerActions
-/// 
+///
 ///     // Invoked when "Move" action is either started, performed or canceled.
 ///     public void OnMove(InputAction.CallbackContext context)
 ///     {
 ///         Debug.Log($"OnMove: {context.ReadValue&lt;Vector2&gt;()}");
 ///     }
-/// 
+///
 ///     // Invoked when "Attack" action is either started, performed or canceled.
 ///     public void OnAttack(InputAction.CallbackContext context)
 ///     {
 ///         Debug.Log($"OnAttack: {context.ReadValue&lt;float&gt;()}");
 ///     }
-/// 
+///
 ///     #endregion
 /// }
 /// </code>
@@ -105,6 +105,15 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""name"": ""Look"",
                     ""type"": ""Value"",
                     ""id"": ""d561de99-f208-4aad-8df5-9adbb83b0a47"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""RadialSelection"",
+                    ""type"": ""Value"",
+                    ""id"": ""6453fae3-4252-49ea-b349-1557c0b36ccd"",
                     ""expectedControlType"": ""Vector2"",
                     ""processors"": """",
                     ""interactions"": """",
@@ -165,6 +174,15 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": false
                 },
                 {
+                    ""name"": ""Sell"",
+                    ""type"": ""Button"",
+                    ""id"": ""3fd94edb-e7d3-411c-bd39-c1f7e4d701e0"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
                     ""name"": ""SwapUpgrade"",
                     ""type"": ""Button"",
                     ""id"": ""06250bac-bd29-43a3-aac4-9bcadf801043"",
@@ -174,13 +192,22 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": false
                 },
                 {
-                    ""name"": ""Sell"",
-                    ""type"": ""Button"",
-                    ""id"": ""3fd94edb-e7d3-411c-bd39-c1f7e4d701e0"",
+                    ""name"": ""NextSlot"",
+                    ""type"": ""Value"",
+                    ""id"": ""18f1c305-fec9-4d83-a37c-8f253e9120c4"",
                     ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
-                    ""initialStateCheck"": false
+                    ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""PrevSlot"",
+                    ""type"": ""Value"",
+                    ""id"": ""7518e168-d4bc-4f27-aaf0-c3db68054ac2"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
                 },
                 {
                     ""name"": ""Slot1"",
@@ -262,24 +289,6 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
-                },
-                {
-                    ""name"": ""NextSlot"",
-                    ""type"": ""Value"",
-                    ""id"": ""18f1c305-fec9-4d83-a37c-8f253e9120c4"",
-                    ""expectedControlType"": """",
-                    ""processors"": """",
-                    ""interactions"": """",
-                    ""initialStateCheck"": true
-                },
-                {
-                    ""name"": ""PrevSlot"",
-                    ""type"": ""Value"",
-                    ""id"": ""7518e168-d4bc-4f27-aaf0-c3db68054ac2"",
-                    ""expectedControlType"": """",
-                    ""processors"": """",
-                    ""interactions"": """",
-                    ""initialStateCheck"": true
                 }
             ],
             ""bindings"": [
@@ -357,6 +366,17 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""Look"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""679012c3-069a-48d9-8fa3-7373d2315bfa"",
+                    ""path"": ""<Gamepad>/rightStick"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""RadialSelection"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -688,14 +708,17 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         m_Player = asset.FindActionMap("Player", throwIfNotFound: true);
         m_Player_Move = m_Player.FindAction("Move", throwIfNotFound: true);
         m_Player_Look = m_Player.FindAction("Look", throwIfNotFound: true);
+        m_Player_RadialSelection = m_Player.FindAction("RadialSelection", throwIfNotFound: true);
         m_Player_Jump = m_Player.FindAction("Jump", throwIfNotFound: true);
         m_Player_Sprint = m_Player.FindAction("Sprint", throwIfNotFound: true);
         m_Player_Escape = m_Player.FindAction("Escape", throwIfNotFound: true);
         m_Player_PrimaryClick = m_Player.FindAction("PrimaryClick", throwIfNotFound: true);
         m_Player_SecondaryClick = m_Player.FindAction("SecondaryClick", throwIfNotFound: true);
         m_Player_Upgrade = m_Player.FindAction("Upgrade", throwIfNotFound: true);
-        m_Player_SwapUpgrade = m_Player.FindAction("SwapUpgrade", throwIfNotFound: true);
         m_Player_Sell = m_Player.FindAction("Sell", throwIfNotFound: true);
+        m_Player_SwapUpgrade = m_Player.FindAction("SwapUpgrade", throwIfNotFound: true);
+        m_Player_NextSlot = m_Player.FindAction("NextSlot", throwIfNotFound: true);
+        m_Player_PrevSlot = m_Player.FindAction("PrevSlot", throwIfNotFound: true);
         m_Player_Slot1 = m_Player.FindAction("Slot1", throwIfNotFound: true);
         m_Player_Slot2 = m_Player.FindAction("Slot2", throwIfNotFound: true);
         m_Player_Slot3 = m_Player.FindAction("Slot3", throwIfNotFound: true);
@@ -705,8 +728,6 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         m_Player_Slot7 = m_Player.FindAction("Slot7", throwIfNotFound: true);
         m_Player_Slot8 = m_Player.FindAction("Slot8", throwIfNotFound: true);
         m_Player_Slot9 = m_Player.FindAction("Slot9", throwIfNotFound: true);
-        m_Player_NextSlot = m_Player.FindAction("NextSlot", throwIfNotFound: true);
-        m_Player_PrevSlot = m_Player.FindAction("PrevSlot", throwIfNotFound: true);
     }
 
     ~@PlayerControls()
@@ -789,14 +810,17 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
     private List<IPlayerActions> m_PlayerActionsCallbackInterfaces = new List<IPlayerActions>();
     private readonly InputAction m_Player_Move;
     private readonly InputAction m_Player_Look;
+    private readonly InputAction m_Player_RadialSelection;
     private readonly InputAction m_Player_Jump;
     private readonly InputAction m_Player_Sprint;
     private readonly InputAction m_Player_Escape;
     private readonly InputAction m_Player_PrimaryClick;
     private readonly InputAction m_Player_SecondaryClick;
     private readonly InputAction m_Player_Upgrade;
-    private readonly InputAction m_Player_SwapUpgrade;
     private readonly InputAction m_Player_Sell;
+    private readonly InputAction m_Player_SwapUpgrade;
+    private readonly InputAction m_Player_NextSlot;
+    private readonly InputAction m_Player_PrevSlot;
     private readonly InputAction m_Player_Slot1;
     private readonly InputAction m_Player_Slot2;
     private readonly InputAction m_Player_Slot3;
@@ -806,8 +830,6 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_Slot7;
     private readonly InputAction m_Player_Slot8;
     private readonly InputAction m_Player_Slot9;
-    private readonly InputAction m_Player_NextSlot;
-    private readonly InputAction m_Player_PrevSlot;
     /// <summary>
     /// Provides access to input actions defined in input action map "Player".
     /// </summary>
@@ -827,6 +849,10 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Player/Look".
         /// </summary>
         public InputAction @Look => m_Wrapper.m_Player_Look;
+        /// <summary>
+        /// Provides access to the underlying input action "Player/RadialSelection".
+        /// </summary>
+        public InputAction @RadialSelection => m_Wrapper.m_Player_RadialSelection;
         /// <summary>
         /// Provides access to the underlying input action "Player/Jump".
         /// </summary>
@@ -852,13 +878,21 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         /// </summary>
         public InputAction @Upgrade => m_Wrapper.m_Player_Upgrade;
         /// <summary>
+        /// Provides access to the underlying input action "Player/Sell".
+        /// </summary>
+        public InputAction @Sell => m_Wrapper.m_Player_Sell;
+        /// <summary>
         /// Provides access to the underlying input action "Player/SwapUpgrade".
         /// </summary>
         public InputAction @SwapUpgrade => m_Wrapper.m_Player_SwapUpgrade;
         /// <summary>
-        /// Provides access to the underlying input action "Player/Sell".
+        /// Provides access to the underlying input action "Player/NextSlot".
         /// </summary>
-        public InputAction @Sell => m_Wrapper.m_Player_Sell;
+        public InputAction @NextSlot => m_Wrapper.m_Player_NextSlot;
+        /// <summary>
+        /// Provides access to the underlying input action "Player/PrevSlot".
+        /// </summary>
+        public InputAction @PrevSlot => m_Wrapper.m_Player_PrevSlot;
         /// <summary>
         /// Provides access to the underlying input action "Player/Slot1".
         /// </summary>
@@ -896,14 +930,6 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         /// </summary>
         public InputAction @Slot9 => m_Wrapper.m_Player_Slot9;
         /// <summary>
-        /// Provides access to the underlying input action "Player/NextSlot".
-        /// </summary>
-        public InputAction @NextSlot => m_Wrapper.m_Player_NextSlot;
-        /// <summary>
-        /// Provides access to the underlying input action "Player/PrevSlot".
-        /// </summary>
-        public InputAction @PrevSlot => m_Wrapper.m_Player_PrevSlot;
-        /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
         public InputActionMap Get() { return m_Wrapper.m_Player; }
@@ -935,6 +961,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @Look.started += instance.OnLook;
             @Look.performed += instance.OnLook;
             @Look.canceled += instance.OnLook;
+            @RadialSelection.started += instance.OnRadialSelection;
+            @RadialSelection.performed += instance.OnRadialSelection;
+            @RadialSelection.canceled += instance.OnRadialSelection;
             @Jump.started += instance.OnJump;
             @Jump.performed += instance.OnJump;
             @Jump.canceled += instance.OnJump;
@@ -953,12 +982,18 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @Upgrade.started += instance.OnUpgrade;
             @Upgrade.performed += instance.OnUpgrade;
             @Upgrade.canceled += instance.OnUpgrade;
-            @SwapUpgrade.started += instance.OnSwapUpgrade;
-            @SwapUpgrade.performed += instance.OnSwapUpgrade;
-            @SwapUpgrade.canceled += instance.OnSwapUpgrade;
             @Sell.started += instance.OnSell;
             @Sell.performed += instance.OnSell;
             @Sell.canceled += instance.OnSell;
+            @SwapUpgrade.started += instance.OnSwapUpgrade;
+            @SwapUpgrade.performed += instance.OnSwapUpgrade;
+            @SwapUpgrade.canceled += instance.OnSwapUpgrade;
+            @NextSlot.started += instance.OnNextSlot;
+            @NextSlot.performed += instance.OnNextSlot;
+            @NextSlot.canceled += instance.OnNextSlot;
+            @PrevSlot.started += instance.OnPrevSlot;
+            @PrevSlot.performed += instance.OnPrevSlot;
+            @PrevSlot.canceled += instance.OnPrevSlot;
             @Slot1.started += instance.OnSlot1;
             @Slot1.performed += instance.OnSlot1;
             @Slot1.canceled += instance.OnSlot1;
@@ -986,12 +1021,6 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @Slot9.started += instance.OnSlot9;
             @Slot9.performed += instance.OnSlot9;
             @Slot9.canceled += instance.OnSlot9;
-            @NextSlot.started += instance.OnNextSlot;
-            @NextSlot.performed += instance.OnNextSlot;
-            @NextSlot.canceled += instance.OnNextSlot;
-            @PrevSlot.started += instance.OnPrevSlot;
-            @PrevSlot.performed += instance.OnPrevSlot;
-            @PrevSlot.canceled += instance.OnPrevSlot;
         }
 
         /// <summary>
@@ -1009,6 +1038,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @Look.started -= instance.OnLook;
             @Look.performed -= instance.OnLook;
             @Look.canceled -= instance.OnLook;
+            @RadialSelection.started -= instance.OnRadialSelection;
+            @RadialSelection.performed -= instance.OnRadialSelection;
+            @RadialSelection.canceled -= instance.OnRadialSelection;
             @Jump.started -= instance.OnJump;
             @Jump.performed -= instance.OnJump;
             @Jump.canceled -= instance.OnJump;
@@ -1027,12 +1059,18 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @Upgrade.started -= instance.OnUpgrade;
             @Upgrade.performed -= instance.OnUpgrade;
             @Upgrade.canceled -= instance.OnUpgrade;
-            @SwapUpgrade.started -= instance.OnSwapUpgrade;
-            @SwapUpgrade.performed -= instance.OnSwapUpgrade;
-            @SwapUpgrade.canceled -= instance.OnSwapUpgrade;
             @Sell.started -= instance.OnSell;
             @Sell.performed -= instance.OnSell;
             @Sell.canceled -= instance.OnSell;
+            @SwapUpgrade.started -= instance.OnSwapUpgrade;
+            @SwapUpgrade.performed -= instance.OnSwapUpgrade;
+            @SwapUpgrade.canceled -= instance.OnSwapUpgrade;
+            @NextSlot.started -= instance.OnNextSlot;
+            @NextSlot.performed -= instance.OnNextSlot;
+            @NextSlot.canceled -= instance.OnNextSlot;
+            @PrevSlot.started -= instance.OnPrevSlot;
+            @PrevSlot.performed -= instance.OnPrevSlot;
+            @PrevSlot.canceled -= instance.OnPrevSlot;
             @Slot1.started -= instance.OnSlot1;
             @Slot1.performed -= instance.OnSlot1;
             @Slot1.canceled -= instance.OnSlot1;
@@ -1060,12 +1098,6 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @Slot9.started -= instance.OnSlot9;
             @Slot9.performed -= instance.OnSlot9;
             @Slot9.canceled -= instance.OnSlot9;
-            @NextSlot.started -= instance.OnNextSlot;
-            @NextSlot.performed -= instance.OnNextSlot;
-            @NextSlot.canceled -= instance.OnNextSlot;
-            @PrevSlot.started -= instance.OnPrevSlot;
-            @PrevSlot.performed -= instance.OnPrevSlot;
-            @PrevSlot.canceled -= instance.OnPrevSlot;
         }
 
         /// <summary>
@@ -1121,6 +1153,13 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnLook(InputAction.CallbackContext context);
         /// <summary>
+        /// Method invoked when associated input action "RadialSelection" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnRadialSelection(InputAction.CallbackContext context);
+        /// <summary>
         /// Method invoked when associated input action "Jump" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
         /// </summary>
         /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
@@ -1163,6 +1202,13 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnUpgrade(InputAction.CallbackContext context);
         /// <summary>
+        /// Method invoked when associated input action "Sell" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnSell(InputAction.CallbackContext context);
+        /// <summary>
         /// Method invoked when associated input action "SwapUpgrade" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
         /// </summary>
         /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
@@ -1170,12 +1216,19 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnSwapUpgrade(InputAction.CallbackContext context);
         /// <summary>
-        /// Method invoked when associated input action "Sell" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// Method invoked when associated input action "NextSlot" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
         /// </summary>
         /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
-        void OnSell(InputAction.CallbackContext context);
+        void OnNextSlot(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "PrevSlot" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnPrevSlot(InputAction.CallbackContext context);
         /// <summary>
         /// Method invoked when associated input action "Slot1" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
         /// </summary>
@@ -1239,19 +1292,5 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnSlot9(InputAction.CallbackContext context);
-        /// <summary>
-        /// Method invoked when associated input action "NextSlot" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
-        /// </summary>
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
-        void OnNextSlot(InputAction.CallbackContext context);
-        /// <summary>
-        /// Method invoked when associated input action "PrevSlot" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
-        /// </summary>
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
-        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
-        void OnPrevSlot(InputAction.CallbackContext context);
     }
 }
