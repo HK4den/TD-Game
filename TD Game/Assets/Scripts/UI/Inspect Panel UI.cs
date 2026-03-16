@@ -55,6 +55,9 @@ public class InspectPanelUI : MonoBehaviour
     [SerializeField] private RectTransform sellFillRect; // your "copied sell button" rect
     [SerializeField] private float sellFillFullWidth = 384.02f; // full width when filled
 
+    [Header("Selection Highlight")]
+    [SerializeField] private SelectionHighlightManager selectionHighlightManager;
+
     [Header("Terrain Descriptions (optional)")]
     [SerializeField] private TerrainDescriptionsSO terrainDescriptions;
 
@@ -72,6 +75,9 @@ public class InspectPanelUI : MonoBehaviour
 
     private void Awake()
     {
+        if (selectionHighlightManager == null)
+            selectionHighlightManager = FindFirstObjectByType<SelectionHighlightManager>();
+
         if (panelRoot != null) panelRoot.gameObject.SetActive(true);
         if (panelRect == null) panelRect = panelRoot;
 
@@ -107,6 +113,9 @@ public class InspectPanelUI : MonoBehaviour
         ApplyTerrain(null);
         ApplyTower(null, null);
 
+        if (selectionHighlightManager != null)
+            selectionHighlightManager.ClearSelection();
+
         StartMove(hiddenAnchoredPos);
     }
 
@@ -128,6 +137,9 @@ public class InspectPanelUI : MonoBehaviour
         ApplyTerrain(tile);
         ApplyTower(null, null);
 
+        if (selectionHighlightManager != null)
+            selectionHighlightManager.SetSelection(null, tile != null ? tile.gameObject : null);
+
         StartMove(tile != null ? shownAnchoredPos : hiddenAnchoredPos);
     }
 
@@ -139,6 +151,13 @@ public class InspectPanelUI : MonoBehaviour
 
         ApplyTerrain(tileUnderTower);
         ApplyTower(tower, upgradeState);
+
+        if (selectionHighlightManager != null)
+        {
+            GameObject towerRoot = tower != null ? tower.gameObject : null;
+            GameObject tileRoot = tileUnderTower != null ? tileUnderTower.gameObject : null;
+            selectionHighlightManager.SetSelection(towerRoot, tileRoot);
+        }
 
         StartMove((tower != null || tileUnderTower != null) ? shownAnchoredPos : hiddenAnchoredPos);
     }
