@@ -23,14 +23,61 @@ public class SelectionHighlightManager : MonoBehaviour
 
     public void ClearSelection()
     {
+        // First try restoring remembered originals
         RestoreDictionary(towerOriginals);
         RestoreDictionary(tileOriginals);
+
+        // Then aggressively strip the selection material from the current roots
+        // in case upgrade/rebuild changed renderer or material state after highlight was applied.
+        RemoveHighlightFromRoot(currentTowerRoot);
+        RemoveHighlightFromRoot(currentTileRoot);
 
         towerOriginals.Clear();
         tileOriginals.Clear();
 
         currentTowerRoot = null;
         currentTileRoot = null;
+    }
+
+    private void RemoveHighlightFromRoot(GameObject root)
+    {
+        if (root == null || highlightMaterial == null)
+            return;
+
+        Renderer[] renderers = root.GetComponentsInChildren<Renderer>(true);
+
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            Renderer r = renderers[i];
+            if (r == null) continue;
+
+            Material[] mats = r.sharedMaterials;
+            if (mats == null || mats.Length == 0) continue;
+
+            int keptCount = 0;
+            for (int j = 0; j < mats.Length; j++)
+            {
+                if (mats[j] != highlightMaterial)
+                    keptCount++;
+            }
+
+            if (keptCount == mats.Length)
+                continue; // nothing to remove
+
+            Material[] cleaned = new Material[keptCount];
+            int index = 0;
+
+            for (int j = 0; j < mats.Length; j++)
+            {
+                if (mats[j] != highlightMaterial)
+                {
+                    cleaned[index] = mats[j];
+                    index++;
+                }
+            }
+
+            r.sharedMaterials = cleaned;
+        }
     }
 
     private void ApplySelection(GameObject towerRoot, GameObject tileRoot)
@@ -49,6 +96,8 @@ public class SelectionHighlightManager : MonoBehaviour
     {
         if (root == null || highlightMaterial == null)
             return;
+
+        RemoveHighlightFromRoot(root);
 
         Renderer[] renderers = root.GetComponentsInChildren<Renderer>(true);
 
