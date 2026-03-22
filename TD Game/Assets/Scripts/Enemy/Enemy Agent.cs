@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class EnemyAgent : MonoBehaviour
 {
-    // Global lifecycle events (WaveSpawner listens to these)
     public static event Action<EnemyAgent> OnAnySpawned;
     public static event Action<EnemyAgent> OnAnyRemoved;
 
@@ -31,9 +30,33 @@ public class EnemyAgent : MonoBehaviour
     private bool hasReachedGoal;
     private bool spawnedEventFired;
 
-    /// <summary>
-    /// Called by WaveSpawner right after Instantiate so this enemy always damages the correct base.
-    /// </summary>
+    public bool HasReachedGoal => hasReachedGoal;
+    public bool HasValidPath => tilePath != null && tilePath.Count > 0;
+    public float MoveSpeed => speed;
+
+    public float RemainingPathDistance
+    {
+        get
+        {
+            if (hasReachedGoal)
+                return 0f;
+
+            return CalculateRemainingPathDistance();
+        }
+    }
+
+    public float DistanceTravelled
+    {
+        get
+        {
+            if (!HasValidPath)
+                return 0f;
+
+            float totalPath = CalculateTotalPathDistance();
+            return Mathf.Max(0f, totalPath - RemainingPathDistance);
+        }
+    }
+
     public void SetBaseHealth(BaseHealth bh)
     {
         baseHealth = bh;
@@ -55,23 +78,22 @@ public class EnemyAgent : MonoBehaviour
         if (grid == null) grid = FindFirstObjectByType<GridManager>();
         if (pathfinder == null) pathfinder = FindFirstObjectByType<GridPathfinder>();
 
-        // Intentionally NOT auto-finding BaseHealth here anymore.
-        // WaveSpawner should assign it via SetBaseHealth().
         Debug.Log($"[EnemyAgent] Awake baseHealth={(baseHealth ? baseHealth.name : "NULL")}");
     }
 
     private void Start()
     {
-        // In case something instantiates enemies without calling Init (debug/testing),
-        // still count them as spawned.
         FireSpawnedIfNeeded();
-
         ForceRepath();
     }
 
     private void Update()
     {
-        if (hasReachedGoal) return;
+        if (PauseState.IsPaused)
+            return;
+
+        if (hasReachedGoal)
+            return;
 
         if (lastSeenPathVersion != PathChangeBroadcaster.Version)
             ForceRepath();
@@ -81,7 +103,9 @@ public class EnemyAgent : MonoBehaviour
 
     private void FireSpawnedIfNeeded()
     {
-        if (spawnedEventFired) return;
+        if (spawnedEventFired)
+            return;
+
         spawnedEventFired = true;
         OnAnySpawned?.Invoke(this);
     }
@@ -90,7 +114,8 @@ public class EnemyAgent : MonoBehaviour
     {
         lastSeenPathVersion = PathChangeBroadcaster.Version;
 
-        if (grid == null || pathfinder == null) return;
+        if (grid == null || pathfinder == null)
+            return;
 
         grid.RebuildLookupFromChildren();
 
@@ -101,14 +126,16 @@ public class EnemyAgent : MonoBehaviour
         tilePath = pathfinder.FindPathAStar(startTile, goalTile);
         index = 0;
 
-        if (tilePath == null || tilePath.Count == 0) return;
+        if (tilePath == null || tilePath.Count == 0)
+            return;
 
         AdvanceIfClose();
     }
 
     private void FollowPath()
     {
-        if (tilePath == null || tilePath.Count == 0) return;
+        if (tilePath == null || tilePath.Count == 0)
+            return;
 
         if (index >= tilePath.Count)
         {
@@ -134,7 +161,6 @@ public class EnemyAgent : MonoBehaviour
 
         float step = speed * Time.deltaTime;
 
-        // Clamp so we don't overshoot
         if (dist <= step && dist > 0.0001f)
         {
             transform.position = target;
@@ -155,7 +181,9 @@ public class EnemyAgent : MonoBehaviour
 
     private void ArriveAtGoal()
     {
-        if (hasReachedGoal) return;
+        if (hasReachedGoal)
+            return;
+
         hasReachedGoal = true;
 
         Debug.Log($"[EnemyAgent] ArriveAtGoal baseHealth={(baseHealth ? baseHealth.name : "NULL")} dmg={baseDamage}");
@@ -170,7 +198,8 @@ public class EnemyAgent : MonoBehaviour
 
     private void AdvanceIfClose()
     {
-        if (tilePath == null || tilePath.Count == 0) return;
+        if (tilePath == null || tilePath.Count == 0)
+            return;
 
         Vector3 target = tilePath[0].transform.position;
         Vector3 to = target - transform.position;
@@ -179,10 +208,50 @@ public class EnemyAgent : MonoBehaviour
             index = 1;
     }
 
+    private float CalculateRemainingPathDistance()
+    {
+        if (tilePath == null || tilePath.Count == 0)
+            return float.MaxValue;
+
+        if (index >= tilePath.Count)
+            return 0f;
+
+        float total = 0f;
+
+        Vector3 currentPos = transform.position;
+        Vector3 currentTarget = tilePath[index].transform.position;
+        currentTarget.y = currentPos.y + yOffset;
+
+        total += Vector3.Distance(currentPos, currentTarget);
+
+        for (int i = index; i < tilePath.Count - 1; i++)
+        {
+            Vector3 a = tilePath[i].transform.position;
+            Vector3 b = tilePath[i + 1].transform.position;
+            total += Vector3.Distance(a, b);
+        }
+
+        return total;
+    }
+
+    private float CalculateTotalPathDistance()
+    {
+        if (tilePath == null || tilePath.Count <= 1)
+            return 0f;
+
+        float total = 0f;
+        for (int i = 0; i < tilePath.Count - 1; i++)
+        {
+            Vector3 a = tilePath[i].transform.position;
+            Vector3 b = tilePath[i + 1].transform.position;
+            total += Vector3.Distance(a, b);
+        }
+
+        return total;
+    }
+
     private void OnDestroy()
     {
-        // Only report removal if we had reported spawn.
-        // This avoids weird cases during scene shutdown.
         if (spawnedEventFired)
             OnAnyRemoved?.Invoke(this);
     }
