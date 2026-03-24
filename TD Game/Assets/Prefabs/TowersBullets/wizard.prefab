@@ -18,6 +18,7 @@ GameObject:
   - component: {fileID: -2177105339483779199}
   - component: {fileID: 9198767423989168895}
   - component: {fileID: 4221621356532786706}
+  - component: {fileID: 6979606240984811205}
   m_Layer: 6
   m_Name: wizard
   m_TagString: Tower
@@ -214,3 +215,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TowerValueLedger
   canSell: 1
   totalSpent: 0
+--- !u!114 &6979606240984811205
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1937534747383321431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b230df570326cc143b29616b681fe6e6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TowerTargetingFeedback
+  worldSpacePopupPrefab: {fileID: 0}
+  worldOffset: {x: 0, y: 2, z: 0}

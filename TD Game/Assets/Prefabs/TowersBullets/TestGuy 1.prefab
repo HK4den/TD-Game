@@ -114,7 +114,7 @@ GameObject:
   - component: {fileID: -8808299984456531476}
   - component: {fileID: -4418911605106883157}
   m_Layer: 6
-  m_Name: TestGuy
+  m_Name: TestGuy 1
   m_TagString: Tower
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -254,7 +254,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4a19a91366db874c9bdb2c6a84843d4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TowerIdentity
-  displayName: Wizard
+  displayName: Testman2
   icon: {fileID: 21300000, guid: 63547566a6a728b4f91d249aeb220873, type: 3}
 --- !u!114 &9198767423989168895
 MonoBehaviour:
@@ -321,10 +321,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 07871fc07221521458e810cd531370bf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TowerRangeProfile
-  shape: 0
+  shape: 1
   baseSphereRadius: 2.5
   singleBoxLocalCenter: {x: 0, y: 0, z: 0}
-  singleBoxBaseSize: {x: 1, y: 1, z: 4}
+  singleBoxBaseSize: {x: 1, y: 1, z: 1}
   multiBoxDefinitions:
   - localCenter: {x: 0, y: 0, z: 0}
     baseSize: {x: 0.01, y: 0.01, z: 0.01}
