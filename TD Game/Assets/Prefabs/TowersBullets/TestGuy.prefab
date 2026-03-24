@@ -113,6 +113,7 @@ GameObject:
   - component: {fileID: -5030970616454914048}
   - component: {fileID: -8808299984456531476}
   - component: {fileID: -4418911605106883157}
+  - component: {fileID: -5336945119137476084}
   m_Layer: 6
   m_Name: TestGuy
   m_TagString: Tower
@@ -305,7 +306,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7d581701fda38fc4c8e3b300b45b9d9c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TowerCombatStats
-  basePower: 10
+  basePower: 100
   baseSecondsBetweenShots: 1
   basePierce: 1
   baseRange: 2.5
@@ -395,9 +396,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf3172c51ce2ef9478f82db91aae24c2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TowerAttackController
-  combatStats: {fileID: 0}
-  targetingController: {fileID: 0}
-  projectileEmitter: {fileID: 0}
+  combatStats: {fileID: 3602398885712497751}
+  targetingController: {fileID: 6772138513667187524}
+  projectileEmitter: {fileID: -5030970616454914048}
   debugLogAttacks: 0
 --- !u!114 &-4418911605106883157
 MonoBehaviour:
@@ -413,6 +414,26 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TowerTargetingFeedback
   worldSpacePopupPrefab: {fileID: 6565176689698462858, guid: f9c62a44afb42b647907b335e527ad68, type: 3}
   worldOffset: {x: 0, y: 0.4, z: 0}
+--- !u!114 &-5336945119137476084
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1937534747383321431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8c83c8479aa25094a8a67132e712e21d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TowerRotationController
+  visualRoot: {fileID: 4607724837775410472}
+  functionalRoot: {fileID: 4607724837775410472}
+  allowManualRotation: 1
+  cardinalOnlyManualRotation: 0
+  nonCardinalManualStepDegrees: 20
+  manualRotationMode: 1
+  allowAttackWindupRotation: 1
+  windupUsesYawOnly: 1
 --- !u!1 &4103327753956445793
 GameObject:
   m_ObjectHideFlags: 0

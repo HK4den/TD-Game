@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8851941772324762798}
   - component: {fileID: 8324182222862372157}
+  - component: {fileID: 1693652489919305394}
   m_Layer: 0
   m_Name: WaveSpawner
   m_TagString: Untagged
@@ -25,7 +26,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2749267946440613925}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 16.24937, y: 0.001, z: 1.5353999}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -46,8 +47,61 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WaveSpawner
   grid: {fileID: 0}
   pathfinder: {fileID: 0}
-  enemyPrefab: {fileID: 0}
+  economy: {fileID: 0}
+  baseHealth: {fileID: 0}
   spawnCoord: {x: 0, y: 0}
   goalCoord: {x: 19, y: 19}
-  spawnYOffset: 0
-  waves: []
+  spawnYOffset: 0.2
+  waves:
+  - name: Wave 1
+    completionReward: 50
+    groups:
+    - enemyPrefab: {fileID: 483553121193507500, guid: 4aa9a2cd2a15e154aae0a15935a37b32, type: 3}
+      count: 5
+      spawnInterval: 0.75
+      delayAfterGroup: 1
+    - enemyPrefab: {fileID: 483553121193507500, guid: 4aa9a2cd2a15e154aae0a15935a37b32, type: 3}
+      count: 5
+      spawnInterval: 0.2
+      delayAfterGroup: 1
+  - name: Wave 2
+    completionReward: 0
+    groups:
+    - enemyPrefab: {fileID: 483553121193507500, guid: 4aa9a2cd2a15e154aae0a15935a37b32, type: 3}
+      count: 6
+      spawnInterval: 1
+      delayAfterGroup: 3
+    - enemyPrefab: {fileID: 483553121193507500, guid: 4aa9a2cd2a15e154aae0a15935a37b32, type: 3}
+      count: 10
+      spawnInterval: 0.5
+      delayAfterGroup: 1
+    - enemyPrefab: {fileID: 483553121193507500, guid: 4aa9a2cd2a15e154aae0a15935a37b32, type: 3}
+      count: 25
+      spawnInterval: 0.2
+      delayAfterGroup: 0
+  - name: Wave 3
+    completionReward: 0
+    groups:
+    - enemyPrefab: {fileID: 483553121193507500, guid: 4aa9a2cd2a15e154aae0a15935a37b32, type: 3}
+      count: 6
+      spawnInterval: 1
+      delayAfterGroup: 3
+  - name: Wave 4
+    completionReward: 0
+    groups:
+    - enemyPrefab: {fileID: 483553121193507500, guid: 4aa9a2cd2a15e154aae0a15935a37b32, type: 3}
+      count: 6
+      spawnInterval: 1
+      delayAfterGroup: 3
+--- !u!114 &1693652489919305394
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2749267946440613925}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 045edbcb79a731f45ab19f6f5a050b18, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyRegistry

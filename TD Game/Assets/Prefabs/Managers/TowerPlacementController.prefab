@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 1300564849046510540}
   - component: {fileID: 8247475752741641969}
   - component: {fileID: 8209055954498011567}
+  - component: {fileID: 3751579155576691655}
   m_Layer: 0
   m_Name: TowerPlacementController
   m_TagString: Untagged
@@ -26,7 +27,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2906545329388491397}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 12.12971, y: 0.001, z: -6.11625}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -65,16 +66,45 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TowerPlacementController
   cam: {fileID: 0}
   grid: {fileID: 0}
+  pathfinder: {fileID: 0}
+  inspectPanel: {fileID: 0}
+  playerLook: {fileID: 0}
+  radialMenu: {fileID: 0}
   maxDistance: 5
   tileMask:
     serializedVersion: 2
     m_Bits: 512
-  towerPrefab: {fileID: 1937534747383321431, guid: acfe89a8519482e4e8d2c6baf0ab4cc8, type: 3}
+  placeableTowers:
+  - displayName: Evocator
+    towerPrefab: {fileID: 1937534747383321431, guid: acfe89a8519482e4e8d2c6baf0ab4cc8, type: 3}
+    overrideIcon: {fileID: 0}
+  - displayName: Evocator
+    towerPrefab: {fileID: 1937534747383321431, guid: ffd5b89fb7f7e0745aeac0122574159e, type: 3}
+    overrideIcon: {fileID: 0}
+  - displayName: TestGuy
+    towerPrefab: {fileID: 1937534747383321431, guid: 332272cf66f0fc148a67839c0b63a836, type: 3}
+    overrideIcon: {fileID: 0}
   towersBlockEnemies: 1
   enforcePath: 1
   startCoord: {x: 0, y: 0}
   goalCoord: {x: 19, y: 19}
-  pathfinder: {fileID: 0}
   ghostMaterial: {fileID: 2100000, guid: b957998617595fb4c9d282bc9ba92e55, type: 2}
   invalidGhostMaterial: {fileID: 2100000, guid: e02bcedd247d7ed4c88f39036efe36eb, type: 2}
-  ghostYOffset: 0.05
+  ghostYOffset: 0
+  radialOpen: 0
+  radialOpenHoldTime: 0.15
+  radialStickDeadzone: 0.5
+--- !u!114 &3751579155576691655
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2906545329388491397}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5634e03501688774eb6ea981ee8f0863, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TowerRangeVisualizer
+  rangeMaterial: {fileID: 2100000, guid: 4ffac12e9647b94429dc4d55b5eb8391, type: 2}
+  yOffset: 0.05

@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 460496811992567059}
   - component: {fileID: 1211111131408979196}
   - component: {fileID: 7313397994648493523}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: bulllet
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -106,11 +106,11 @@ SphereCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 0.5
+  m_Radius: 0.7
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &7313397994648493523
 MonoBehaviour:
@@ -124,8 +124,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e356f26f9af0cc54e98470ad194583a5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TowerProjectile
-  speed: 8
-  effectAmount: 1
+  speed: 12
+  effectAmount: 10
   remainingPierce: 1
-  maxLifetime: 8
+  maxLifetime: 5
   effectMode: 0
