@@ -728,13 +728,20 @@ public class TowerPlacementController : MonoBehaviour
         for (int i = 0; i < colliders.Length; i++)
             Destroy(colliders[i]);
 
-        MonoBehaviour[] behaviours = root.GetComponentsInChildren<MonoBehaviour>(true);
-        for (int i = 0; i < behaviours.Length; i++)
-            Destroy(behaviours[i]);
-
         Rigidbody[] rigidbodies = root.GetComponentsInChildren<Rigidbody>(true);
         for (int i = 0; i < rigidbodies.Length; i++)
             Destroy(rigidbodies[i]);
+
+        // Disable behaviours instead of destroying them.
+        // This avoids RequireComponent removal warnings and keeps the ghost inert.
+        Behaviour[] behaviours = root.GetComponentsInChildren<Behaviour>(true);
+        for (int i = 0; i < behaviours.Length; i++)
+        {
+            if (behaviours[i] == null)
+                continue;
+
+            behaviours[i].enabled = false;
+        }
     }
 
     private void SetLookBlocked(bool blocked)

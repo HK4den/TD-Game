@@ -265,7 +265,8 @@ public class TowerRangeVisualizer : MonoBehaviour
         GameObject box = GameObject.CreatePrimitive(PrimitiveType.Cube);
         box.name = "RangeVisual_SingleBox";
 
-        Vector3 worldCenter = towerPosition + (towerRotation * profile.SingleBoxLocalCenter);
+        Vector3 localCenter = profile.GetExtendedSingleBoxCenter(effectiveRange, baseRange);
+        Vector3 worldCenter = towerPosition + (towerRotation * localCenter);
         Vector3 size = profile.GetExtendedSingleBoxSize(effectiveRange, baseRange);
 
         box.transform.position = worldCenter + Vector3.up * yOffset;

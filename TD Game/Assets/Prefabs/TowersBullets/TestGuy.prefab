@@ -307,10 +307,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7d581701fda38fc4c8e3b300b45b9d9c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TowerCombatStats
-  basePower: 100
-  baseSecondsBetweenShots: 1
+  basePower: 1.5
+  baseSecondsBetweenShots: 0.75
   basePierce: 3
-  baseRange: 5
+  baseRange: 2.5
 --- !u!114 &8455232979921060398
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -372,10 +372,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TowerProjectileEmitter
   combatStats: {fileID: 3602398885712497751}
-  rotationController: {fileID: 0}
+  rotationController: {fileID: -5336945119137476084}
   projectilePrefab: {fileID: 7313397994648493523, guid: 7cb40c470b40b8142b741024650284b3, type: 3}
-  projectileSpeed: 8
-  projectileLifetime: 8
+  projectileSpeed: 18
+  projectileLifetime: 0.15
   effectMode: 0
   firePoints:
   - {fileID: 689398155025200244}
@@ -384,6 +384,8 @@ MonoBehaviour:
   burstCount: 1
   delayBetweenBurstShots: 0
   fireDirectionMode: 2
+  flattenAimedShotsToXZPlane: 1
+  flattenFixedForwardShotsToXZPlane: 0
 --- !u!114 &-8808299984456531476
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -473,7 +475,7 @@ Transform:
   m_GameObject: {fileID: 4103327753956445793}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.031, z: 0.501}
+  m_LocalPosition: {x: 0, y: 0.375, z: 0.501}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

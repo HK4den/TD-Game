@@ -39,6 +39,12 @@ public class TowerRangeProfile : MonoBehaviour
     public Vector3 SingleBoxBaseSize => singleBoxBaseSize;
     public IReadOnlyList<BoxRangeDefinition> MultiBoxDefinitions => multiBoxDefinitions;
 
+    public Vector3 GetExtendedSingleBoxCenter(float effectiveRange, float baseRange)
+    {
+        float extension = Mathf.Max(0f, effectiveRange - Mathf.Max(0.01f, baseRange));
+        return singleBoxLocalCenter + (Vector3.forward * (extension * 0.5f));
+    }
+
     public Vector3 GetExtendedSingleBoxSize(float effectiveRange, float baseRange)
     {
         float extension = Mathf.Max(0f, effectiveRange - Mathf.Max(0.01f, baseRange));

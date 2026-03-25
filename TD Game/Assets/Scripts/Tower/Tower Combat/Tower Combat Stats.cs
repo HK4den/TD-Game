@@ -48,7 +48,7 @@ public class TowerCombatStats : MonoBehaviour
     [Header("Base Combat Stats")]
     [SerializeField] private float basePower = 1f;
     [SerializeField] private float baseSecondsBetweenShots = 1f;
-    [SerializeField] private float basePierce = 1f;
+    [SerializeField] private int basePierce = 1;
     [SerializeField] private float baseRange = 4f;
 
     private readonly FloatStat powerStat = new FloatStat();
@@ -60,47 +60,51 @@ public class TowerCombatStats : MonoBehaviour
 
     public float BasePower
     {
-        get => powerStat.BaseValue;
+        get => Mathf.Max(0.001f, basePower);
         set
         {
-            powerStat.BaseValue = Mathf.Max(0.001f, value);
+            basePower = Mathf.Max(0.001f, value);
+            powerStat.BaseValue = basePower;
             RaiseStatsChanged();
         }
     }
 
     public float BaseSecondsBetweenShots
     {
-        get => shootIntervalStat.BaseValue;
+        get => Mathf.Max(0.001f, baseSecondsBetweenShots);
         set
         {
-            shootIntervalStat.BaseValue = Mathf.Max(0.001f, value);
+            baseSecondsBetweenShots = Mathf.Max(0.001f, value);
+            shootIntervalStat.BaseValue = baseSecondsBetweenShots;
             RaiseStatsChanged();
         }
     }
 
     public int BasePierce
     {
-        get => Mathf.Max(1, Mathf.RoundToInt(pierceStat.BaseValue));
+        get => Mathf.Max(1, basePierce);
         set
         {
-            pierceStat.BaseValue = Mathf.Max(1f, value);
+            basePierce = Mathf.Max(1, value);
+            pierceStat.BaseValue = basePierce;
             RaiseStatsChanged();
         }
     }
 
     public float BaseRange
     {
-        get => rangeStat.BaseValue;
+        get => Mathf.Max(0.01f, baseRange);
         set
         {
-            rangeStat.BaseValue = Mathf.Max(0.01f, value);
+            baseRange = Mathf.Max(0.01f, value);
+            rangeStat.BaseValue = baseRange;
             RaiseStatsChanged();
         }
     }
 
     public float Power => powerStat.GetValue(0.001f);
 
-    // User-facing name is Shoot Speed, but code logic stores seconds between shots.
+    // User-facing concept is Shoot Speed, but internally this is seconds between shots.
     public float SecondsBetweenShots => shootIntervalStat.GetValue(0.001f);
 
     public int Pierce => Mathf.Max(1, Mathf.RoundToInt(pierceStat.GetValue(1f)));
@@ -108,6 +112,23 @@ public class TowerCombatStats : MonoBehaviour
     public float Range => rangeStat.GetValue(0.01f);
 
     private void Awake()
+    {
+        SyncRuntimeStatsFromSerializedBases();
+    }
+
+#if UNITY_EDITOR
+    private void OnValidate()
+    {
+        basePower = Mathf.Max(0.001f, basePower);
+        baseSecondsBetweenShots = Mathf.Max(0.001f, baseSecondsBetweenShots);
+        basePierce = Mathf.Max(1, basePierce);
+        baseRange = Mathf.Max(0.01f, baseRange);
+
+        SyncRuntimeStatsFromSerializedBases();
+    }
+#endif
+
+    private void SyncRuntimeStatsFromSerializedBases()
     {
         powerStat.BaseValue = Mathf.Max(0.001f, basePower);
         shootIntervalStat.BaseValue = Mathf.Max(0.001f, baseSecondsBetweenShots);
@@ -217,6 +238,8 @@ public class TowerCombatStats : MonoBehaviour
         shootIntervalStat.ClearModifiers();
         pierceStat.ClearModifiers();
         rangeStat.ClearModifiers();
+
+        SyncRuntimeStatsFromSerializedBases();
         RaiseStatsChanged();
     }
 

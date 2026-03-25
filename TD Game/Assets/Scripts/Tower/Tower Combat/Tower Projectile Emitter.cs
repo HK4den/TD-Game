@@ -34,7 +34,12 @@ public class TowerProjectileEmitter : MonoBehaviour
     [Header("Behavior")]
     [SerializeField] private FireDirectionMode fireDirectionMode = FireDirectionMode.FixedFirePointForward;
 
+    [Header("Aim Rules")]
+    [SerializeField] private bool flattenAimedShotsToXZPlane = true;
+    [SerializeField] private bool flattenFixedForwardShotsToXZPlane = false;
+
     private Coroutine attackRoutine;
+    private readonly List<Transform> reusableFirePoints = new List<Transform>(8);
 
     public bool IsEmitting => attackRoutine != null;
 
@@ -86,18 +91,19 @@ public class TowerProjectileEmitter : MonoBehaviour
         if (projectilePrefab == null || combatStats == null)
             return;
 
-        List<Transform> points = GetValidFirePoints();
-        if (points.Count == 0)
-            points.Add(transform);
+        GetValidFirePointsNonAlloc(reusableFirePoints);
+
+        if (reusableFirePoints.Count == 0)
+            reusableFirePoints.Add(transform);
 
         if (useAllFirePointsPerShot)
         {
-            for (int i = 0; i < points.Count; i++)
-                SpawnProjectileFromPoint(points[i], lockedTarget);
+            for (int i = 0; i < reusableFirePoints.Count; i++)
+                SpawnProjectileFromPoint(reusableFirePoints[i], lockedTarget);
         }
         else
         {
-            SpawnProjectileFromPoint(points[0], lockedTarget);
+            SpawnProjectileFromPoint(reusableFirePoints[0], lockedTarget);
         }
     }
 
@@ -108,6 +114,9 @@ public class TowerProjectileEmitter : MonoBehaviour
 
         Vector3 spawnPos = firePoint.position;
         Vector3 direction = ResolveShotDirection(firePoint, lockedTarget);
+
+        if (direction.sqrMagnitude <= 0.0001f)
+            direction = firePoint.forward;
 
         TowerProjectile projectile = Instantiate(projectilePrefab, spawnPos, Quaternion.LookRotation(direction));
         projectile.Initialize(
@@ -124,7 +133,16 @@ public class TowerProjectileEmitter : MonoBehaviour
         switch (fireDirectionMode)
         {
             case FireDirectionMode.FixedFirePointForward:
-                return firePoint.forward;
+                {
+                    Vector3 dir = firePoint.forward;
+                    if (flattenFixedForwardShotsToXZPlane)
+                        dir.y = 0f;
+
+                    if (dir.sqrMagnitude <= 0.0001f)
+                        dir = Vector3.forward;
+
+                    return dir.normalized;
+                }
 
             case FireDirectionMode.AimAtTargetWithoutVisualRotate:
             case FireDirectionMode.AimAtTargetWithVisualRotate:
@@ -132,29 +150,38 @@ public class TowerProjectileEmitter : MonoBehaviour
                     if (lockedTarget != null)
                     {
                         Vector3 toTarget = lockedTarget.transform.position - firePoint.position;
+
+                        if (flattenAimedShotsToXZPlane)
+                            toTarget.y = 0f;
+
                         if (toTarget.sqrMagnitude > 0.0001f)
                             return toTarget.normalized;
                     }
 
-                    return firePoint.forward;
+                    Vector3 fallback = firePoint.forward;
+                    if (flattenAimedShotsToXZPlane)
+                        fallback.y = 0f;
+
+                    if (fallback.sqrMagnitude <= 0.0001f)
+                        fallback = Vector3.forward;
+
+                    return fallback.normalized;
                 }
 
             default:
-                return firePoint.forward;
+                return firePoint.forward.normalized;
         }
     }
 
-    private List<Transform> GetValidFirePoints()
+    private void GetValidFirePointsNonAlloc(List<Transform> results)
     {
-        List<Transform> results = new List<Transform>();
+        results.Clear();
 
         for (int i = 0; i < firePoints.Count; i++)
         {
             if (firePoints[i] != null)
                 results.Add(firePoints[i]);
         }
-
-        return results;
     }
 
     private IEnumerator WaitForSecondsGameplay(float seconds)

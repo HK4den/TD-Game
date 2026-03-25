@@ -91,7 +91,8 @@ public class TowerRangeQuery : MonoBehaviour
 
     private bool IsInsideSingleBox(Vector3 enemyPos, float effectiveRange, float baseRange)
     {
-        Vector3 worldCenter = transform.TransformPoint(rangeProfile.SingleBoxLocalCenter);
+        Vector3 localCenter = rangeProfile.GetExtendedSingleBoxCenter(effectiveRange, baseRange);
+        Vector3 worldCenter = transform.TransformPoint(localCenter);
         Vector3 worldHalfExtents = rangeProfile.GetExtendedSingleBoxSize(effectiveRange, baseRange) * 0.5f;
         Quaternion rotation = transform.rotation;
 
