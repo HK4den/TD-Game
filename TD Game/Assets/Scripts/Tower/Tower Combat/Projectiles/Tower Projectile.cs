@@ -19,7 +19,24 @@ public class TowerProjectile : MonoBehaviour
 
     private Vector3 moveDirection = Vector3.forward;
     private float lifetimeTimer;
+
+    private Collider ownCollider;
+    private Rigidbody rb;
+
     private readonly HashSet<EnemyHealth> alreadyHit = new HashSet<EnemyHealth>();
+
+    private void Awake()
+    {
+        ownCollider = GetComponent<Collider>();
+        rb = GetComponent<Rigidbody>();
+
+        if (rb == null)
+            rb = gameObject.AddComponent<Rigidbody>();
+
+        rb.useGravity = false;
+        rb.isKinematic = true;
+        rb.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
+    }
 
     public void Initialize(
         Vector3 direction,
@@ -56,6 +73,25 @@ public class TowerProjectile : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
+        TryHit(other);
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (collision == null || collision.collider == null)
+            return;
+
+        TryHit(collision.collider);
+    }
+
+    private void TryHit(Collider other)
+    {
+        if (other == null)
+            return;
+
+        if (other == ownCollider)
+            return;
+
         EnemyHealth health = other.GetComponentInParent<EnemyHealth>();
         if (health == null)
             return;

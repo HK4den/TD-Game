@@ -63,6 +63,7 @@ public class TowerRangeQuery : MonoBehaviour
 
         Vector3 enemyPos = enemy.transform.position;
         float effectiveRange = combatStats.Range;
+        float baseRange = combatStats.BaseRange;
 
         switch (rangeProfile.Shape)
         {
@@ -70,10 +71,10 @@ public class TowerRangeQuery : MonoBehaviour
                 return IsInsideSphere(enemyPos, effectiveRange);
 
             case TowerRangeProfile.RangeShape.SingleBox:
-                return IsInsideSingleBox(enemyPos, effectiveRange);
+                return IsInsideSingleBox(enemyPos, effectiveRange, baseRange);
 
             case TowerRangeProfile.RangeShape.MultiBox:
-                return IsInsideAnyMultiBox(enemyPos, effectiveRange);
+                return IsInsideAnyMultiBox(enemyPos, effectiveRange, baseRange);
         }
 
         return false;
@@ -88,16 +89,16 @@ public class TowerRangeQuery : MonoBehaviour
         return sqrDistance <= radius * radius;
     }
 
-    private bool IsInsideSingleBox(Vector3 enemyPos, float effectiveRange)
+    private bool IsInsideSingleBox(Vector3 enemyPos, float effectiveRange, float baseRange)
     {
         Vector3 worldCenter = transform.TransformPoint(rangeProfile.SingleBoxLocalCenter);
-        Vector3 worldHalfExtents = rangeProfile.GetExtendedSingleBoxSize(effectiveRange) * 0.5f;
+        Vector3 worldHalfExtents = rangeProfile.GetExtendedSingleBoxSize(effectiveRange, baseRange) * 0.5f;
         Quaternion rotation = transform.rotation;
 
         return IsPointInsideOrientedBox(enemyPos, worldCenter, worldHalfExtents, rotation);
     }
 
-    private bool IsInsideAnyMultiBox(Vector3 enemyPos, float effectiveRange)
+    private bool IsInsideAnyMultiBox(Vector3 enemyPos, float effectiveRange, float baseRange)
     {
         IReadOnlyList<TowerRangeProfile.BoxRangeDefinition> defs = rangeProfile.MultiBoxDefinitions;
         for (int i = 0; i < defs.Count; i++)
@@ -106,8 +107,8 @@ public class TowerRangeQuery : MonoBehaviour
             if (def == null)
                 continue;
 
-            Vector3 localCenter = rangeProfile.GetExtendedMultiBoxCenter(def, effectiveRange);
-            Vector3 size = rangeProfile.GetExtendedMultiBoxSize(def, effectiveRange);
+            Vector3 localCenter = rangeProfile.GetExtendedMultiBoxCenter(def, effectiveRange, baseRange);
+            Vector3 size = rangeProfile.GetExtendedMultiBoxSize(def, effectiveRange, baseRange);
 
             Vector3 worldCenter = transform.TransformPoint(localCenter);
             Vector3 halfExtents = size * 0.5f;

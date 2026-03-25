@@ -19,8 +19,6 @@ public class TowerTargetingTool : MonoBehaviour
     private GridTile hoveredTile;
     private GameObject hoveredTower;
 
-    public GameObject HoveredTower => hoveredTower;
-
     private void Awake()
     {
         if (cam == null) cam = Camera.main;
@@ -40,7 +38,7 @@ public class TowerTargetingTool : MonoBehaviour
         hoveredTower = null;
 
         if (rangeVisualizer != null)
-            rangeVisualizer.SetHoveredTower(null);
+            rangeVisualizer.ClearHoveredTower();
     }
 
     private void OnDisable()
@@ -53,18 +51,26 @@ public class TowerTargetingTool : MonoBehaviour
         hoveredTower = null;
 
         if (rangeVisualizer != null)
-            rangeVisualizer.SetHoveredTower(null);
+            rangeVisualizer.ClearHoveredTower();
     }
 
     private void Update()
     {
-        if (PauseState.IsPaused)
+        if (PauseState.IsPaused || !IsTargetingToolActive())
         {
-            SetHoveredTower(null, null);
+            ClearHoverState();
             return;
         }
 
         UpdateHoveredTower();
+    }
+
+    private bool IsTargetingToolActive()
+    {
+        if (hotbar == null)
+            return false;
+
+        return hotbar.CurrentSlot.kind == ToolHotbar.ToolKind.Targeting;
     }
 
     private void UpdateHoveredTower()
@@ -74,7 +80,7 @@ public class TowerTargetingTool : MonoBehaviour
 
         if (cam == null)
         {
-            SetHoveredTower(null, null);
+            ClearHoverState();
             return;
         }
 
@@ -82,54 +88,51 @@ public class TowerTargetingTool : MonoBehaviour
 
         if (!Physics.Raycast(ray, out RaycastHit hit, maxDistance, tileMask, QueryTriggerInteraction.Ignore))
         {
-            SetHoveredTower(null, null);
+            ClearHoverState();
             return;
         }
 
         GridTile tile = hit.collider.GetComponentInParent<GridTile>();
-        if (tile == null)
+        if (tile == null || tile.OccupiedTower == null)
         {
-            SetHoveredTower(null, null);
-            return;
-        }
-
-        hoveredTile = tile;
-
-        if (tile.OccupiedTower == null)
-        {
-            SetHoveredTower(tile, null);
+            ClearHoverState();
             return;
         }
 
         float dist = Vector3.Distance(cam.transform.position, tile.OccupiedTower.transform.position);
         if (dist > interactionDistance)
         {
-            SetHoveredTower(tile, null);
+            ClearHoverState();
             return;
         }
 
-        SetHoveredTower(tile, tile.OccupiedTower);
-    }
-
-    private void SetHoveredTower(GridTile tile, GameObject tower)
-    {
         hoveredTile = tile;
-        hoveredTower = tower;
+        hoveredTower = tile.OccupiedTower;
 
         if (rangeVisualizer != null)
             rangeVisualizer.SetHoveredTower(hoveredTower);
     }
 
+    private void ClearHoverState()
+    {
+        hoveredTile = null;
+        hoveredTower = null;
+
+        if (rangeVisualizer != null)
+            rangeVisualizer.ClearHoveredTower();
+    }
+
     private void OnPrimaryClick(InputAction.CallbackContext ctx)
     {
-        if (PauseState.IsPaused) return;
-        if (hoveredTower == null) return;
+        if (PauseState.IsPaused || !IsTargetingToolActive())
+            return;
+
+        if (hoveredTower == null)
+            return;
 
         TowerTargetingController targeting = hoveredTower.GetComponent<TowerTargetingController>();
         if (targeting == null) targeting = hoveredTower.GetComponentInChildren<TowerTargetingController>();
-        if (targeting == null) return;
-
-        if (!targeting.CanCycleTargetingMode())
+        if (targeting == null || !targeting.CanCycleTargetingMode())
             return;
 
         TowerTargetingMode newMode = targeting.CycleForward();
@@ -143,14 +146,15 @@ public class TowerTargetingTool : MonoBehaviour
 
     private void OnSecondaryClick(InputAction.CallbackContext ctx)
     {
-        if (PauseState.IsPaused) return;
-        if (hoveredTower == null) return;
+        if (PauseState.IsPaused || !IsTargetingToolActive())
+            return;
+
+        if (hoveredTower == null)
+            return;
 
         TowerRotationController rotation = hoveredTower.GetComponent<TowerRotationController>();
         if (rotation == null) rotation = hoveredTower.GetComponentInChildren<TowerRotationController>();
-        if (rotation == null) return;
-
-        if (!rotation.CanManualRotate)
+        if (rotation == null || !rotation.CanManualRotate)
             return;
 
         rotation.RotateManualForward();

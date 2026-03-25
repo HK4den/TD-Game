@@ -114,6 +114,7 @@ GameObject:
   - component: {fileID: -8808299984456531476}
   - component: {fileID: -4418911605106883157}
   - component: {fileID: -5336945119137476084}
+  - component: {fileID: 2162596195956399744}
   m_Layer: 6
   m_Name: TestGuy
   m_TagString: Tower
@@ -130,7 +131,7 @@ Transform:
   m_GameObject: {fileID: 1937534747383321431}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0.108, z: 0}
   m_LocalScale: {x: 0.37561, y: 0.37561, z: 0.37561}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -308,8 +309,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TowerCombatStats
   basePower: 100
   baseSecondsBetweenShots: 1
-  basePierce: 1
-  baseRange: 2.5
+  basePierce: 3
+  baseRange: 5
 --- !u!114 &8455232979921060398
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -323,7 +324,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TowerRangeProfile
   shape: 0
-  baseSphereRadius: 2.5
   singleBoxLocalCenter: {x: 0, y: 0, z: 0}
   singleBoxBaseSize: {x: 1, y: 1, z: 4}
   multiBoxDefinitions:
@@ -434,6 +434,20 @@ MonoBehaviour:
   manualRotationMode: 1
   allowAttackWindupRotation: 1
   windupUsesYawOnly: 1
+--- !u!114 &2162596195956399744
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1937534747383321431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 406fc660767f27a4e9cbf3a67816bef6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TowerPlacementOrientation
+  facingRule: 0
+  cardinalOnly: 0
 --- !u!1 &4103327753956445793
 GameObject:
   m_ObjectHideFlags: 0

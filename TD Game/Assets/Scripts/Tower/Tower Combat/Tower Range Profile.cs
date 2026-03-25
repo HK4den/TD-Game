@@ -17,7 +17,7 @@ public class TowerRangeProfile : MonoBehaviour
         [Tooltip("Local center before extension is applied.")]
         public Vector3 localCenter = new Vector3(0f, 0f, 2f);
 
-        [Tooltip("Base box size before range extension is applied.")]
+        [Tooltip("Base box size before extension is applied.")]
         public Vector3 baseSize = new Vector3(1f, 1f, 4f);
 
         [Tooltip("Local axis this box should extend along when range increases.")]
@@ -27,9 +27,6 @@ public class TowerRangeProfile : MonoBehaviour
     [Header("Shape")]
     [SerializeField] private RangeShape shape = RangeShape.Sphere;
 
-    [Header("Sphere")]
-    [SerializeField] private float baseSphereRadius = 4f;
-
     [Header("Single Box")]
     [SerializeField] private Vector3 singleBoxLocalCenter = new Vector3(0f, 0f, 2f);
     [SerializeField] private Vector3 singleBoxBaseSize = new Vector3(1f, 1f, 4f);
@@ -38,41 +35,42 @@ public class TowerRangeProfile : MonoBehaviour
     [SerializeField] private List<BoxRangeDefinition> multiBoxDefinitions = new List<BoxRangeDefinition>();
 
     public RangeShape Shape => shape;
-    public float BaseSphereRadius => Mathf.Max(0.01f, baseSphereRadius);
     public Vector3 SingleBoxLocalCenter => singleBoxLocalCenter;
     public Vector3 SingleBoxBaseSize => singleBoxBaseSize;
     public IReadOnlyList<BoxRangeDefinition> MultiBoxDefinitions => multiBoxDefinitions;
 
-    public Vector3 GetExtendedSingleBoxSize(float effectiveRange)
+    public Vector3 GetExtendedSingleBoxSize(float effectiveRange, float baseRange)
     {
-        float extension = Mathf.Max(0f, effectiveRange - baseSphereRadius);
+        float extension = Mathf.Max(0f, effectiveRange - Mathf.Max(0.01f, baseRange));
 
         Vector3 size = singleBoxBaseSize;
         size.z += extension;
+
+        size.x = Mathf.Max(0.01f, size.x);
+        size.y = Mathf.Max(0.01f, size.y);
+        size.z = Mathf.Max(0.01f, size.z);
         return size;
     }
 
-    public Vector3 GetExtendedMultiBoxCenter(BoxRangeDefinition def, float effectiveRange)
+    public Vector3 GetExtendedMultiBoxCenter(BoxRangeDefinition def, float effectiveRange, float baseRange)
     {
         Vector3 axis = GetNormalizedAxis(def.extensionAxis);
-        float extension = Mathf.Max(0f, effectiveRange - baseSphereRadius);
+        float extension = Mathf.Max(0f, effectiveRange - Mathf.Max(0.01f, baseRange));
         return def.localCenter + axis * (extension * 0.5f);
     }
 
-    public Vector3 GetExtendedMultiBoxSize(BoxRangeDefinition def, float effectiveRange)
+    public Vector3 GetExtendedMultiBoxSize(BoxRangeDefinition def, float effectiveRange, float baseRange)
     {
         Vector3 axis = GetNormalizedAxis(def.extensionAxis);
-        float extension = Mathf.Max(0f, effectiveRange - baseSphereRadius);
+        float extension = Mathf.Max(0f, effectiveRange - Mathf.Max(0.01f, baseRange));
 
         Vector3 size = def.baseSize;
-
         Vector3 absAxis = new Vector3(Mathf.Abs(axis.x), Mathf.Abs(axis.y), Mathf.Abs(axis.z));
         size += new Vector3(absAxis.x * extension, absAxis.y * extension, absAxis.z * extension);
 
         size.x = Mathf.Max(0.01f, size.x);
         size.y = Mathf.Max(0.01f, size.y);
         size.z = Mathf.Max(0.01f, size.z);
-
         return size;
     }
 
@@ -87,8 +85,6 @@ public class TowerRangeProfile : MonoBehaviour
 #if UNITY_EDITOR
     private void OnValidate()
     {
-        baseSphereRadius = Mathf.Max(0.01f, baseSphereRadius);
-
         singleBoxBaseSize.x = Mathf.Max(0.01f, singleBoxBaseSize.x);
         singleBoxBaseSize.y = Mathf.Max(0.01f, singleBoxBaseSize.y);
         singleBoxBaseSize.z = Mathf.Max(0.01f, singleBoxBaseSize.z);
