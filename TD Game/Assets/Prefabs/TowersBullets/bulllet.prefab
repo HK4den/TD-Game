@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 460496811992567059}
   - component: {fileID: 1211111131408979196}
   - component: {fileID: 7313397994648493523}
+  - component: {fileID: 2896453053086861087}
   m_Layer: 6
   m_Name: bulllet
   m_TagString: Untagged
@@ -20,21 +21,25 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &4313123569666679741
-Transform:
+--- !u!224 &4313123569666679741
+RectTransform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5053428989181277274}
-  serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 9.41198, y: 3.52584, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0.2, y: 0.2, z: 0.2}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 9.41198, y: 3.52584}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!33 &3432740518436964250
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -129,3 +134,11 @@ MonoBehaviour:
   remainingPierce: 1
   maxLifetime: 5
   effectMode: 0
+--- !u!222 &2896453053086861087
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5053428989181277274}
+  m_CullTransparentMesh: 1

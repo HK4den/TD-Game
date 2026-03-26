@@ -921,15 +921,15 @@ MonoBehaviour:
   m_OverrideSceneCullingMask: 6917529027641081856
   m_SceneIsLit: 1
   m_SceneLighting: 1
-  m_2DMode: 1
+  m_2DMode: 0
   m_isRotationLocked: 0
   m_PlayAudio: 0
   m_AudioPlay: 0
   m_DebugDrawModesUseInteractiveLightBakingData: 0
   m_Position:
-    m_Target: {x: 9.411977, y: 3.5258389, z: 10.036289}
+    m_Target: {x: 15.072706, y: -11.688658, z: 3.8670864}
     speed: 2
-    m_Value: {x: 0.000000029802322, y: 0.10800001, z: -0.009765908}
+    m_Value: {x: 9.411977, y: 3.5258389, z: 10.036289}
   m_RenderMode: 0
   m_CameraMode:
     drawMode: 0
@@ -975,17 +975,17 @@ MonoBehaviour:
     m_GridAxis: 1
     m_gridOpacity: 0.5
   m_Rotation:
-    m_Target: {x: 0, y: 0, z: 0, w: 1}
+    m_Target: {x: 0.30931067, y: 0.62257034, z: -0.29344323, w: 0.6563209}
     speed: 2
-    m_Value: {x: -0.060084347, y: 0.78456694, z: -0.07698056, w: -0.61230606}
+    m_Value: {x: 0, y: 0, z: 0, w: 1}
   m_Size:
     m_Target: 10.513126
     speed: 2
-    m_Value: 0.5187943
+    m_Value: 10.513126
   m_Ortho:
-    m_Target: 1
+    m_Target: 0
     speed: 2
-    m_Value: 0
+    m_Value: 1
   m_CameraSettings:
     m_Speed: 1
     m_SpeedNormalized: 0.5
@@ -999,7 +999,7 @@ MonoBehaviour:
     m_FarClip: 10000
     m_DynamicClip: 1
     m_OcclusionCulling: 0
-  m_LastSceneViewRotation: {x: -0.060084928, y: 0.7845745, z: -0.076981306, w: -0.61231196}
+  m_LastSceneViewRotation: {x: -0.08717229, y: 0.89959055, z: -0.21045254, w: -0.3726226}
   m_LastSceneViewOrtho: 0
   m_Viewpoint:
     m_SceneView: {fileID: 14}
@@ -1081,7 +1081,7 @@ MonoBehaviour:
     scrollPos: {x: 0, y: 72}
     m_SelectedIDs: 0ed30000
     m_LastClickedID: 54030
-    m_ExpandedIDs: 00000000dad20000dcd20000ded20000e0d20000e2d20000e4d20000
+    m_ExpandedIDs: 00000000aed20000b0d20000b2d20000b4d20000b6d20000b8d20000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -1110,7 +1110,7 @@ MonoBehaviour:
     scrollPos: {x: 0, y: 0}
     m_SelectedIDs: 
     m_LastClickedID: 0
-    m_ExpandedIDs: 00000000dad20000dcd20000ded20000e0d20000e2d20000e4d20000
+    m_ExpandedIDs: 00000000aed20000b0d20000b2d20000b4d20000b6d20000b8d20000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
