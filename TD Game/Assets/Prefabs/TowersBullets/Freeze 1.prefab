@@ -26,7 +26,7 @@ RectTransform:
   m_GameObject: {fileID: 2901376761504723862}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.4905812, y: 0.4905812, z: 0.4905812}
+  m_LocalScale: {x: 1.0054182, y: 1.0054182, z: 1.0054182}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 4313123569666679741}
@@ -83,7 +83,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: 75dc00927c2a49c4494067c2c342201c, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 5e1dd92a29e52c4409cdda1825ee4c6d, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -107,7 +107,7 @@ GameObject:
   - component: {fileID: 7313397994648493523}
   - component: {fileID: -2637162587219787932}
   m_Layer: 6
-  m_Name: bulllet
+  m_Name: Freeze 1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -169,11 +169,11 @@ MonoBehaviour:
   speed: 12
   effectAmount: 10
   remainingPierce: 1
-  maxLifetime: 5
+  maxLifetime: 1
   effectMode: 0
-  applySlowOnHit: 0
-  slowPercent: 0
-  slowDuration: 2
+  applySlowOnHit: 1
+  slowPercent: 1
+  slowDuration: 1
 --- !u!114 &-2637162587219787932
 MonoBehaviour:
   m_ObjectHideFlags: 0

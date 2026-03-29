@@ -15,6 +15,7 @@ public class TowerProjectileEmitter : MonoBehaviour
     [Header("Refs")]
     [SerializeField] private TowerCombatStats combatStats;
     [SerializeField] private TowerRotationController rotationController;
+    [SerializeField] private TowerIdentity towerIdentity;
 
     [Header("Projectile")]
     [SerializeField] private TowerProjectile projectilePrefab;
@@ -50,6 +51,12 @@ public class TowerProjectileEmitter : MonoBehaviour
 
         if (rotationController == null)
             rotationController = GetComponent<TowerRotationController>();
+
+        if (towerIdentity == null)
+            towerIdentity = GetComponent<TowerIdentity>();
+
+        if (towerIdentity == null)
+            towerIdentity = GetComponentInChildren<TowerIdentity>();
     }
 
     public bool TryBeginAttack(EnemyAgent attackTarget)
@@ -118,6 +125,9 @@ public class TowerProjectileEmitter : MonoBehaviour
         if (direction.sqrMagnitude <= 0.0001f)
             direction = firePoint.forward;
 
+        string familyKey = towerIdentity != null ? towerIdentity.TowerFamilyKey : string.Empty;
+        int sourceInstanceId = transform.root.gameObject.GetInstanceID();
+
         TowerProjectile projectile = Instantiate(projectilePrefab, spawnPos, Quaternion.LookRotation(direction));
         projectile.Initialize(
             direction,
@@ -125,7 +135,9 @@ public class TowerProjectileEmitter : MonoBehaviour
             combatStats.Pierce,
             combatStats.Power,
             effectMode,
-            projectileLifetime);
+            projectileLifetime,
+            familyKey,
+            sourceInstanceId);
     }
 
     private Vector3 ResolveShotDirection(Transform firePoint, EnemyAgent lockedTarget)

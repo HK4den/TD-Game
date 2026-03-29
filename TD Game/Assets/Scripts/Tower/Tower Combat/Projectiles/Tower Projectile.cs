@@ -17,8 +17,17 @@ public class TowerProjectile : MonoBehaviour
     [SerializeField] private float maxLifetime = 8f;
     [SerializeField] private EffectMode effectMode = EffectMode.Damage;
 
+    [Header("Optional Slow On Hit")]
+    [SerializeField] private bool applySlowOnHit = false;
+    [Range(0f, 1f)]
+    [SerializeField] private float slowPercent = 0.10f;
+    [SerializeField] private float slowDuration = 1f;
+
     private Vector3 moveDirection = Vector3.forward;
     private float lifetimeTimer;
+
+    private string slowFamilyKey = string.Empty;
+    private int slowSourceInstanceId = 0;
 
     private Collider ownCollider;
     private Rigidbody rb;
@@ -44,7 +53,9 @@ public class TowerProjectile : MonoBehaviour
         int pierce,
         float amount,
         EffectMode mode,
-        float lifetime)
+        float lifetime,
+        string sourceFamilyKey,
+        int sourceInstanceId)
     {
         moveDirection = direction.sqrMagnitude <= 0.0001f ? Vector3.forward : direction.normalized;
         speed = Mathf.Max(0.01f, moveSpeed);
@@ -52,6 +63,9 @@ public class TowerProjectile : MonoBehaviour
         effectAmount = Mathf.Max(0.001f, amount);
         effectMode = mode;
         maxLifetime = Mathf.Max(0.1f, lifetime);
+
+        slowFamilyKey = sourceFamilyKey ?? string.Empty;
+        slowSourceInstanceId = sourceInstanceId;
 
         lifetimeTimer = 0f;
         alreadyHit.Clear();
@@ -114,6 +128,19 @@ public class TowerProjectile : MonoBehaviour
             default:
                 health.TakeDamage(effectAmount);
                 break;
+        }
+
+        if (applySlowOnHit)
+        {
+            EnemySlowController slowController = health.GetComponentInParent<EnemySlowController>();
+            if (slowController != null)
+            {
+                slowController.ApplyOrRefreshSlow(
+                    slowSourceInstanceId,
+                    slowFamilyKey,
+                    slowPercent,
+                    slowDuration);
+            }
         }
 
         remainingPierce--;

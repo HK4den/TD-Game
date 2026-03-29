@@ -23,6 +23,13 @@ public class EnemyHealth : MonoBehaviour
 
     public void TakeDamage(float amount)
     {
+        EnemyDamageTakenController damageTakenController = GetComponent<EnemyDamageTakenController>();
+        if (damageTakenController == null)
+            damageTakenController = GetComponentInParent<EnemyDamageTakenController>();
+
+        if (damageTakenController != null)
+            amount = damageTakenController.ModifyIncomingDamage(amount);
+
         if (died)
             return;
 

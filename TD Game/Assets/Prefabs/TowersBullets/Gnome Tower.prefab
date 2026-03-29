@@ -261,6 +261,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TowerIdentity
   displayName: Gnome Tower
   icon: {fileID: 21300000, guid: 63547566a6a728b4f91d249aeb220873, type: 3}
+  towerFamilyKey: GnomeT
+  extraTags: []
 --- !u!114 &9198767423989168895
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -385,6 +387,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TowerProjectileEmitter
   combatStats: {fileID: 3602398885712497751}
   rotationController: {fileID: -5336945119137476084}
+  towerIdentity: {fileID: 0}
   projectilePrefab: {fileID: 7313397994648493523, guid: 7cb40c470b40b8142b741024650284b3, type: 3}
   projectileSpeed: 15
   projectileLifetime: 0.08

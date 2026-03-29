@@ -101,8 +101,8 @@ GameObject:
   - component: {fileID: 4949671239270492398}
   - component: {fileID: 3676228937446241712}
   - component: {fileID: 8904442986876764220}
-  - component: {fileID: -6372878388460448235}
   - component: {fileID: 6825880120995313783}
+  - component: {fileID: -6372878388460448235}
   - component: {fileID: -2177105339483779199}
   - component: {fileID: 9198767423989168895}
   - component: {fileID: 4221621356532786706}
@@ -219,6 +219,18 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &6825880120995313783
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1937534747383321431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 792db0a5ba32a2e43844c030ec9e437b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Tower
 --- !u!114 &-6372878388460448235
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -232,18 +244,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TowerCost
   cost: 75
---- !u!114 &6825880120995313783
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1937534747383321431}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 792db0a5ba32a2e43844c030ec9e437b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Tower
 --- !u!114 &-2177105339483779199
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -256,8 +256,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4a19a91366db874c9bdb2c6a84843d4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TowerIdentity
-  displayName: Gnome Tower
+  displayName: Ballista
   icon: {fileID: 21300000, guid: 63547566a6a728b4f91d249aeb220873, type: 3}
+  towerFamilyKey: Ballista
+  extraTags: []
 --- !u!114 &9198767423989168895
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -373,7 +375,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TowerProjectileEmitter
   combatStats: {fileID: 3602398885712497751}
   rotationController: {fileID: -5336945119137476084}
-  projectilePrefab: {fileID: 7313397994648493523, guid: 7cb40c470b40b8142b741024650284b3, type: 3}
+  towerIdentity: {fileID: -2177105339483779199}
+  projectilePrefab: {fileID: 7313397994648493523, guid: 2aed411d043d1594d859d0537bcd28db, type: 3}
   projectileSpeed: 20
   projectileLifetime: 0.18
   effectMode: 0

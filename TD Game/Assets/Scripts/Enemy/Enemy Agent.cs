@@ -10,6 +10,7 @@ public class EnemyAgent : MonoBehaviour
     [Header("Refs")]
     [SerializeField] private GridManager grid;
     [SerializeField] private GridPathfinder pathfinder;
+    [SerializeField] private EnemySlowController slowController;
 
     [Header("Base / Goal")]
     [SerializeField] private Vector2Int goalCoord = new Vector2Int(19, 19);
@@ -77,6 +78,9 @@ public class EnemyAgent : MonoBehaviour
     {
         if (grid == null) grid = FindFirstObjectByType<GridManager>();
         if (pathfinder == null) pathfinder = FindFirstObjectByType<GridPathfinder>();
+
+        if (slowController == null)
+            slowController = GetComponent<EnemySlowController>();
 
         Debug.Log($"[EnemyAgent] Awake baseHealth={(baseHealth ? baseHealth.name : "NULL")}");
     }
@@ -159,7 +163,11 @@ public class EnemyAgent : MonoBehaviour
             return;
         }
 
-        float step = speed * Time.deltaTime;
+        float moveSpeed = speed;
+        if (slowController != null)
+            moveSpeed *= slowController.CurrentMoveSpeedMultiplier;
+
+        float step = moveSpeed * Time.deltaTime;
 
         if (dist <= step && dist > 0.0001f)
         {

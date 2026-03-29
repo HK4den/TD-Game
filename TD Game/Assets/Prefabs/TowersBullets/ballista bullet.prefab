@@ -105,9 +105,9 @@ GameObject:
   - component: {fileID: 4313123569666679741}
   - component: {fileID: 1211111131408979196}
   - component: {fileID: 7313397994648493523}
-  - component: {fileID: -2637162587219787932}
+  - component: {fileID: -7445406052490693769}
   m_Layer: 6
-  m_Name: bulllet
+  m_Name: ballista bullet
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -171,10 +171,10 @@ MonoBehaviour:
   remainingPierce: 1
   maxLifetime: 5
   effectMode: 0
-  applySlowOnHit: 0
-  slowPercent: 0
+  applySlowOnHit: 1
+  slowPercent: 0.5
   slowDuration: 2
---- !u!114 &-2637162587219787932
+--- !u!114 &-7445406052490693769
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
