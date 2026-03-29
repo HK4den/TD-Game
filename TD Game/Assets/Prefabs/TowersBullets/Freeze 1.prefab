@@ -10,7 +10,8 @@ GameObject:
   m_Component:
   - component: {fileID: 7473501439224132664}
   - component: {fileID: 5129878473686459769}
-  m_Layer: 6
+  - component: {fileID: 5384311617330279687}
+  m_Layer: 10
   m_Name: Square
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -94,6 +95,18 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &5384311617330279687
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2901376761504723862}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 248a94cdee24dc644a2ee23e4b733b50, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Billboard
 --- !u!1 &5053428989181277274
 GameObject:
   m_ObjectHideFlags: 0
@@ -105,8 +118,7 @@ GameObject:
   - component: {fileID: 4313123569666679741}
   - component: {fileID: 1211111131408979196}
   - component: {fileID: 7313397994648493523}
-  - component: {fileID: -2637162587219787932}
-  m_Layer: 6
+  m_Layer: 10
   m_Name: Freeze 1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -174,15 +186,5 @@ MonoBehaviour:
   applySlowOnHit: 1
   slowPercent: 1
   slowDuration: 1
---- !u!114 &-2637162587219787932
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5053428989181277274}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 248a94cdee24dc644a2ee23e4b733b50, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Billboard
+  spawnAcidPuddleOnHit: 0
+  acidPuddlePrefab: {fileID: 0}

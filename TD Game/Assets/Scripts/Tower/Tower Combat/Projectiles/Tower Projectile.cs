@@ -23,6 +23,10 @@ public class TowerProjectile : MonoBehaviour
     [SerializeField] private float slowPercent = 0.10f;
     [SerializeField] private float slowDuration = 1f;
 
+    [Header("Optional Acid Puddle On Hit")]
+    [SerializeField] private bool spawnAcidPuddleOnHit = false;
+    [SerializeField] private AcidPuddleArea acidPuddlePrefab;
+
     private Vector3 moveDirection = Vector3.forward;
     private float lifetimeTimer;
 
@@ -141,6 +145,12 @@ public class TowerProjectile : MonoBehaviour
                     slowPercent,
                     slowDuration);
             }
+        }
+
+        if (spawnAcidPuddleOnHit && acidPuddlePrefab != null && effectMode == EffectMode.Damage)
+        {
+            AcidPuddleArea puddle = Instantiate(acidPuddlePrefab);
+            puddle.InitializeFromImpactPosition(health.transform.position);
         }
 
         remainingPierce--;

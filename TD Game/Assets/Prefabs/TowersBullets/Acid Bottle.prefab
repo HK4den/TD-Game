@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7473501439224132664}
   - component: {fileID: 5129878473686459769}
-  - component: {fileID: 5240498037959113513}
+  - component: {fileID: 5384311617330279687}
   m_Layer: 10
   m_Name: Square
   m_TagString: Untagged
@@ -27,7 +27,7 @@ RectTransform:
   m_GameObject: {fileID: 2901376761504723862}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.4905812, y: 0.4905812, z: 0.4905812}
+  m_LocalScale: {x: 1.0054182, y: 1.0054182, z: 1.0054182}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 4313123569666679741}
@@ -84,7 +84,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: 75dc00927c2a49c4494067c2c342201c, type: 3}
+  m_Sprite: {fileID: 21300000, guid: c8304eb41ab08804783922caade10f88, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -95,7 +95,7 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!114 &5240498037959113513
+--- !u!114 &5384311617330279687
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -107,6 +107,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 248a94cdee24dc644a2ee23e4b733b50, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Billboard
+  rotateOverTime: 1
+  rotationSpeed: 2
+  rotationMode: 2
 --- !u!1 &5053428989181277274
 GameObject:
   m_ObjectHideFlags: 0
@@ -119,7 +122,7 @@ GameObject:
   - component: {fileID: 1211111131408979196}
   - component: {fileID: 7313397994648493523}
   m_Layer: 10
-  m_Name: bulllet
+  m_Name: Acid Bottle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -181,10 +184,10 @@ MonoBehaviour:
   speed: 12
   effectAmount: 10
   remainingPierce: 1
-  maxLifetime: 5
+  maxLifetime: 1
   effectMode: 0
-  applySlowOnHit: 0
-  slowPercent: 0
-  slowDuration: 2
-  spawnAcidPuddleOnHit: 0
-  acidPuddlePrefab: {fileID: 0}
+  applySlowOnHit: 1
+  slowPercent: 0.05
+  slowDuration: 1
+  spawnAcidPuddleOnHit: 1
+  acidPuddlePrefab: {fileID: -1956712512445859431, guid: f981467006d3af64a90f4cfa1c8caa68, type: 3}
