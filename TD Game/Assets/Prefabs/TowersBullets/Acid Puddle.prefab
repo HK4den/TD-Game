@@ -132,9 +132,9 @@ MonoBehaviour:
   fadeDuration: 0.2
   baseHeightAboveGrid: 0.0001
   overlapHeightStep: 0.00001
-  overlapHeightVariants: 24
+  overlapHeightVariants: 100
   finalScale: {x: 1, y: 1, z: 1}
-  triggerCollider: {fileID: 0}
+  triggerCollider: {fileID: -2552144541487948713}
   colliderHeight: 1
   targetRenderers:
   - {fileID: 6018798475078345273}
