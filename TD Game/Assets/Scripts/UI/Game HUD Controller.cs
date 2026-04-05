@@ -76,8 +76,6 @@ public class GameHUDController : MonoBehaviour
         }
     }
 
-    // --- Event Handlers ---
-
     private void OnMoneyChanged(int newMoney)
     {
         RefreshMoney();
@@ -97,18 +95,14 @@ public class GameHUDController : MonoBehaviour
     private void OnWaveCompleted(int waveNumber, int reward)
     {
         currentWaveInProgress = 0;
-
         nextWaveToStart = Mathf.Min(waveNumber + 1, totalWaves);
-
         RefreshWaveAndStatus();
     }
-
-    // --- UI Refresh Methods ---
 
     private void RefreshMoney()
     {
         if (moneyText == null) return;
-        moneyText.text = economy != null ? $"Money: {economy.Money}" : "Money: ?";
+        moneyText.text = economy != null ? $"{FormatMoney(economy.Money)}" : "?";
     }
 
     private void RefreshHP(int hp, int maxHp)
@@ -137,5 +131,13 @@ public class GameHUDController : MonoBehaviour
                 ? "Wave in Progress"
                 : "Start Wave (Press Enter)";
         }
+    }
+
+    private string FormatMoney(int amount)
+    {
+        if (amount < 0)
+            return $"-${Mathf.Abs(amount)}";
+
+        return $"${amount}";
     }
 }

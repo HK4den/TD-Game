@@ -18,10 +18,27 @@ public class EconomyManager : MonoBehaviour
 
     public void AddMoney(int amount)
     {
-        if (amount <= 0) return;
+        if (amount <= 0)
+            return;
+
+        AdjustMoneySigned(amount);
+    }
+
+    public void AdjustMoneySigned(int amount)
+    {
+        if (amount == 0)
+        {
+            OnMoneyChanged?.Invoke(Money);
+            return;
+        }
 
         Money += amount;
-        Debug.Log($"[Economy] +{amount} => {Money} (manager: {name})");
+
+        if (amount > 0)
+            Debug.Log($"[Economy] +{amount} => {Money} (manager: {name})");
+        else
+            Debug.Log($"[Economy] {amount} => {Money} (manager: {name})");
+
         OnMoneyChanged?.Invoke(Money);
     }
 

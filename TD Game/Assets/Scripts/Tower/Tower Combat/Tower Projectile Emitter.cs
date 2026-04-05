@@ -16,6 +16,7 @@ public class TowerProjectileEmitter : MonoBehaviour
     [SerializeField] private TowerCombatStats combatStats;
     [SerializeField] private TowerRotationController rotationController;
     [SerializeField] private TowerIdentity towerIdentity;
+    [SerializeField] private TowerVisualSquash visualSquash;
 
     [Header("Projectile")]
     [SerializeField] private TowerProjectile projectilePrefab;
@@ -57,6 +58,9 @@ public class TowerProjectileEmitter : MonoBehaviour
 
         if (towerIdentity == null)
             towerIdentity = GetComponentInChildren<TowerIdentity>();
+
+        if (visualSquash == null)
+            visualSquash = GetComponent<TowerVisualSquash>();
     }
 
     public bool TryBeginAttack(EnemyAgent attackTarget)
@@ -95,6 +99,9 @@ public class TowerProjectileEmitter : MonoBehaviour
 
     private void FireBurstShot(EnemyAgent lockedTarget)
     {
+        if (visualSquash != null)
+            visualSquash.TriggerFirePulse();
+
         if (projectilePrefab == null || combatStats == null)
             return;
 

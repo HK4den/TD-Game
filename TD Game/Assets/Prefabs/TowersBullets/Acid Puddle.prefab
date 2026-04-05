@@ -129,7 +129,7 @@ MonoBehaviour:
   maxDamageApplications: 5
   activeLifetime: 4
   growDuration: 0.3
-  fadeDuration: 0.2
+  fadeDuration: 0.1
   baseHeightAboveGrid: 0.0001
   overlapHeightStep: 0.00001
   overlapHeightVariants: 100

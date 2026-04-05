@@ -26,13 +26,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1234026082425297431}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.7127938, y: -0, z: -0, w: 0.7013737}
-  m_LocalPosition: {x: 0, y: 0.425, z: 0.374}
-  m_LocalScale: {x: 1.1890122, y: -0.0288296, z: 1.1890122}
+  m_LocalRotation: {x: -0.21664806, y: -0, z: -0, w: 0.97624975}
+  m_LocalPosition: {x: 0, y: 0.591, z: -0.026}
+  m_LocalScale: {x: 1.095598, y: -0.026564619, z: 1.095598}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 4607724837775410472}
-  m_LocalEulerAnglesHint: {x: -90.925, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: -25.024, y: 0, z: 0}
 --- !u!33 &4879986670366559751
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -101,8 +101,8 @@ GameObject:
   - component: {fileID: 4949671239270492398}
   - component: {fileID: 3676228937446241712}
   - component: {fileID: 8904442986876764220}
-  - component: {fileID: 6825880120995313783}
   - component: {fileID: -6372878388460448235}
+  - component: {fileID: 6825880120995313783}
   - component: {fileID: -2177105339483779199}
   - component: {fileID: 9198767423989168895}
   - component: {fileID: 4221621356532786706}
@@ -116,7 +116,7 @@ GameObject:
   - component: {fileID: -5336945119137476084}
   - component: {fileID: 2162596195956399744}
   m_Layer: 6
-  m_Name: Ballista
+  m_Name: Causticist1
   m_TagString: Tower
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -136,7 +136,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 3219774841748485395}
-  - {fileID: 7741922432040853749}
+  - {fileID: 689398155025200244}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &4949671239270492398
@@ -172,7 +172,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: ffa364e4056498843bc409f3249543c7, type: 2}
+  - {fileID: 2100000, guid: 84f5437c8b4e67d4c820e7b1b04e70b2, type: 2}
   - {fileID: 2100000, guid: f78c0ac9fa857114b98699529e7957df, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
@@ -219,18 +219,6 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &6825880120995313783
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1937534747383321431}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 792db0a5ba32a2e43844c030ec9e437b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Tower
 --- !u!114 &-6372878388460448235
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -244,6 +232,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TowerCost
   cost: 75
+--- !u!114 &6825880120995313783
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1937534747383321431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 792db0a5ba32a2e43844c030ec9e437b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Tower
 --- !u!114 &-2177105339483779199
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -256,9 +256,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4a19a91366db874c9bdb2c6a84843d4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TowerIdentity
-  displayName: Ballista
-  icon: {fileID: 21300000, guid: 63547566a6a728b4f91d249aeb220873, type: 3}
-  towerFamilyKey: Ballista
+  displayName: Causticist
+  icon: {fileID: 21300000, guid: 4d14ad9e744e1f94b8f021dcc01ff26a, type: 3}
+  towerFamilyKey: Acid
   extraTags: []
 --- !u!114 &9198767423989168895
 MonoBehaviour:
@@ -309,10 +309,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7d581701fda38fc4c8e3b300b45b9d9c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TowerCombatStats
-  basePower: 6
+  basePower: 1
   baseSecondsBetweenShots: 2
-  basePierce: 6
-  baseRange: 4
+  basePierce: 1
+  baseRange: 2.5
 --- !u!114 &8455232979921060398
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -325,12 +325,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 07871fc07221521458e810cd531370bf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TowerRangeProfile
-  shape: 1
-  singleBoxLocalCenter: {x: 0, y: 0, z: 1.5}
+  shape: 0
+  singleBoxLocalCenter: {x: 0, y: 0, z: 0}
   singleBoxBaseSize: {x: 1, y: 1, z: 4}
   multiBoxDefinitions:
   - localCenter: {x: 0, y: 0, z: 0}
-    baseSize: {x: 1, y: 1, z: 3}
+    baseSize: {x: 0.01, y: 0.01, z: 0.01}
     extensionAxis: {x: 0, y: 0, z: 1}
 --- !u!114 &6630877168591428445
 MonoBehaviour:
@@ -358,7 +358,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2a89e224cdfcdc044b43518684866970, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TowerTargetingController
-  useTargetingModes: 0
+  useTargetingModes: 1
   defaultTargetingMode: 1
   rangeQuery: {fileID: 6630877168591428445}
 --- !u!114 &-5030970616454914048
@@ -376,17 +376,17 @@ MonoBehaviour:
   combatStats: {fileID: 3602398885712497751}
   rotationController: {fileID: -5336945119137476084}
   towerIdentity: {fileID: -2177105339483779199}
-  projectilePrefab: {fileID: 7313397994648493523, guid: 2aed411d043d1594d859d0537bcd28db, type: 3}
-  projectileSpeed: 20
-  projectileLifetime: 0.18
+  projectilePrefab: {fileID: 7313397994648493523, guid: 8483f502f539b01419bc6a0d3be700dc, type: 3}
+  projectileSpeed: 12
+  projectileLifetime: 0.3
   effectMode: 0
   firePoints:
-  - {fileID: 7741922432040853749}
+  - {fileID: 689398155025200244}
   useAllFirePointsPerShot: 1
-  delayBeforeFirstShot: 0.2
+  delayBeforeFirstShot: 0
   burstCount: 1
   delayBetweenBurstShots: 0
-  fireDirectionMode: 0
+  fireDirectionMode: 2
   flattenAimedShotsToXZPlane: 1
   flattenFixedForwardShotsToXZPlane: 0
 --- !u!114 &-8808299984456531476
@@ -404,7 +404,7 @@ MonoBehaviour:
   combatStats: {fileID: 3602398885712497751}
   targetingController: {fileID: 6772138513667187524}
   projectileEmitter: {fileID: -5030970616454914048}
-  debugLogAttacks: 1
+  debugLogAttacks: 0
 --- !u!114 &-4418911605106883157
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -434,8 +434,8 @@ MonoBehaviour:
   visualRoot: {fileID: 4607724837775410472}
   functionalRoot: {fileID: 4607724837775410472}
   allowManualRotation: 1
-  cardinalOnlyManualRotation: 1
-  nonCardinalManualStepDegrees: 90
+  cardinalOnlyManualRotation: 0
+  nonCardinalManualStepDegrees: 20
   manualRotationMode: 1
   allowAttackWindupRotation: 1
   windupUsesYawOnly: 1
@@ -451,9 +451,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 406fc660767f27a4e9cbf3a67816bef6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TowerPlacementOrientation
-  facingRule: 1
-  cardinalOnly: 1
---- !u!1 &3240061608903648100
+  facingRule: 0
+  cardinalOnly: 0
+--- !u!1 &4103327753956445793
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -461,24 +461,24 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 7741922432040853749}
+  - component: {fileID: 689398155025200244}
   m_Layer: 6
-  m_Name: Point (1)
+  m_Name: GameObject
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &7741922432040853749
+--- !u!4 &689398155025200244
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3240061608903648100}
+  m_GameObject: {fileID: 4103327753956445793}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.375, z: 0.5}
+  m_LocalPosition: {x: 0, y: 0.375, z: 0.501}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

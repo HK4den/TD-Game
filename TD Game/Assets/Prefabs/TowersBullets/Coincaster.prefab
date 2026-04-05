@@ -26,13 +26,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1234026082425297431}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.21664806, y: -0, z: -0, w: 0.97624975}
-  m_LocalPosition: {x: 0, y: 0.591, z: -0.026}
-  m_LocalScale: {x: 1.095598, y: -0.026564619, z: 1.095598}
+  m_LocalRotation: {x: 0.6505155, y: -0, z: -0, w: 0.759493}
+  m_LocalPosition: {x: 0.000000025247, y: 0.874, z: 0.343}
+  m_LocalScale: {x: 0.95293707, y: -0.023105564, z: 0.95293707}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 4607724837775410472}
-  m_LocalEulerAnglesHint: {x: -25.024, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 81.161, y: 0, z: 0}
 --- !u!33 &4879986670366559751
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -106,17 +106,11 @@ GameObject:
   - component: {fileID: -2177105339483779199}
   - component: {fileID: 9198767423989168895}
   - component: {fileID: 4221621356532786706}
-  - component: {fileID: 3602398885712497751}
-  - component: {fileID: 8455232979921060398}
-  - component: {fileID: 6630877168591428445}
-  - component: {fileID: 6772138513667187524}
-  - component: {fileID: -5030970616454914048}
-  - component: {fileID: -8808299984456531476}
-  - component: {fileID: -4418911605106883157}
   - component: {fileID: -5336945119137476084}
   - component: {fileID: 2162596195956399744}
+  - component: {fileID: 1138612233970405445}
   m_Layer: 6
-  m_Name: Acidumancer
+  m_Name: Coincaster
   m_TagString: Tower
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -172,7 +166,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 84f5437c8b4e67d4c820e7b1b04e70b2, type: 2}
+  - {fileID: 2100000, guid: ffa364e4056498843bc409f3249543c7, type: 2}
   - {fileID: 2100000, guid: f78c0ac9fa857114b98699529e7957df, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
@@ -256,9 +250,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4a19a91366db874c9bdb2c6a84843d4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TowerIdentity
-  displayName: Wizard
-  icon: {fileID: 21300000, guid: 63547566a6a728b4f91d249aeb220873, type: 3}
-  towerFamilyKey: Acid
+  displayName: Coincaster
+  icon: {fileID: 21300000, guid: be93790986ec1914fafdf0d34dd8bb3b, type: 3}
+  towerFamilyKey: Coincaster
   extraTags: []
 --- !u!114 &9198767423989168895
 MonoBehaviour:
@@ -297,128 +291,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TowerValueLedger
   canSell: 1
   totalSpent: 0
---- !u!114 &3602398885712497751
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1937534747383321431}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7d581701fda38fc4c8e3b300b45b9d9c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TowerCombatStats
-  basePower: 1
-  baseSecondsBetweenShots: 2
-  basePierce: 1
-  baseRange: 2.5
---- !u!114 &8455232979921060398
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1937534747383321431}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 07871fc07221521458e810cd531370bf, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TowerRangeProfile
-  shape: 0
-  singleBoxLocalCenter: {x: 0, y: 0, z: 0}
-  singleBoxBaseSize: {x: 1, y: 1, z: 4}
-  multiBoxDefinitions:
-  - localCenter: {x: 0, y: 0, z: 0}
-    baseSize: {x: 0.01, y: 0.01, z: 0.01}
-    extensionAxis: {x: 0, y: 0, z: 1}
---- !u!114 &6630877168591428445
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1937534747383321431}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a60dc3537bbf82c4881528875c85bb9e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TowerRangeQuery
-  combatStats: {fileID: 3602398885712497751}
-  rangeProfile: {fileID: 8455232979921060398}
---- !u!114 &6772138513667187524
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1937534747383321431}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2a89e224cdfcdc044b43518684866970, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TowerTargetingController
-  useTargetingModes: 1
-  defaultTargetingMode: 1
-  rangeQuery: {fileID: 6630877168591428445}
---- !u!114 &-5030970616454914048
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1937534747383321431}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: aeff611ed2258e1479563c2e8eddebdb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TowerProjectileEmitter
-  combatStats: {fileID: 3602398885712497751}
-  rotationController: {fileID: -5336945119137476084}
-  towerIdentity: {fileID: -2177105339483779199}
-  projectilePrefab: {fileID: 7313397994648493523, guid: 8483f502f539b01419bc6a0d3be700dc, type: 3}
-  projectileSpeed: 12
-  projectileLifetime: 0.3
-  effectMode: 0
-  firePoints:
-  - {fileID: 689398155025200244}
-  useAllFirePointsPerShot: 1
-  delayBeforeFirstShot: 0
-  burstCount: 1
-  delayBetweenBurstShots: 0
-  fireDirectionMode: 2
-  flattenAimedShotsToXZPlane: 1
-  flattenFixedForwardShotsToXZPlane: 0
---- !u!114 &-8808299984456531476
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1937534747383321431}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bf3172c51ce2ef9478f82db91aae24c2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TowerAttackController
-  combatStats: {fileID: 3602398885712497751}
-  targetingController: {fileID: 6772138513667187524}
-  projectileEmitter: {fileID: -5030970616454914048}
-  debugLogAttacks: 0
---- !u!114 &-4418911605106883157
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1937534747383321431}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b230df570326cc143b29616b681fe6e6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TowerTargetingFeedback
-  worldSpacePopupPrefab: {fileID: 6565176689698462858, guid: f9c62a44afb42b647907b335e527ad68, type: 3}
-  worldOffset: {x: 0, y: 0.4, z: 0}
 --- !u!114 &-5336945119137476084
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -435,8 +307,8 @@ MonoBehaviour:
   functionalRoot: {fileID: 4607724837775410472}
   allowManualRotation: 1
   cardinalOnlyManualRotation: 0
-  nonCardinalManualStepDegrees: 20
-  manualRotationMode: 1
+  nonCardinalManualStepDegrees: 15
+  manualRotationMode: 0
   allowAttackWindupRotation: 1
   windupUsesYawOnly: 1
 --- !u!114 &2162596195956399744
@@ -453,6 +325,28 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TowerPlacementOrientation
   facingRule: 0
   cardinalOnly: 0
+--- !u!114 &1138612233970405445
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1937534747383321431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 90325b25824f708458e4c3f7dc428159, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EndOfWaveMoneyTower
+  towerIdentity: {fileID: -2177105339483779199}
+  outcomes:
+  - chance: 0.25
+    moneyChange: -100
+  - chance: 0.25
+    moneyChange: -50
+  - chance: 0.25
+    moneyChange: 0
+  - chance: 0.25
+    moneyChange: 400
 --- !u!1 &4103327753956445793
 GameObject:
   m_ObjectHideFlags: 0

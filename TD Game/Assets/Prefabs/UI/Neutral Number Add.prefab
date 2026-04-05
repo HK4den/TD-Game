@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 4664270444583934622}
   - component: {fileID: 566350937206865270}
   m_Layer: 0
-  m_Name: Insufficient Fund Text
+  m_Name: Neutral Number Add
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -26,7 +26,7 @@ RectTransform:
   m_GameObject: {fileID: 2363759818847889793}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 10}
-  m_LocalScale: {x: 0.7, y: 0.6, z: 1}
+  m_LocalScale: {x: 2, y: 2, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4375524372205822423}
@@ -69,7 +69,7 @@ MonoBehaviour:
   fovCamera: {fileID: 0}
   cameraOverride: {fileID: 0}
   enableNumber: 0
-  number: 1
+  number: 0
   numberSettings:
     bold: 0
     italic: 0
@@ -103,7 +103,7 @@ MonoBehaviour:
     suffixDecimalChar: .
     suffixHideZeros: 0
   enableLeftText: 1
-  leftText: Insufficient Funds
+  leftText: 
   leftTextSettings:
     bold: 0
     italic: 0
@@ -112,8 +112,8 @@ MonoBehaviour:
     alpha: 1
     customColor: 0
     color: {r: 1, g: 1, b: 0, a: 1}
-    mark: 0
-    markColor: {r: 0, g: 0, b: 0, a: 0.5}
+    mark: 1
+    markColor: {r: 0, g: 0, b: 0, a: 0.25490198}
     horizontal: 0
     vertical: 0
     characterSpacing: 0
@@ -135,7 +135,7 @@ MonoBehaviour:
     characterSpacing: 0
     size: 0
   enableTopText: 0
-  topText: hi
+  topText: 
   topTextSettings:
     bold: 0
     italic: 0
@@ -151,7 +151,7 @@ MonoBehaviour:
     characterSpacing: 0
     size: 0
   enableBottomText: 0
-  bottomText: hi
+  bottomText: 
   bottomTextSettings:
     bold: 0
     italic: 0
@@ -223,10 +223,10 @@ MonoBehaviour:
   enableLerp: 1
   lerpSettings:
     speed: 4
-    minX: -0.1
-    maxX: 0.1
-    minY: 0.3
-    maxY: 0.45
+    minX: 0
+    maxX: 0
+    minY: -0.8
+    maxY: -0.8
     randomFlip: 0
   enableVelocity: 0
   velocitySettings:
@@ -544,17 +544,17 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Insufficient Funds
+  m_text: 
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: a50e85261c47743468fb8649eced36e7, type: 2}
-  m_sharedMaterial: {fileID: -178917677106001470, guid: a50e85261c47743468fb8649eced36e7, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 529b13300c039e74d9773721f7f6d167, type: 2}
+  m_sharedMaterial: {fileID: 5723514191899847794, guid: 529b13300c039e74d9773721f7f6d167, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4284374783
-  m_fontColor: {r: 1, g: 0.36756855, b: 0.36756855, a: 1}
+    rgba: 4291809231
+  m_fontColor: {r: 0.8117647, g: 0.8117647, b: 0.8117647, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -680,17 +680,17 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Insufficient Funds
+  m_text: 
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: a50e85261c47743468fb8649eced36e7, type: 2}
-  m_sharedMaterial: {fileID: -178917677106001470, guid: a50e85261c47743468fb8649eced36e7, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 529b13300c039e74d9773721f7f6d167, type: 2}
+  m_sharedMaterial: {fileID: 5723514191899847794, guid: 529b13300c039e74d9773721f7f6d167, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4284374783
-  m_fontColor: {r: 1, g: 0.36756855, b: 0.36756855, a: 1}
+    rgba: 4291809231
+  m_fontColor: {r: 0.8117647, g: 0.8117647, b: 0.8117647, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:

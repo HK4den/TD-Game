@@ -5418,7 +5418,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TowerIdentity
   displayName: Cryomancer
-  icon: {fileID: 21300000, guid: 63547566a6a728b4f91d249aeb220873, type: 3}
+  icon: {fileID: 21300000, guid: a4a5f0cd55c478349bbf747c061aefa4, type: 3}
   towerFamilyKey: Cryo
   extraTags: []
 --- !u!114 &9198767423989168895
