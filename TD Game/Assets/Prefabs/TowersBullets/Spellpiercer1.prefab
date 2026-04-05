@@ -407,17 +407,17 @@ MonoBehaviour:
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
-      time: 0.7694585
-      value: 0.11148849
-      inSlope: 0
-      outSlope: 0
+      time: 0.7168189
+      value: 0.29772606
+      inSlope: -0.008326603
+      outSlope: -0.008326603
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
-      outWeight: 0
+      outWeight: 0.9132493
     - serializedVersion: 3
-      time: 0.905691
-      value: 0.0025204383
+      time: 0.98518807
+      value: 0.00010629464
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -491,7 +491,7 @@ MonoBehaviour:
     m_RotationOrder: 4
   moneyDuration: 0.28
   moneyIntensity: 1
-  horizontalScaleStrength: 0
+  horizontalScaleStrength: 0.75
   verticalScaleStrength: 0.22
   retriggerIntensityAdd: 0.2
   maxIntensity: 10

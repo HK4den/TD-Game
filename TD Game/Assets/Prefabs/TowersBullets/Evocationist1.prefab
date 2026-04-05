@@ -28,12 +28,12 @@ Transform:
   m_GameObject: {fileID: 454527347262352940}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: -0.18718001, y: 0.338049, z: -0.015350001}
+  m_LocalScale: {x: 0.37561, y: 0.37561, z: 0.37561}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 3219774841748485395}
-  m_Father: {fileID: 4607724837775410472}
+  m_Father: {fileID: 2677507177568320531}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &8519916663099189109
 MeshFilter:
@@ -248,8 +248,8 @@ Transform:
   m_LocalScale: {x: 0.37561, y: 0.37561, z: 0.37561}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 3235301458621731478}
   - {fileID: 689398155025200244}
+  - {fileID: 2677507177568320531}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &-6372878388460448235
@@ -499,7 +499,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fba9ac3aa000a464681e51ce4802a129, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TowerVisualSquash
-  visualTarget: {fileID: 3235301458621731478}
+  visualTarget: {fileID: 2677507177568320531}
   fireCurve:
     serializedVersion: 2
     m_Curve:
@@ -513,8 +513,8 @@ MonoBehaviour:
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
-      time: 0.1389808
-      value: 0.4677562
+      time: 0.19731516
+      value: 0.48940462
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -522,8 +522,8 @@ MonoBehaviour:
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
-      time: 0.3373311
-      value: -0.1817042
+      time: 0.46649674
+      value: -0.17398325
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -531,8 +531,8 @@ MonoBehaviour:
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
-      time: 0.55761415
-      value: 0.006802365
+      time: 0.68261415
+      value: 0.0037200898
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -552,7 +552,7 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   fireDuration: 0.5
-  fireIntensity: 2.5
+  fireIntensity: 3
   moneyCurve:
     serializedVersion: 2
     m_Curve:
@@ -606,11 +606,43 @@ MonoBehaviour:
     m_RotationOrder: 4
   moneyDuration: 0.28
   moneyIntensity: 1
-  horizontalScaleStrength: 0.18
+  horizontalScaleStrength: 0.22
   verticalScaleStrength: 0.22
   retriggerIntensityAdd: 0.2
   maxIntensity: 2
   visualHeight: 0
+--- !u!1 &2906364562466434970
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2677507177568320531}
+  m_Layer: 0
+  m_Name: Visual Pivot
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2677507177568320531
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2906364562466434970}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0.49833608, y: -0.9, z: 0.04086686}
+  m_LocalScale: {x: 2.662336, y: 2.662336, z: 2.662336}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 3235301458621731478}
+  m_Father: {fileID: 4607724837775410472}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4103327753956445793
 GameObject:
   m_ObjectHideFlags: 0

@@ -138,7 +138,9 @@ public class TowerVisualSquash : MonoBehaviour
     private void ApplyCurveValue(float value)
     {
         float yMultiplier = 1f + (value * verticalScaleStrength);
-        float xzMultiplier = 1f - (value * horizontalScaleStrength);
+
+        // invert based on Y so they are tightly linked
+        float xzMultiplier = Mathf.Pow(1f / Mathf.Sqrt(yMultiplier), horizontalScaleStrength);
 
         yMultiplier = Mathf.Max(0.05f, yMultiplier);
         xzMultiplier = Mathf.Max(0.05f, xzMultiplier);
