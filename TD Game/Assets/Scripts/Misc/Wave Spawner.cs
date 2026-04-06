@@ -5,6 +5,8 @@ using UnityEngine;
 
 public class WaveSpawner : MonoBehaviour
 {
+    public static WaveSpawner Active { get; private set; }
+
     [System.Serializable]
     public class SpawnGroup
     {
@@ -21,7 +23,7 @@ public class WaveSpawner : MonoBehaviour
     public class Wave
     {
         public string name = "Wave";
-        public int completionReward = 50;   // per-wave reward
+        public int completionReward = 50;
         public SpawnGroup[] groups;
     }
 
@@ -39,62 +41,101 @@ public class WaveSpawner : MonoBehaviour
     [Header("Waves")]
     [SerializeField] private Wave[] waves;
 
-    public event Action<int> OnWaveStarted;            // wave # (1-based)
-    public event Action<int, int> OnWaveCompleted;     // wave #, reward $
+    public event Action<int> OnWaveStarted;
+    public event Action<int, int> OnWaveCompleted;
 
     public int TotalWaves => waves != null ? waves.Length : 0;
     public int NextWaveNumber => Mathf.Clamp(waveIndex + 1, 1, Mathf.Max(1, TotalWaves));
     public bool IsSpawning => running != null;
     public int AliveEnemiesThisWave => aliveThisWave;
+    public bool IsWaveInProgress => waveActiveContext && (IsSpawning || aliveThisWave > 0);
 
-    // "Wave in progress" means either we are still spawning OR enemies are still alive
-    public bool IsWaveInProgress => IsSpawning || aliveThisWave > 0;
-
-    private int waveIndex = 0; // next wave to start (0-based)
+    private int waveIndex = 0;
     private Coroutine running;
 
     private int aliveThisWave = 0;
     private bool spawningFinished = false;
+    private bool waveActiveContext = false;
 
-    // Track EXACT enemies spawned for the current wave (prevents wrong counting)
-    private readonly HashSet<EnemyAgent> spawnedThisWave = new HashSet<EnemyAgent>();
+    private readonly HashSet<EnemyAgent> activeWaveMembers = new HashSet<EnemyAgent>();
 
     private void Awake()
     {
+        Active = this;
+
         if (economy == null) economy = FindFirstObjectByType<EconomyManager>();
         if (baseHealth == null) baseHealth = FindFirstObjectByType<BaseHealth>();
         if (grid == null) grid = FindFirstObjectByType<GridManager>();
         if (pathfinder == null) pathfinder = FindFirstObjectByType<GridPathfinder>();
     }
 
-    private void OnEnable()
+    private void OnDestroy()
     {
-        EnemyAgent.OnAnyRemoved += HandleEnemyRemoved;
-    }
-
-    private void OnDisable()
-    {
-        EnemyAgent.OnAnyRemoved -= HandleEnemyRemoved;
+        if (Active == this)
+            Active = null;
     }
 
     [ContextMenu("Start Next Wave")]
     public void StartNextWave()
     {
-        if (grid != null) grid.RebuildLookupFromChildren();
+        if (grid != null)
+            grid.RebuildLookupFromChildren();
 
-        if (running != null) return;
-        if (waves == null || waves.Length == 0) return;
-        if (waveIndex >= waves.Length) return;
+        if (running != null)
+            return;
+
+        if (IsWaveInProgress)
+            return;
+
+        if (waves == null || waves.Length == 0)
+            return;
+
+        if (waveIndex >= waves.Length)
+            return;
 
         aliveThisWave = 0;
         spawningFinished = false;
-        spawnedThisWave.Clear();
+        waveActiveContext = true;
+        activeWaveMembers.Clear();
 
         int startedWaveNumber = waveIndex + 1;
         OnWaveStarted?.Invoke(startedWaveNumber);
 
         running = StartCoroutine(SpawnWave(waves[waveIndex], startedWaveNumber));
         waveIndex++;
+    }
+
+    public EnemyAgent SpawnEnemyFromPrefab(EnemyAgent prefab, Vector3 worldPosition, bool registerToCurrentWave = true)
+    {
+        if (prefab == null || grid == null || pathfinder == null)
+            return null;
+
+        EnemyAgent enemy = Instantiate(prefab, worldPosition, Quaternion.identity);
+        ConfigureSpawnedEnemy(enemy, registerToCurrentWave);
+        return enemy;
+    }
+
+    public EnemyAgent SpawnChildEnemy(EnemyAgent prefab, Vector3 worldPosition)
+    {
+        bool registerToCurrentWave = waveActiveContext;
+        return SpawnEnemyFromPrefab(prefab, worldPosition, registerToCurrentWave);
+    }
+
+    public void RegisterEnemyAsCurrentWaveMember(EnemyAgent enemy)
+    {
+        if (enemy == null || !waveActiveContext)
+            return;
+
+        if (!activeWaveMembers.Add(enemy))
+            return;
+
+        aliveThisWave++;
+
+        EnemyHealth health = enemy.GetComponent<EnemyHealth>();
+        if (health != null)
+            health.OnDeathFinalized += HandleEnemyDeathFinalized;
+
+        enemy.OnReachedGoal += HandleEnemyReachedGoal;
     }
 
     private IEnumerator SpawnWave(Wave wave, int waveNumber)
@@ -120,7 +161,7 @@ public class WaveSpawner : MonoBehaviour
                 if (group.spawnInterval > 0f)
                     yield return new WaitForSeconds(group.spawnInterval);
                 else
-                    yield return null; // allow a frame if interval is 0
+                    yield return null;
             }
 
             if (group.delayAfterGroup > 0f)
@@ -135,52 +176,89 @@ public class WaveSpawner : MonoBehaviour
 
     private void SpawnOne(EnemyAgent prefab)
     {
-        if (prefab == null || grid == null || pathfinder == null) return;
+        if (prefab == null || grid == null || pathfinder == null)
+            return;
 
         GridTile spawnTile = grid.GetTile(spawnCoord.x, spawnCoord.y);
-        if (spawnTile == null) return;
+        if (spawnTile == null)
+            return;
 
         Vector3 pos = spawnTile.transform.position;
         pos.y += spawnYOffset;
 
         EnemyAgent enemy = Instantiate(prefab, pos, Quaternion.identity);
-
-        // IMPORTANT: ensure enemies always damage the correct base (no FindFirst randomness)
-        if (enemy != null)
-            enemy.SetBaseHealth(baseHealth);
-
-        // Speed comes from enemy type (prefab instance)
-        float speed = 2.5f;
-        EnemyStats stats = enemy.GetComponent<EnemyStats>();
-        if (stats != null) speed = stats.MoveSpeed;
-
-        enemy.Init(grid, pathfinder, goalCoord, speed);
-
-        // Track + count
-        spawnedThisWave.Add(enemy);
-        aliveThisWave++;
+        ConfigureSpawnedEnemy(enemy, true);
     }
 
-    private void HandleEnemyRemoved(EnemyAgent enemy)
+    private void ConfigureSpawnedEnemy(EnemyAgent enemy, bool registerToCurrentWave)
     {
-        // Only count enemies that were spawned in THIS wave
-        if (!spawnedThisWave.Remove(enemy))
+        if (enemy == null)
             return;
 
-        if (aliveThisWave <= 0) return;
+        enemy.SetBaseHealth(baseHealth);
 
-        aliveThisWave--;
-        if (aliveThisWave < 0) aliveThisWave = 0;
+        float moveSpeed = 2.5f;
+        EnemyStats stats = enemy.GetComponent<EnemyStats>();
+        if (stats != null)
+            moveSpeed = stats.MoveSpeed;
 
-        // waveIndex already advanced, so current wave number is waveIndex (1-based)
+        enemy.Init(grid, pathfinder, goalCoord, moveSpeed);
+
+        if (registerToCurrentWave)
+            RegisterEnemyAsCurrentWaveMember(enemy);
+    }
+
+    private void HandleEnemyDeathFinalized(EnemyHealth health)
+    {
+        if (health == null)
+            return;
+
+        EnemyAgent enemy = health.GetComponent<EnemyAgent>();
+        if (enemy == null)
+            enemy = health.GetComponentInParent<EnemyAgent>();
+
+        MarkEnemyResolved(enemy);
+    }
+
+    private void HandleEnemyReachedGoal(EnemyAgent enemy)
+    {
+        MarkEnemyResolved(enemy);
+    }
+
+    private void MarkEnemyResolved(EnemyAgent enemy)
+    {
+        if (enemy == null)
+            return;
+
+        if (!activeWaveMembers.Remove(enemy))
+            return;
+
+        EnemyHealth health = enemy.GetComponent<EnemyHealth>();
+        if (health != null)
+            health.OnDeathFinalized -= HandleEnemyDeathFinalized;
+
+        enemy.OnReachedGoal -= HandleEnemyReachedGoal;
+
+        if (aliveThisWave > 0)
+            aliveThisWave--;
+
+        if (aliveThisWave < 0)
+            aliveThisWave = 0;
+
         int currentWaveNumber = waveIndex;
         TryCompleteWaveIfDone(currentWaveNumber);
     }
 
     private void TryCompleteWaveIfDone(int waveNumber)
     {
-        if (!spawningFinished) return;
-        if (aliveThisWave != 0) return;
+        if (!waveActiveContext)
+            return;
+
+        if (!spawningFinished)
+            return;
+
+        if (aliveThisWave != 0)
+            return;
 
         int idx = waveNumber - 1;
         int reward = 50;
@@ -188,9 +266,11 @@ public class WaveSpawner : MonoBehaviour
         if (waves != null && idx >= 0 && idx < waves.Length)
             reward = waves[idx].completionReward;
 
-        // Grant reward here (game logic), not in the HUD
         if (economy != null && reward > 0)
             economy.AddMoney(reward);
+
+        waveActiveContext = false;
+        spawningFinished = false;
 
         OnWaveCompleted?.Invoke(waveNumber, reward);
     }

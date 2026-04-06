@@ -9,7 +9,7 @@ public class EnemyDamageTakenController : MonoBehaviour
     {
         public int sourceInstanceId;
         public string familyKey;
-        public float extraDamageTakenPercent;
+        public float damageTakenPercent;
         public float expireTime;
     }
 
@@ -41,22 +41,14 @@ public class EnemyDamageTakenController : MonoBehaviour
             Debug.Log($"[EnemyDamageTakenController] Expired entries removed on {name}. Current multiplier={currentDamageTakenMultiplier:0.###}");
     }
 
-    public void ApplyOrRefreshExtraDamageTaken(int sourceInstanceId, string familyKey, float extraPercent, float duration)
+    public void ApplyOrRefreshExtraDamageTaken(int sourceInstanceId, string familyKey, float percent, float duration)
     {
         if (duration <= 0f)
             return;
 
-        float adjustedPercent = extraPercent;
+        float adjustedPercent = percent;
         if (abilities != null)
             adjustedPercent = abilities.AdjustExtraDamageTakenPercent(adjustedPercent);
-
-        adjustedPercent = Mathf.Max(0f, adjustedPercent);
-
-        if (adjustedPercent <= 0f)
-        {
-            RecalculateMultiplier();
-            return;
-        }
 
         string resolvedFamilyKey = ResolveFamilyKey(sourceInstanceId, familyKey);
         float expireTime = Time.time + duration;
@@ -66,12 +58,12 @@ public class EnemyDamageTakenController : MonoBehaviour
             DamageAmpEntry entry = activeEntries[i];
             if (entry.sourceInstanceId == sourceInstanceId && entry.familyKey == resolvedFamilyKey)
             {
-                entry.extraDamageTakenPercent = adjustedPercent;
+                entry.damageTakenPercent = adjustedPercent;
                 entry.expireTime = expireTime;
                 RecalculateMultiplier();
 
                 if (debugLogDamageAmpChanges)
-                    Debug.Log($"[EnemyDamageTakenController] Refreshed on {name} family={resolvedFamilyKey} extra={adjustedPercent:0.###}");
+                    Debug.Log($"[EnemyDamageTakenController] Refreshed on {name} family={resolvedFamilyKey} amount={adjustedPercent:0.###}");
 
                 return;
             }
@@ -81,14 +73,14 @@ public class EnemyDamageTakenController : MonoBehaviour
         {
             sourceInstanceId = sourceInstanceId,
             familyKey = resolvedFamilyKey,
-            extraDamageTakenPercent = adjustedPercent,
+            damageTakenPercent = adjustedPercent,
             expireTime = expireTime
         });
 
         RecalculateMultiplier();
 
         if (debugLogDamageAmpChanges)
-            Debug.Log($"[EnemyDamageTakenController] Added on {name} family={resolvedFamilyKey} extra={adjustedPercent:0.###}");
+            Debug.Log($"[EnemyDamageTakenController] Added on {name} family={resolvedFamilyKey} amount={adjustedPercent:0.###}");
     }
 
     public float ModifyIncomingDamage(float baseDamage)
@@ -129,18 +121,18 @@ public class EnemyDamageTakenController : MonoBehaviour
             if (entry == null)
                 continue;
 
-            float extra = Mathf.Max(0f, entry.extraDamageTakenPercent);
-            if (extra <= 0f)
+            float value = entry.damageTakenPercent;
+            if (Mathf.Abs(value) <= 0.0001f)
                 continue;
 
             if (strongestByFamily.TryGetValue(entry.familyKey, out float currentBest))
             {
-                if (extra > currentBest)
-                    strongestByFamily[entry.familyKey] = extra;
+                if (Mathf.Abs(value) > Mathf.Abs(currentBest))
+                    strongestByFamily[entry.familyKey] = value;
             }
             else
             {
-                strongestByFamily.Add(entry.familyKey, extra);
+                strongestByFamily.Add(entry.familyKey, value);
             }
         }
 
@@ -149,7 +141,7 @@ public class EnemyDamageTakenController : MonoBehaviour
         foreach (var pair in strongestByFamily)
             multiplier *= (1f + pair.Value);
 
-        currentDamageTakenMultiplier = Mathf.Max(1f, multiplier);
+        currentDamageTakenMultiplier = Mathf.Max(0f, multiplier);
     }
 
     private string ResolveFamilyKey(int sourceInstanceId, string familyKey)

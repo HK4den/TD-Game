@@ -34,6 +34,11 @@ public class EnemyAbilities : MonoBehaviour
 
     public float AdjustExtraDamageTakenPercent(float incomingPercent)
     {
+        // Positive values mean "take more damage" and are resisted.
+        // Negative values mean "take less damage" and are allowed through unchanged.
+        if (incomingPercent < 0f)
+            return incomingPercent;
+
         float clamped = Mathf.Max(0f, incomingPercent);
 
         if (extraDamageTakenImmune)

@@ -1,13 +1,25 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 public class PauseMenuController : MonoBehaviour
 {
-    [Header("UI")]
-    [SerializeField] private GameObject panelRoot; // the pause panel
+    [Header("Panels")]
+    [SerializeField] private GameObject pausePanelRoot;
+    [SerializeField] private GameObject settingsPanelRoot;
+
+    [Header("Pause Menu Buttons")]
     [SerializeField] private Button resumeButton;
-    [SerializeField] private Button quitButton;
+    [SerializeField] private Button settingsButton;
+    [SerializeField] private Button quitToMenuButton;
+    [SerializeField] private Button quitGameButton;
+
+    [Header("Settings Buttons")]
+    [SerializeField] private Button backButton;
+
+    [Header("Scene")]
+    [SerializeField] private string mainMenuSceneName = "MainMenu";
 
     [Header("Cursor")]
     [SerializeField] private bool lockCursorOnResume = true;
@@ -19,11 +31,13 @@ public class PauseMenuController : MonoBehaviour
         originalFixedDeltaTime = Time.fixedDeltaTime;
 
         if (resumeButton != null) resumeButton.onClick.AddListener(Resume);
-        if (quitButton != null) quitButton.onClick.AddListener(Quit);
+        if (settingsButton != null) settingsButton.onClick.AddListener(OpenSettings);
+        if (quitToMenuButton != null) quitToMenuButton.onClick.AddListener(QuitToMenu);
+        if (quitGameButton != null) quitGameButton.onClick.AddListener(QuitGame);
+        if (backButton != null) backButton.onClick.AddListener(CloseSettings);
 
         PauseState.OnPauseChanged += HandlePauseChanged;
 
-        // start unpaused
         HandlePauseChanged(false);
     }
 
@@ -34,17 +48,27 @@ public class PauseMenuController : MonoBehaviour
 
     private void Update()
     {
-        // Escape toggles pause
-        if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+        if (Keyboard.current == null) return;
+
+        if (Keyboard.current.escapeKey.wasPressedThisFrame)
         {
+            if (settingsPanelRoot != null && settingsPanelRoot.activeSelf)
+            {
+                CloseSettings();
+                return;
+            }
+
             PauseState.Toggle();
         }
     }
 
     private void HandlePauseChanged(bool paused)
     {
-        if (panelRoot != null)
-            panelRoot.SetActive(paused);
+        if (pausePanelRoot != null)
+            pausePanelRoot.SetActive(paused);
+
+        if (!paused && settingsPanelRoot != null)
+            settingsPanelRoot.SetActive(false);
 
         if (paused)
         {
@@ -72,13 +96,55 @@ public class PauseMenuController : MonoBehaviour
         PauseState.SetPaused(false);
     }
 
-    public void Quit()
+    public void OpenSettings()
     {
-        // Works in builds
+        if (pausePanelRoot != null)
+            pausePanelRoot.SetActive(false);
+
+        if (settingsPanelRoot != null)
+            settingsPanelRoot.SetActive(true);
+
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
+    }
+
+    public void CloseSettings()
+    {
+        if (settingsPanelRoot != null)
+            settingsPanelRoot.SetActive(false);
+
+        if (PauseState.IsPaused)
+        {
+            if (pausePanelRoot != null)
+                pausePanelRoot.SetActive(true);
+
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
+        }
+        else if (lockCursorOnResume)
+        {
+            Cursor.visible = false;
+            Cursor.lockState = CursorLockMode.Locked;
+        }
+    }
+
+    public void QuitToMenu()
+    {
+        Time.timeScale = 1f;
+        Time.fixedDeltaTime = originalFixedDeltaTime;
+        PauseState.SetPaused(false);
+
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
+
+        SceneManager.LoadScene(mainMenuSceneName);
+    }
+
+    public void QuitGame()
+    {
         Application.Quit();
 
 #if UNITY_EDITOR
-        // Works in editor play mode
         UnityEditor.EditorApplication.isPlaying = false;
 #endif
     }
