@@ -95,8 +95,7 @@ public class EndOfWaveIncomeSummaryManager : MonoBehaviour
             if (economy != null)
                 economy.AdjustMoneySigned(rolledAmount);
 
-            if (economy != null)
-                economy.AdjustMoneySigned(rolledAmount);
+
 
             if (showPerTowerWorldPopups)
                 SpawnPerTowerWorldPopup(tower.transform.position + perTowerWorldOffset, rolledAmount);

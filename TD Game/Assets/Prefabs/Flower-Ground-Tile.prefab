@@ -68,7 +68,8 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: baa76925cca5a2f42aa6d40a203b1a44, type: 2}
+  - {fileID: 2100000, guid: 43db6010e5476f14aacbdc1ff8ee5687, type: 2}
+  - {fileID: 2100000, guid: bb56027e4e9f1a9468f506a810eda371, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -128,12 +129,7 @@ MonoBehaviour:
   x: 0
   z: 0
   terrainType: 0
-  variantMaterials: []
-  normalTint: {r: 1, g: 1, b: 1, a: 1}
-  swampTint: {r: 0.75, g: 1, b: 0.75, a: 1}
-  fireTint: {r: 1, g: 0.8, b: 0.6, a: 1}
-  energyTint: {r: 0.7, g: 0.9, b: 1, a: 1}
-  blockedTint: {r: 0.6, g: 0.6, b: 0.6, a: 1}
-  hoverBorderMaterial: {fileID: 2100000, guid: baa76925cca5a2f42aa6d40a203b1a44, type: 2}
-  hoverYOffset: 0.01
-  hoverScale: 1.02
+  buildable: 1
+  blocksEnemies: 0
+  occupied: 0
+  occupiedTower: {fileID: 0}

@@ -206,12 +206,20 @@ public class EnemyHealth : MonoBehaviour
 
         for (int i = 0; i < cachedRigidbodies.Length; i++)
         {
-            if (cachedRigidbodies[i] == null)
+            Rigidbody rb = cachedRigidbodies[i];
+            if (rb == null)
                 continue;
 
-            cachedRigidbodies[i].linearVelocity = Vector3.zero;
-            cachedRigidbodies[i].angularVelocity = Vector3.zero;
-            cachedRigidbodies[i].isKinematic = true;
+            // Only clear velocity if Unity actually allows it.
+            if (!rb.isKinematic)
+            {
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+            }
+
+            // After death, this body should no longer participate in collision-driven gameplay.
+            rb.detectCollisions = false;
+            rb.isKinematic = true;
         }
     }
 
