@@ -173,7 +173,7 @@ MonoBehaviour:
   grid: {fileID: 7337746363587140048, guid: 6ce187c02f142a242848381859d11e5b, type: 3}
   pathfinder: {fileID: 7387158980045677629, guid: be0b0b5192c67cc42a594bd8f372d6c1, type: 3}
   slowController: {fileID: 8133276463507527364}
-  enemyHealth: {fileID: 0}
+  enemyHealth: {fileID: -4781632782304773973}
   goalCoord: {x: 19, y: 19}
   baseDamage: 1
   baseHealth: {fileID: 0}
