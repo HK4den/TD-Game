@@ -82,12 +82,12 @@ MonoBehaviour:
   pathfinder: {fileID: 7387158980045677629, guid: be0b0b5192c67cc42a594bd8f372d6c1, type: 3}
   slowController: {fileID: 8133276463507527364}
   enemyHealth: {fileID: -4781632782304773973}
-  goalCoord: {x: 19, y: 19}
+  goalCoord: {x: 14, y: 13}
   baseDamage: 1
   baseHealth: {fileID: 0}
   nodeArriveDist: 0.08
   yOffset: 0
-  speed: 2.5
+  speed: 2.25
 --- !u!114 &-4781632782304773973
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -101,8 +101,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
   maxHP: 5
-  rewardMoney: 5
-  visualRoot: {fileID: 0}
+  rewardMoney: 2
+  visualRoot: {fileID: 6242888042476496939}
   deathAnimationDuration: 0.35
   minAxisRotationSpeed: 220
   maxAxisRotationSpeed: 540
