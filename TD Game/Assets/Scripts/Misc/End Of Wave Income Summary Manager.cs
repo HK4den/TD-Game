@@ -57,6 +57,7 @@ public class EndOfWaveIncomeSummaryManager : MonoBehaviour
             breakdownCanvasGroup.alpha = 0f;
     }
 
+
     private void OnEnable()
     {
         if (waveSpawner != null)
@@ -94,8 +95,6 @@ public class EndOfWaveIncomeSummaryManager : MonoBehaviour
 
             if (economy != null)
                 economy.AdjustMoneySigned(rolledAmount);
-
-
 
             if (showPerTowerWorldPopups)
                 SpawnPerTowerWorldPopup(tower.transform.position + perTowerWorldOffset, rolledAmount);
@@ -146,6 +145,15 @@ public class EndOfWaveIncomeSummaryManager : MonoBehaviour
             if (breakdownText != null)
                 breakdownText.text = string.Empty;
         }
+    }
+
+    public void SpawnPickupMoneyPopup(int amount)
+    {
+        SpawnTotalPopup(amount);
+    }
+    public void SpawnExternalMoneyPopup(Vector3 worldPosition, int amount)
+    {
+        SpawnPerTowerWorldPopup(worldPosition, amount);
     }
 
     private void SpawnTotalPopup(int totalDelta)

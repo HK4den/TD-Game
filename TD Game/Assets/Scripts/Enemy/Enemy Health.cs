@@ -20,6 +20,10 @@ public class EnemyHealth : MonoBehaviour
     [SerializeField] private float maxAxisRotationSpeed = 540f;
     [SerializeField] private bool disableAllCollidersOnDeath = true;
 
+    [Header("Sound")]
+    [SerializeField] private GameObject deathSoundPrefab;
+    [SerializeField] private Vector3 deathSoundOffset = Vector3.zero;
+
     private float hp;
     private bool died;
     private bool deathFinalized;
@@ -138,6 +142,7 @@ public class EnemyHealth : MonoBehaviour
         died = true;
 
         DisableCombatPresence();
+        SpawnDeathSound();
         OnDied?.Invoke(this);
 
         GrantRewardOnce();
@@ -193,6 +198,14 @@ public class EnemyHealth : MonoBehaviour
         Destroy(gameObject);
     }
 
+    private void SpawnDeathSound()
+    {
+        if (deathSoundPrefab == null)
+            return;
+
+        Vector3 pos = transform.position + deathSoundOffset;
+        Instantiate(deathSoundPrefab, pos, Quaternion.identity);
+    }
     private void DisableCombatPresence()
     {
         if (disableAllCollidersOnDeath)

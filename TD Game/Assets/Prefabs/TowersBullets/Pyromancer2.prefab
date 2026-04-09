@@ -176,7 +176,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7d581701fda38fc4c8e3b300b45b9d9c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TowerCombatStats
-  basePower: 3
+  basePower: 2
   baseSecondsBetweenShots: 0.55
   basePierce: 5
   baseRange: 1
@@ -273,6 +273,8 @@ MonoBehaviour:
   fireDirectionMode: 0
   flattenAimedShotsToXZPlane: 1
   flattenFixedForwardShotsToXZPlane: 0
+  shootSoundPrefab: {fileID: 7125198490331484351, guid: 5aa708711f22b7a49ab25091640a8a4c, type: 3}
+  soundOffset: {x: 0, y: 0, z: 0}
 --- !u!114 &-8808299984456531476
 MonoBehaviour:
   m_ObjectHideFlags: 0

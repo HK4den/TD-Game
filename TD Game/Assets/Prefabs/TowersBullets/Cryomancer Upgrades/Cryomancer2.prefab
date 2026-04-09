@@ -189,6 +189,8 @@ MonoBehaviour:
   fireDirectionMode: 1
   flattenAimedShotsToXZPlane: 0
   flattenFixedForwardShotsToXZPlane: 0
+  shootSoundPrefab: {fileID: 7125198490331484351, guid: 5aa708711f22b7a49ab25091640a8a4c, type: 3}
+  soundOffset: {x: 0, y: 0, z: 0}
 --- !u!114 &5573293120056219482
 MonoBehaviour:
   m_ObjectHideFlags: 0

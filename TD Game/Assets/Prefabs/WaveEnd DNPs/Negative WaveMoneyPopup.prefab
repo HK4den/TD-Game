@@ -488,16 +488,16 @@ MonoBehaviour:
   shakeFrequencyFadeOut: 2
   enableLerp: 1
   lerpSettings:
-    speed: 1
+    speed: 2
     minX: 0
     maxX: 0
-    minY: 0.1
-    maxY: 0.1
+    minY: 0.2
+    maxY: 0.2
     randomFlip: 0
   enableVelocity: 0
   velocitySettings:
-    minX: 0
-    maxX: 0
+    minX: -1
+    maxX: 1
     minY: 4
     maxY: 5
     randomFlip: 0
@@ -738,7 +738,7 @@ MonoBehaviour:
   enablePush: 0
   pushSettings:
     radius: 3
-    pushOffset: 0.8
+    pushOffset: 1
   updateDelay: 0.0125
   enablePooling: 0
   poolSize: 50

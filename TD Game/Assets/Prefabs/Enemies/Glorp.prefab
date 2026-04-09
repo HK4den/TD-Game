@@ -199,6 +199,8 @@ MonoBehaviour:
   minAxisRotationSpeed: 220
   maxAxisRotationSpeed: 540
   disableAllCollidersOnDeath: 1
+  deathSoundPrefab: {fileID: 7125198490331484351, guid: 7be70e6dcf08ce54eb47a84bdd7cb0f0, type: 3}
+  deathSoundOffset: {x: 0, y: 0, z: 0}
 --- !u!114 &-5912099426387452359
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -40,6 +40,10 @@ public class TowerProjectileEmitter : MonoBehaviour
     [SerializeField] private bool flattenAimedShotsToXZPlane = true;
     [SerializeField] private bool flattenFixedForwardShotsToXZPlane = false;
 
+    [Header("Audio")]
+    [SerializeField] private GameObject shootSoundPrefab;
+    [SerializeField] private Vector3 soundOffset = Vector3.zero;
+
     private Coroutine attackRoutine;
     private readonly List<Transform> reusableFirePoints = new List<Transform>(8);
 
@@ -63,6 +67,14 @@ public class TowerProjectileEmitter : MonoBehaviour
             visualSquash = GetComponent<TowerVisualSquash>();
     }
 
+    private void SpawnShootSound()
+    {
+        if (shootSoundPrefab == null)
+            return;
+
+        Vector3 pos = transform.position + soundOffset;
+        Instantiate(shootSoundPrefab, pos, Quaternion.identity);
+    }
     public bool TryBeginAttack(EnemyAgent attackTarget)
     {
         if (attackRoutine != null)
@@ -99,6 +111,9 @@ public class TowerProjectileEmitter : MonoBehaviour
 
     private void FireBurstShot(EnemyAgent lockedTarget)
     {
+        if (shootSoundPrefab != null)
+            SpawnShootSound();
+
         if (visualSquash != null)
             visualSquash.TriggerFirePulse();
 

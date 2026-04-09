@@ -575,7 +575,7 @@ MonoBehaviour:
   enableShakeFadeOut: 0
   shakeOffsetFadeOut: {x: 0, y: 1.5}
   shakeFrequencyFadeOut: 4
-  enableLerp: 0
+  enableLerp: 1
   lerpSettings:
     speed: 5
     minX: -0.4
@@ -657,7 +657,7 @@ MonoBehaviour:
     fromNumber: 0
     toNumber: 1000
     fromScale: 1
-    toScale: 2
+    toScale: 1.2
   enableScaleOverTime: 0
   scaleOverTime:
     serializedVersion: 2
@@ -687,13 +687,13 @@ MonoBehaviour:
   defaultOrthographicSize: 5
   maxOrthographicSize: 1.5
   orthographicCamera: {fileID: 0}
-  spamGroup: 
-  enableCombination: 0
+  spamGroup: Default
+  enableCombination: 1
   combinationSettings:
-    method: 0
+    method: 1
     maxDistance: 10
-    spawnDelay: 0.2
-    absorbDuration: 0.4
+    spawnDelay: 0.25
+    absorbDuration: 0.35
     scaleCurve:
       serializedVersion: 2
       m_Curve:
@@ -826,8 +826,8 @@ MonoBehaviour:
     desiredDirection: {x: 0, y: 0, z: 0}
   enablePush: 0
   pushSettings:
-    radius: 4
-    pushOffset: 0.8
+    radius: 3
+    pushOffset: 1
   updateDelay: 0.0125
   enablePooling: 0
   poolSize: 50

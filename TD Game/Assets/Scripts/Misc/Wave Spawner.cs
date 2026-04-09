@@ -41,6 +41,19 @@ public class WaveSpawner : MonoBehaviour
     [Header("Waves")]
     [SerializeField] private Wave[] waves;
 
+    [Header("Wave SFX")]
+    [SerializeField] private AudioSource waveStartAudioSource;
+    [SerializeField] private AudioSource waveEndAudioSource;
+
+    [Header("Wave Music")]
+    [SerializeField] private GameObject betweenWavesMusicPrefab;
+    [SerializeField] private GameObject activeWaveMusicPrefab;
+    [SerializeField] private Vector3 musicSpawnPosition = Vector3.zero;
+    [SerializeField] private bool playBetweenWavesMusicOnStart = true;
+
+    [Header("Music Crossfade")]
+    [SerializeField] private float musicFadeDuration = 0.4f;
+
     public event Action<int> OnWaveStarted;
     public event Action<int, int> OnWaveCompleted;
 
@@ -59,6 +72,17 @@ public class WaveSpawner : MonoBehaviour
 
     private readonly HashSet<EnemyAgent> activeWaveMembers = new HashSet<EnemyAgent>();
 
+    private GameObject currentBetweenWavesMusicInstance;
+    private GameObject currentActiveWaveMusicInstance;
+
+    private AudioSource betweenWavesMusicSource;
+    private AudioSource activeWaveMusicSource;
+
+    private float betweenWavesTargetVolume = 1f;
+    private float activeWaveTargetVolume = 1f;
+
+    private Coroutine musicFadeRoutine;
+
     private void Awake()
     {
         Active = this;
@@ -67,12 +91,25 @@ public class WaveSpawner : MonoBehaviour
         if (baseHealth == null) baseHealth = FindFirstObjectByType<BaseHealth>();
         if (grid == null) grid = FindFirstObjectByType<GridManager>();
         if (pathfinder == null) pathfinder = FindFirstObjectByType<GridPathfinder>();
+
+        SetupMusicInstances();
+
+        if (playBetweenWavesMusicOnStart)
+            ApplyImmediateMusicState(false);
+        else
+            ApplyImmediateMusicState(IsWaveInProgress);
     }
 
     private void OnDestroy()
     {
         if (Active == this)
             Active = null;
+
+        if (musicFadeRoutine != null)
+            StopCoroutine(musicFadeRoutine);
+
+        DestroyMusicInstance(ref currentBetweenWavesMusicInstance, ref betweenWavesMusicSource);
+        DestroyMusicInstance(ref currentActiveWaveMusicInstance, ref activeWaveMusicSource);
     }
 
     [ContextMenu("Start Next Wave")]
@@ -100,6 +137,9 @@ public class WaveSpawner : MonoBehaviour
 
         int startedWaveNumber = waveIndex + 1;
         OnWaveStarted?.Invoke(startedWaveNumber);
+
+        PlayWaveStartSound();
+        RefreshWaveMusicState();
 
         running = StartCoroutine(SpawnWave(waves[waveIndex], startedWaveNumber));
         waveIndex++;
@@ -272,6 +312,153 @@ public class WaveSpawner : MonoBehaviour
         waveActiveContext = false;
         spawningFinished = false;
 
+        PlayWaveEndSound();
+        RefreshWaveMusicState();
+
         OnWaveCompleted?.Invoke(waveNumber, reward);
+    }
+
+    private void PlayWaveStartSound()
+    {
+        if (waveStartAudioSource != null)
+            waveStartAudioSource.Play();
+    }
+
+    private void PlayWaveEndSound()
+    {
+        if (waveEndAudioSource != null)
+            waveEndAudioSource.Play();
+    }
+
+    private void SetupMusicInstances()
+    {
+        CreateMusicInstanceIfNeeded(
+            betweenWavesMusicPrefab,
+            ref currentBetweenWavesMusicInstance,
+            ref betweenWavesMusicSource,
+            ref betweenWavesTargetVolume);
+
+        CreateMusicInstanceIfNeeded(
+            activeWaveMusicPrefab,
+            ref currentActiveWaveMusicInstance,
+            ref activeWaveMusicSource,
+            ref activeWaveTargetVolume);
+    }
+
+    private void CreateMusicInstanceIfNeeded(
+        GameObject prefab,
+        ref GameObject instance,
+        ref AudioSource source,
+        ref float storedTargetVolume)
+    {
+        if (prefab == null || instance != null)
+            return;
+
+        instance = Instantiate(prefab, musicSpawnPosition, Quaternion.identity);
+        source = GetMusicAudioSource(instance);
+
+        if (source == null)
+        {
+            Debug.LogWarning($"Music prefab '{prefab.name}' does not have an AudioSource on it or its children.");
+            return;
+        }
+
+        storedTargetVolume = source.volume;
+        source.loop = true;
+        source.playOnAwake = false;
+
+        if (!source.isPlaying)
+            source.Play();
+    }
+
+    private AudioSource GetMusicAudioSource(GameObject instance)
+    {
+        if (instance == null)
+            return null;
+
+        AudioSource source = instance.GetComponent<AudioSource>();
+        if (source != null)
+            return source;
+
+        return instance.GetComponentInChildren<AudioSource>();
+    }
+
+    private bool lastMusicWaveState = false;
+
+    private void RefreshWaveMusicState()
+    {
+        bool waveActive = waveActiveContext;
+
+        if (lastMusicWaveState == waveActive && musicFadeRoutine == null)
+            return;
+
+        lastMusicWaveState = waveActive;
+
+        if (musicFadeRoutine != null)
+            StopCoroutine(musicFadeRoutine);
+
+        musicFadeRoutine = StartCoroutine(CrossfadeMusic(waveActive));
+    }
+
+    private IEnumerator CrossfadeMusic(bool waveActive)
+    {
+        SetupMusicInstances();
+
+        AudioSource fadeInSource = waveActive ? activeWaveMusicSource : betweenWavesMusicSource;
+        AudioSource fadeOutSource = waveActive ? betweenWavesMusicSource : activeWaveMusicSource;
+
+        float fadeInTarget = waveActive ? activeWaveTargetVolume : betweenWavesTargetVolume;
+        float fadeOutStart = fadeOutSource != null ? fadeOutSource.volume : 0f;
+        float fadeInStart = fadeInSource != null ? fadeInSource.volume : 0f;
+
+        if (fadeInSource != null && !fadeInSource.isPlaying)
+            fadeInSource.Play();
+
+        float duration = Mathf.Max(0.01f, musicFadeDuration);
+        float time = 0f;
+
+        while (time < duration)
+        {
+            time += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(time / duration);
+
+            if (fadeOutSource != null)
+                fadeOutSource.volume = Mathf.Lerp(fadeOutStart, 0f, t);
+
+            if (fadeInSource != null)
+                fadeInSource.volume = Mathf.Lerp(fadeInStart, fadeInTarget, t);
+
+            yield return null;
+        }
+
+        if (fadeOutSource != null)
+            fadeOutSource.volume = 0f;
+
+        if (fadeInSource != null)
+            fadeInSource.volume = fadeInTarget;
+
+        musicFadeRoutine = null;
+    }
+
+    private void ApplyImmediateMusicState(bool waveActive)
+    {
+        SetupMusicInstances();
+
+        if (betweenWavesMusicSource != null)
+            betweenWavesMusicSource.volume = waveActive ? 0f : betweenWavesTargetVolume;
+
+        if (activeWaveMusicSource != null)
+            activeWaveMusicSource.volume = waveActive ? activeWaveTargetVolume : 0f;
+    }
+
+    private void DestroyMusicInstance(ref GameObject instance, ref AudioSource source)
+    {
+        source = null;
+
+        if (instance == null)
+            return;
+
+        Destroy(instance);
+        instance = null;
     }
 }
