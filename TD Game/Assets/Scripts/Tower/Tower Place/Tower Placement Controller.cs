@@ -90,6 +90,11 @@ public class TowerPlacementController : MonoBehaviour
     [SerializeField] private Material invalidGhostMaterial;
     [SerializeField] private float ghostYOffset = 0.05f;
 
+    [Header("Placement SFX")]
+    [SerializeField] private GameObject placeTowerSfxPrefab;
+    [SerializeField] private GameObject invalidPlacementSfxPrefab;
+    [SerializeField] private Vector3 sfxSpawnOffset = Vector3.zero;
+
     [Header("Radial State Prep")]
     [SerializeField] private bool radialOpen;
     [SerializeField] private float radialOpenHoldTime = 0.2f;
@@ -222,6 +227,7 @@ public class TowerPlacementController : MonoBehaviour
         if (!HasTowerSelected) return;
         if (hoveredTile == null) return;
 
+        // No ghost / no placement attempt on occupied tiles.
         if (hoveredTile.IsOccupied) return;
 
         TryPlace();
@@ -306,6 +312,7 @@ public class TowerPlacementController : MonoBehaviour
         if (ghost == null || !ghost.activeSelf) return;
         if (hoveredTile == null) return;
         if (!HasTowerSelected) return;
+        if (hoveredTile.IsOccupied) return;
 
         bool nowValid = IsPlacementValid(hoveredTile);
         if (nowValid != lastWasValid)
@@ -482,6 +489,15 @@ public class TowerPlacementController : MonoBehaviour
             return;
         }
 
+        // NEW: no ghost at all on occupied tiles.
+        if (hoveredTile.IsOccupied)
+        {
+            HideGhostImmediate();
+            lastTile = hoveredTile;
+            lastSeenPathVersion = PathChangeBroadcaster.Version;
+            return;
+        }
+
         ghost.SetActive(true);
 
         Vector3 tilePos = hoveredTile.transform.position;
@@ -490,11 +506,12 @@ public class TowerPlacementController : MonoBehaviour
         ghost.transform.position = tilePos + Vector3.up * ghostYOffset;
         ghost.transform.rotation = placementRotation;
 
-        if (!hoveredTile.IsBuildable || hoveredTile.IsOccupied || hoveredTile.Terrain == TerrainType.Blocked)
+        if (!hoveredTile.IsBuildable || hoveredTile.Terrain == TerrainType.Blocked)
         {
             ApplyGhostMaterial(false);
             lastTile = hoveredTile;
             lastSeenPathVersion = PathChangeBroadcaster.Version;
+            lastWasValid = false;
             return;
         }
 
@@ -655,13 +672,22 @@ public class TowerPlacementController : MonoBehaviour
 
     private void TryPlace()
     {
-        if (hoveredTile == null) return;
+        if (hoveredTile == null)
+            return;
 
         GameObject selectedPrefab = GetSelectedTowerPrefab();
-        if (selectedPrefab == null) return;
+        if (selectedPrefab == null)
+            return;
 
-        if (hoveredTile.IsOccupied) return;
-        if (!IsPlacementValid(hoveredTile)) return;
+        // Occupied tiles intentionally do nothing because there should be no ghost there.
+        if (hoveredTile.IsOccupied)
+            return;
+
+        if (!IsPlacementValid(hoveredTile))
+        {
+            PlayPlacementSfx(invalidPlacementSfxPrefab, hoveredTile.transform.position);
+            return;
+        }
 
         int paidCost = 0;
 
@@ -670,7 +696,10 @@ public class TowerPlacementController : MonoBehaviour
         {
             paidCost = Mathf.Max(0, costComp.Cost);
             if (!economy.TrySpendMoney(paidCost))
+            {
+                PlayPlacementSfx(invalidPlacementSfxPrefab, hoveredTile.transform.position);
                 return;
+            }
         }
 
         Vector3 pos = hoveredTile.transform.position;
@@ -689,6 +718,8 @@ public class TowerPlacementController : MonoBehaviour
 
         PathChangeBroadcaster.Bump();
 
+        PlayPlacementSfx(placeTowerSfxPrefab, pos);
+
         if (inspectPanel != null)
         {
             TowerIdentity id = placed.GetComponentInChildren<TowerIdentity>();
@@ -699,6 +730,14 @@ public class TowerPlacementController : MonoBehaviour
         }
 
         lastTile = null;
+    }
+
+    private void PlayPlacementSfx(GameObject sfxPrefab, Vector3 worldPosition)
+    {
+        if (sfxPrefab == null)
+            return;
+
+        Instantiate(sfxPrefab, worldPosition + sfxSpawnOffset, Quaternion.identity);
     }
 
     private bool WouldStillHavePathIfPlacedHere(GridTile tile)

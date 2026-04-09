@@ -22,10 +22,10 @@ public class InspectPanelUI : MonoBehaviour
     [SerializeField] private Text towerNameText;
     [SerializeField] private Image towerIconImage;
 
-    [Header("Tower Level UI)")]
+    [Header("Tower Level UI")]
     [SerializeField] private Text towerLevelText; // e.g. "Level: 1"
 
-    [Header("Upgrade UI (Keyboard-controlled)")]
+    [Header("Upgrade UI")]
     [SerializeField] private GameObject upgradeRoot;
     [SerializeField] private Text upgradeAIndicatorText;
     [SerializeField] private Text upgradeBIndicatorText;
@@ -47,6 +47,16 @@ public class InspectPanelUI : MonoBehaviour
     [Tooltip("Where the popup should appear (screen-space overlay). Put this on the selected upgrade row/button area.")]
     [SerializeField] private RectTransform insufficientFundsAnchorA;
     [SerializeField] private RectTransform insufficientFundsAnchorB;
+
+    [Header("Audio Prefabs")]
+    [Tooltip("Prefab to spawn when an upgrade succeeds.")]
+    [SerializeField] private GameObject upgradeSuccessSfxPrefab;
+
+    [Tooltip("Prefab to spawn when trying to upgrade without enough money.")]
+    [SerializeField] private GameObject upgradeFailSfxPrefab;
+
+    [Tooltip("Prefab to spawn when selling a tower.")]
+    [SerializeField] private GameObject sellSfxPrefab;
 
     [Header("Sell UI")]
     [SerializeField] private GameObject sellRoot;   // optional container
@@ -71,8 +81,6 @@ public class InspectPanelUI : MonoBehaviour
 
     private string sellBaseText = "";
 
-    private int selectedUpgradeIndex = 0; // 0 = A, 1 = B
-
     private void Awake()
     {
         if (selectionHighlightManager == null)
@@ -85,7 +93,7 @@ public class InspectPanelUI : MonoBehaviour
 
         ApplyTerrain(null);
         ApplyTower(null, null);
-        ApplyUpgradeSelectionVisuals();
+        ApplyUpgradeLabels();
     }
 
     private void Update()
@@ -162,22 +170,6 @@ public class InspectPanelUI : MonoBehaviour
         StartMove((tower != null || tileUnderTower != null) ? shownAnchoredPos : hiddenAnchoredPos);
     }
 
-    public void ToggleUpgradeSelection()
-    {
-        bool twoPaths = selectedUpgradeState != null && selectedUpgradeState.HasTwoPaths;
-        if (!twoPaths)
-        {
-            selectedUpgradeIndex = 0;
-            ApplyUpgradeSelectionVisuals();
-            return;
-        }
-
-        selectedUpgradeIndex = 1 - selectedUpgradeIndex;
-        ApplyUpgradeSelectionVisuals();
-    }
-
-    public int GetSelectedUpgradeIndex() => selectedUpgradeIndex;
-
     public bool TryGetSelectedTower(out TowerIdentity tower, out TowerUpgradeState upgradeState, out GridTile tile)
     {
         tower = selectedTower;
@@ -186,16 +178,36 @@ public class InspectPanelUI : MonoBehaviour
         return tower != null && tile != null;
     }
 
+    public void ShowInsufficientFundsPopupForUpgrade1()
+    {
+        ShowInsufficientFundsPopupAtAnchor(insufficientFundsAnchorA);
+        PlayUpgradeFailSfx();
+    }
+
+    public void ShowInsufficientFundsPopupForUpgrade2()
+    {
+        ShowInsufficientFundsPopupAtAnchor(insufficientFundsAnchorB != null ? insufficientFundsAnchorB : insufficientFundsAnchorA);
+        PlayUpgradeFailSfx();
+    }
+
     public void ShowInsufficientFundsPopup()
     {
-        if (insufficientFundsGuiPrefab == null) return;
+        ShowInsufficientFundsPopupForUpgrade1();
+    }
 
-        RectTransform anchor = (selectedUpgradeIndex == 1) ? insufficientFundsAnchorB : insufficientFundsAnchorA;
-        if (anchor == null) anchor = insufficientFundsAnchorA != null ? insufficientFundsAnchorA : insufficientFundsAnchorB;
-        if (anchor == null) return;
+    public void PlayUpgradeSuccessSfx()
+    {
+        SpawnAudioPrefab(upgradeSuccessSfxPrefab);
+    }
 
-        DamageNumber dn = insufficientFundsGuiPrefab.Spawn(Vector3.zero);
-        dn.SetAnchoredPosition(anchor, Vector2.zero);
+    public void PlayUpgradeFailSfx()
+    {
+        SpawnAudioPrefab(upgradeFailSfxPrefab);
+    }
+
+    public void PlaySellSfx()
+    {
+        SpawnAudioPrefab(sellSfxPrefab);
     }
 
     public void SetSellHoldFill(float normalized01)
@@ -263,6 +275,7 @@ public class InspectPanelUI : MonoBehaviour
             sellBaseText = "";
 
             ClearSellHoldFill();
+            ApplyUpgradeLabels();
             return;
         }
 
@@ -296,8 +309,6 @@ public class InspectPanelUI : MonoBehaviour
                 int refund = ledger.GetRefund(sellRefundRate);
                 sellBaseText = $"Sell: ${refund} (Q)";
                 sellPriceText.text = sellBaseText;
-
-                // reset bar when selecting a tower
                 ClearSellHoldFill();
             }
             else
@@ -311,9 +322,6 @@ public class InspectPanelUI : MonoBehaviour
         // ---- Upgrades ----
         bool canUpgrade = upgradeState != null && upgradeState.CanUpgrade;
         bool twoPaths = upgradeState != null && upgradeState.HasTwoPaths;
-
-        if (!twoPaths) selectedUpgradeIndex = 0;
-        if (!canUpgrade) selectedUpgradeIndex = 0;
 
         if (upgradeRoot != null)
             upgradeRoot.SetActive(canUpgrade);
@@ -346,16 +354,31 @@ public class InspectPanelUI : MonoBehaviour
                 upgradeBCostText.text = "";
         }
 
-        ApplyUpgradeSelectionVisuals();
+        ApplyUpgradeLabels();
     }
 
-    private void ApplyUpgradeSelectionVisuals()
+    private void ApplyUpgradeLabels()
     {
         if (upgradeAIndicatorText != null)
-            upgradeAIndicatorText.text = (selectedUpgradeIndex == 0) ? "> Upgrade A" : "  Upgrade A";
+            upgradeAIndicatorText.text = "(E) Upgrade 1";
 
         if (upgradeBIndicatorText != null)
-            upgradeBIndicatorText.text = (selectedUpgradeIndex == 1) ? "> Upgrade B" : "  Upgrade B";
+            upgradeBIndicatorText.text = "(R) Upgrade 2";
+    }
+
+    private void ShowInsufficientFundsPopupAtAnchor(RectTransform anchor)
+    {
+        if (insufficientFundsGuiPrefab == null) return;
+        if (anchor == null) return;
+
+        DamageNumber dn = insufficientFundsGuiPrefab.Spawn(Vector3.zero);
+        dn.SetAnchoredPosition(anchor, Vector2.zero);
+    }
+
+    private void SpawnAudioPrefab(GameObject prefab)
+    {
+        if (prefab == null) return;
+        Instantiate(prefab, Vector3.zero, Quaternion.identity);
     }
 
     private void StartMove(Vector2 target)

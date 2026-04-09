@@ -42,8 +42,8 @@ public class TowerInspectorTool : MonoBehaviour
         controls.Enable();
 
         controls.Player.PrimaryClick.performed += OnPrimaryClick;
-        controls.Player.Upgrade.performed += OnUpgrade;
-        controls.Player.SwapUpgrade.performed += OnSwapUpgrade;
+        controls.Player.Upgrade.performed += OnUpgrade1;
+        controls.Player.SwapUpgrade.performed += OnUpgrade2;
         controls.Player.Sell.started += OnSellStarted;
         controls.Player.Sell.canceled += OnSellCanceled;
     }
@@ -51,8 +51,8 @@ public class TowerInspectorTool : MonoBehaviour
     private void OnDisable()
     {
         controls.Player.PrimaryClick.performed -= OnPrimaryClick;
-        controls.Player.Upgrade.performed -= OnUpgrade;
-        controls.Player.SwapUpgrade.performed -= OnSwapUpgrade;
+        controls.Player.Upgrade.performed -= OnUpgrade1;
+        controls.Player.SwapUpgrade.performed -= OnUpgrade2;
         controls.Player.Sell.started -= OnSellStarted;
         controls.Player.Sell.canceled -= OnSellCanceled;
 
@@ -163,16 +163,17 @@ public class TowerInspectorTool : MonoBehaviour
         }
     }
 
-    private void OnSwapUpgrade(InputAction.CallbackContext ctx)
+    private void OnUpgrade1(InputAction.CallbackContext ctx)
     {
-        if (PauseState.IsPaused) return;
-        if (inspectPanel == null) return;
-
-        StopSellHoldUI();
-        inspectPanel.ToggleUpgradeSelection();
+        TryUpgrade(0);
     }
 
-    private void OnUpgrade(InputAction.CallbackContext ctx)
+    private void OnUpgrade2(InputAction.CallbackContext ctx)
+    {
+        TryUpgrade(1);
+    }
+
+    private void TryUpgrade(int upgradeIndex)
     {
         if (PauseState.IsPaused) return;
         if (inspectPanel == null) return;
@@ -182,13 +183,11 @@ public class TowerInspectorTool : MonoBehaviour
         if (!inspectPanel.TryGetSelectedTower(out TowerIdentity tower, out TowerUpgradeState upgradeState, out GridTile tile))
             return;
 
-        if (upgradeState == null || !upgradeState.CanUpgrade)
+        if (tower == null || tile == null || upgradeState == null || !upgradeState.CanUpgrade)
             return;
 
-        int selectedIndex = inspectPanel.GetSelectedUpgradeIndex();
-
         bool upgraded = upgradeState.TryPurchaseUpgrade(
-            selectedIndex,
+            upgradeIndex,
             economy,
             tile,
             out int requiredCost,
@@ -197,10 +196,19 @@ public class TowerInspectorTool : MonoBehaviour
 
         if (!upgraded)
         {
-            if (requiredCost > 0 && economy != null && economy.Money < requiredCost)
-                inspectPanel.ShowInsufficientFundsPopup();
+            bool notEnoughMoney = requiredCost > 0 && economy != null && economy.Money < requiredCost;
+            if (notEnoughMoney)
+            {
+                if (upgradeIndex == 0)
+                    inspectPanel.ShowInsufficientFundsPopupForUpgrade1();
+                else
+                    inspectPanel.ShowInsufficientFundsPopupForUpgrade2();
+            }
+
             return;
         }
+
+        inspectPanel.PlayUpgradeSuccessSfx();
 
         if (newTowerGO != null)
         {
@@ -264,6 +272,9 @@ public class TowerInspectorTool : MonoBehaviour
         int refund = ledger.GetRefund(sellRefundRate);
         if (economy != null && refund > 0)
             economy.AddMoney(refund);
+
+        if (inspectPanel != null)
+            inspectPanel.PlaySellSfx();
 
         tile.ClearOccupiedTower();
 

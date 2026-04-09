@@ -2679,6 +2679,9 @@ MonoBehaviour:
   insufficientFundsGuiPrefab: {fileID: 566350937206865270, guid: f4e4e691f3e388e48961918037be075a, type: 3}
   insufficientFundsAnchorA: {fileID: 4233336305396102451}
   insufficientFundsAnchorB: {fileID: 6932949571217416288}
+  upgradeSuccessSfxPrefab: {fileID: 0}
+  upgradeFailSfxPrefab: {fileID: 7125198490331484351, guid: dc9632abfd51bfd4d91a73c71ac69df6, type: 3}
+  sellSfxPrefab: {fileID: 0}
   sellRoot: {fileID: 8417887272419326810}
   sellPriceText: {fileID: 1702604464730561118}
   sellRefundRate: 0.75

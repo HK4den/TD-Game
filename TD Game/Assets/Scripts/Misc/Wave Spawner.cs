@@ -83,6 +83,11 @@ public class WaveSpawner : MonoBehaviour
 
     private Coroutine musicFadeRoutine;
 
+    private Coroutine endWaveSfxFadeRoutine;
+    private float waveEndOriginalVolume = 1f;
+
+    private const float EndWaveSfxInterruptFadeDuration = 0.1f;
+
     private void Awake()
     {
         Active = this;
@@ -91,6 +96,9 @@ public class WaveSpawner : MonoBehaviour
         if (baseHealth == null) baseHealth = FindFirstObjectByType<BaseHealth>();
         if (grid == null) grid = FindFirstObjectByType<GridManager>();
         if (pathfinder == null) pathfinder = FindFirstObjectByType<GridPathfinder>();
+
+        if (waveEndAudioSource != null)
+            waveEndOriginalVolume = waveEndAudioSource.volume;
 
         SetupMusicInstances();
 
@@ -107,6 +115,9 @@ public class WaveSpawner : MonoBehaviour
 
         if (musicFadeRoutine != null)
             StopCoroutine(musicFadeRoutine);
+
+        if (endWaveSfxFadeRoutine != null)
+            StopCoroutine(endWaveSfxFadeRoutine);
 
         DestroyMusicInstance(ref currentBetweenWavesMusicInstance, ref betweenWavesMusicSource);
         DestroyMusicInstance(ref currentActiveWaveMusicInstance, ref activeWaveMusicSource);
@@ -129,6 +140,8 @@ public class WaveSpawner : MonoBehaviour
 
         if (waveIndex >= waves.Length)
             return;
+
+        FadeOutWaveEndSfxIfPlaying();
 
         aliveThisWave = 0;
         spawningFinished = false;
@@ -326,8 +339,55 @@ public class WaveSpawner : MonoBehaviour
 
     private void PlayWaveEndSound()
     {
+        if (waveEndAudioSource == null)
+            return;
+
+        if (endWaveSfxFadeRoutine != null)
+        {
+            StopCoroutine(endWaveSfxFadeRoutine);
+            endWaveSfxFadeRoutine = null;
+        }
+
+        waveEndAudioSource.volume = waveEndOriginalVolume;
+        waveEndAudioSource.Play();
+    }
+
+    private void FadeOutWaveEndSfxIfPlaying()
+    {
+        if (waveEndAudioSource == null || !waveEndAudioSource.isPlaying)
+            return;
+
+        if (endWaveSfxFadeRoutine != null)
+            StopCoroutine(endWaveSfxFadeRoutine);
+
+        endWaveSfxFadeRoutine = StartCoroutine(FadeOutAndStopWaveEndSfx());
+    }
+
+    private IEnumerator FadeOutAndStopWaveEndSfx()
+    {
+        if (waveEndAudioSource == null)
+            yield break;
+
+        float startVolume = waveEndAudioSource.volume;
+        float duration = Mathf.Max(0.01f, EndWaveSfxInterruptFadeDuration);
+        float time = 0f;
+
+        while (time < duration && waveEndAudioSource != null && waveEndAudioSource.isPlaying)
+        {
+            time += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(time / duration);
+            waveEndAudioSource.volume = Mathf.Lerp(startVolume, 0f, t);
+            yield return null;
+        }
+
         if (waveEndAudioSource != null)
-            waveEndAudioSource.Play();
+        {
+            waveEndAudioSource.volume = 0f;
+            waveEndAudioSource.Stop();
+            waveEndAudioSource.volume = waveEndOriginalVolume;
+        }
+
+        endWaveSfxFadeRoutine = null;
     }
 
     private void SetupMusicInstances()
