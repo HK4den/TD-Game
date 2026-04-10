@@ -24,4 +24,9 @@ public class MainMenu : MonoBehaviour
         UnityEditor.EditorApplication.isPlaying = false;
 #endif
     }
+
+    public void MainMenuTeleport()
+    {
+        SceneManager.LoadScene("MainMenu"); // Replace with your actual scene name
+    }
 }

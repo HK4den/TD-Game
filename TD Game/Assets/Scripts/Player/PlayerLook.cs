@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 public class PlayerLook : MonoBehaviour
 {
@@ -8,13 +9,15 @@ public class PlayerLook : MonoBehaviour
     [SerializeField] private Transform cameraPivot;
     [SerializeField] private PlayerMovement playerMovement;
 
-    [Header("Settings")]
-    [SerializeField] private float mouseSensitivity = 0.1f;
+    [Header("Sensitivity Settings")]
+    [SerializeField] private float defaultSensitivity = 0.1f;
+    [SerializeField] private float minSensitivity = 0.01f;
+    [SerializeField] private float maxSensitivity = 1f;
+    [SerializeField] private Slider sensitivitySlider; // optional
+
+    [Header("Look Clamp")]
     [SerializeField] private float minPitch = -80f;
     [SerializeField] private float maxPitch = 80f;
-
-    private PlayerControls controls;
-    private float pitch;
 
     [Header("Bobbing/Sprint FOV")]
     [SerializeField] private float walkBobSpeed = 8f;
@@ -33,18 +36,23 @@ public class PlayerLook : MonoBehaviour
     [SerializeField] private float maxTiltAngle = 4f;
     [SerializeField] private float tiltLerpSpeed = 8f;
 
-    private float bobTimer;
-    private Vector3 pivotStartLocalPos;
-    private float currentTilt;
-
-    // Legacy/manual override support so older scripts still compile if they call this.
-    private Coroutine fovOverrideRoutine;
-    private bool hasManualFOVOverride;
-    private float manualOverriddenFOV;
-
     [Header("Runtime State")]
     [SerializeField] private bool lookBlocked;
     [SerializeField] private bool cursorUnlockedBySystem;
+
+    private const string SensitivityKey = "MouseSensitivity";
+
+    private PlayerControls controls;
+    private float pitch;
+    private float bobTimer;
+    private Vector3 pivotStartLocalPos;
+    private float currentTilt;
+    private float mouseSensitivity;
+
+    // Legacy/manual override support
+    private Coroutine fovOverrideRoutine;
+    private bool hasManualFOVOverride;
+    private float manualOverriddenFOV;
 
     private void Awake()
     {
@@ -56,6 +64,8 @@ public class PlayerLook : MonoBehaviour
 
         if (playerMovement == null)
             playerMovement = GetComponentInParent<PlayerMovement>();
+
+        LoadSensitivity();
     }
 
     private void OnEnable()
@@ -71,6 +81,7 @@ public class PlayerLook : MonoBehaviour
     private void Start()
     {
         RestoreGameplayCursor();
+        SetupSlider();
     }
 
     private void Update()
@@ -92,6 +103,42 @@ public class PlayerLook : MonoBehaviour
         HandleSprintFOV();
         HandleStrafeTilt();
         ApplyCameraRotation();
+    }
+
+    private void LoadSensitivity()
+    {
+        mouseSensitivity = PlayerPrefs.GetFloat(SensitivityKey, defaultSensitivity);
+        mouseSensitivity = Mathf.Clamp(mouseSensitivity, minSensitivity, maxSensitivity);
+    }
+
+    private void SaveSensitivity()
+    {
+        PlayerPrefs.SetFloat(SensitivityKey, mouseSensitivity);
+        PlayerPrefs.Save();
+    }
+
+    private void SetupSlider()
+    {
+        if (sensitivitySlider == null)
+            return;
+
+        sensitivitySlider.minValue = minSensitivity;
+        sensitivitySlider.maxValue = maxSensitivity;
+        sensitivitySlider.value = mouseSensitivity;
+
+        sensitivitySlider.onValueChanged.RemoveListener(SetSensitivity);
+        sensitivitySlider.onValueChanged.AddListener(SetSensitivity);
+    }
+
+    public void SetSensitivity(float newSensitivity)
+    {
+        mouseSensitivity = Mathf.Clamp(newSensitivity, minSensitivity, maxSensitivity);
+        SaveSensitivity();
+    }
+
+    public float GetSensitivity()
+    {
+        return mouseSensitivity;
     }
 
     public void SetLookBlocked(bool blocked)

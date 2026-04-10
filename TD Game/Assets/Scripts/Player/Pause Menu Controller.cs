@@ -48,6 +48,17 @@ public class PauseMenuController : MonoBehaviour
 
     private void Update()
     {
+        if (GameEndController.IsGameEnded)
+        {
+            if (pausePanelRoot != null && pausePanelRoot.activeSelf)
+                pausePanelRoot.SetActive(false);
+
+            if (settingsPanelRoot != null && settingsPanelRoot.activeSelf)
+                settingsPanelRoot.SetActive(false);
+
+            return;
+        }
+
         if (Keyboard.current == null) return;
 
         if (Keyboard.current.escapeKey.wasPressedThisFrame)
@@ -64,6 +75,17 @@ public class PauseMenuController : MonoBehaviour
 
     private void HandlePauseChanged(bool paused)
     {
+        if (GameEndController.IsGameEnded)
+        {
+            if (pausePanelRoot != null)
+                pausePanelRoot.SetActive(false);
+
+            if (settingsPanelRoot != null)
+                settingsPanelRoot.SetActive(false);
+
+            return;
+        }
+
         if (pausePanelRoot != null)
             pausePanelRoot.SetActive(paused);
 
@@ -93,11 +115,14 @@ public class PauseMenuController : MonoBehaviour
 
     public void Resume()
     {
+        if (GameEndController.IsGameEnded) return;
         PauseState.SetPaused(false);
     }
 
     public void OpenSettings()
     {
+        if (GameEndController.IsGameEnded) return;
+
         if (pausePanelRoot != null)
             pausePanelRoot.SetActive(false);
 
@@ -112,6 +137,13 @@ public class PauseMenuController : MonoBehaviour
     {
         if (settingsPanelRoot != null)
             settingsPanelRoot.SetActive(false);
+
+        if (GameEndController.IsGameEnded)
+        {
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
+            return;
+        }
 
         if (PauseState.IsPaused)
         {
@@ -130,6 +162,8 @@ public class PauseMenuController : MonoBehaviour
 
     public void QuitToMenu()
     {
+        GameEndController.ResetGameEndState();
+
         Time.timeScale = 1f;
         Time.fixedDeltaTime = originalFixedDeltaTime;
         PauseState.SetPaused(false);
