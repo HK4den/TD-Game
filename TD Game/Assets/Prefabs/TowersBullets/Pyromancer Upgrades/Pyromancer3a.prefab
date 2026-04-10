@@ -56,7 +56,7 @@ GameObject:
   - component: {fileID: 2162596195956399744}
   - component: {fileID: 3145777776468631667}
   m_Layer: 6
-  m_Name: Pyromancer2
+  m_Name: Pyromancer3a
   m_TagString: Tower
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -141,7 +141,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TowerUpgradeState
   canUpgrade: 0
   hasTwoPaths: 0
-  displayLevel: 2
+  displayLevel: 3
   upgradeADescription: lets you spam upgrade for fun
   upgradeACost: 1
   upgradeAPrefab: {fileID: 1937534747383321431}
@@ -176,8 +176,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7d581701fda38fc4c8e3b300b45b9d9c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TowerCombatStats
-  basePower: 2
-  baseSecondsBetweenShots: 0.65
+  basePower: 3
+  baseSecondsBetweenShots: 0.45
   basePierce: 2
   baseRange: 1
 --- !u!114 &8455232979921060398

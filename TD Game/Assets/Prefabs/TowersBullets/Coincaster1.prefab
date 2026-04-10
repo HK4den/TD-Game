@@ -99,7 +99,7 @@ MonoBehaviour:
   displayLevel: 1
   upgradeADescription: Makes $105 per round
   upgradeACost: 175
-  upgradeAPrefab: {fileID: 1937534747383321431, guid: 5fff19553163f574ea185911004eae40, type: 3}
+  upgradeAPrefab: {fileID: 1937534747383321431, guid: cb16a1b2b0477944f9c5ab74e2dc9ed5, type: 3}
   upgradeBDescription: Increased Fire Rate & Damage
   upgradeBCost: 65
   upgradeBPrefab: {fileID: 1937534747383321431, guid: ffd5b89fb7f7e0745aeac0122574159e, type: 3}
@@ -168,7 +168,7 @@ MonoBehaviour:
   towerIdentity: {fileID: -2177105339483779199}
   outcomes:
   - chance: 1
-    moneyChange: 80
+    moneyChange: 75
 --- !u!114 &1767062970180267421
 MonoBehaviour:
   m_ObjectHideFlags: 0
