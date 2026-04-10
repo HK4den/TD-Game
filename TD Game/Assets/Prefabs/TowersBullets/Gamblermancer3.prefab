@@ -19,7 +19,7 @@ GameObject:
   - component: {fileID: 1138612233970405445}
   - component: {fileID: 1767062970180267421}
   m_Layer: 6
-  m_Name: Gamblermancer2
+  m_Name: Gamblermancer3
   m_TagString: Tower
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -96,10 +96,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TowerUpgradeState
   canUpgrade: 1
   hasTwoPaths: 0
-  displayLevel: 2
+  displayLevel: 1
   upgradeADescription: LET IT RIIIIDE
   upgradeACost: 750
-  upgradeAPrefab: {fileID: 1937534747383321431, guid: 08dce9826d2ec55479a4d4d154f83d7e, type: 3}
+  upgradeAPrefab: {fileID: 1937534747383321431}
   upgradeBDescription: Increased Fire Rate & Damage
   upgradeBCost: 65
   upgradeBPrefab: {fileID: 1937534747383321431, guid: ffd5b89fb7f7e0745aeac0122574159e, type: 3}
@@ -168,21 +168,21 @@ MonoBehaviour:
   towerIdentity: {fileID: -2177105339483779199}
   outcomes:
   - chance: 0.2
-    moneyChange: -150
+    moneyChange: -250
   - chance: 0.2
-    moneyChange: -75
+    moneyChange: -125
   - chance: 0.2
     moneyChange: 0
   - chance: 0.13
-    moneyChange: 150
+    moneyChange: 250
   - chance: 0.12
-    moneyChange: 300
+    moneyChange: 500
   - chance: 0.1
-    moneyChange: 600
+    moneyChange: 1000
   - chance: 0.03
-    moneyChange: 1200
+    moneyChange: 2000
   - chance: 0.02
-    moneyChange: 2175
+    moneyChange: 3625
 --- !u!114 &1767062970180267421
 MonoBehaviour:
   m_ObjectHideFlags: 0
