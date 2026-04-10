@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem; // add this
 
 public class WaveSpawner : MonoBehaviour
 {
@@ -53,6 +54,9 @@ public class WaveSpawner : MonoBehaviour
 
     [Header("Music Crossfade")]
     [SerializeField] private float musicFadeDuration = 0.4f;
+
+    [Header("Secret Debug")]
+    [SerializeField] private bool allowSecretWaveSkip = false;
 
     public event Action<int> OnWaveStarted;
     public event Action<int, int> OnWaveCompleted;
@@ -108,6 +112,15 @@ public class WaveSpawner : MonoBehaviour
             ApplyImmediateMusicState(IsWaveInProgress);
     }
 
+    private void Update()
+    {
+        if (!allowSecretWaveSkip)
+            return;
+
+        if (Keyboard.current != null && Keyboard.current.pKey.wasPressedThisFrame)
+            SkipCurrentWave();
+    }
+
     private void OnDestroy()
     {
         if (Active == this)
@@ -156,6 +169,43 @@ public class WaveSpawner : MonoBehaviour
 
         running = StartCoroutine(SpawnWave(waves[waveIndex], startedWaveNumber));
         waveIndex++;
+    }
+
+    public void SkipCurrentWave()
+    {
+        if (!waveActiveContext)
+            return;
+
+        int currentWaveNumber = waveIndex;
+
+        if (running != null)
+        {
+            StopCoroutine(running);
+            running = null;
+        }
+
+        // Copy first so we can safely modify while iterating
+        List<EnemyAgent> enemiesToRemove = new List<EnemyAgent>(activeWaveMembers);
+
+        foreach (EnemyAgent enemy in enemiesToRemove)
+        {
+            if (enemy == null)
+                continue;
+
+            EnemyHealth health = enemy.GetComponent<EnemyHealth>();
+            if (health != null)
+                health.OnDeathFinalized -= HandleEnemyDeathFinalized;
+
+            enemy.OnReachedGoal -= HandleEnemyReachedGoal;
+
+            Destroy(enemy.gameObject);
+        }
+
+        activeWaveMembers.Clear();
+        aliveThisWave = 0;
+        spawningFinished = true;
+
+        TryCompleteWaveIfDone(currentWaveNumber);
     }
 
     public EnemyAgent SpawnEnemyFromPrefab(EnemyAgent prefab, Vector3 worldPosition, bool registerToCurrentWave = true)

@@ -1,9 +1,13 @@
 using System;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class EconomyManager : MonoBehaviour
 {
     [SerializeField] private int startingMoney = 200;
+
+    [Header("Secret Debug")]
+    [SerializeField] private bool allowSecretMoneyBoost = false;
 
     public int Money { get; private set; }
 
@@ -14,6 +18,15 @@ public class EconomyManager : MonoBehaviour
         Money = startingMoney;
         Debug.Log($"[Economy] Awake startingMoney={Money} (manager: {name})");
         OnMoneyChanged?.Invoke(Money);
+    }
+
+    private void Update()
+    {
+        if (!allowSecretMoneyBoost)
+            return;
+
+        if (Keyboard.current != null && Keyboard.current.lKey.wasPressedThisFrame)
+            AddMoney(1000);
     }
 
     public void AddMoney(int amount)

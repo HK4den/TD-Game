@@ -97,9 +97,9 @@ MonoBehaviour:
   canUpgrade: 1
   hasTwoPaths: 0
   displayLevel: 1
-  upgradeADescription: Higher odds of winning big or losing lots!
+  upgradeADescription: Win bigger lose more-er!
   upgradeACost: 450
-  upgradeAPrefab: {fileID: 1937534747383321431}
+  upgradeAPrefab: {fileID: 1937534747383321431, guid: 0fc624067ccc53c4e8962d986bb4ffc5, type: 3}
   upgradeBDescription: Increased Fire Rate & Damage
   upgradeBCost: 65
   upgradeBPrefab: {fileID: 1937534747383321431, guid: ffd5b89fb7f7e0745aeac0122574159e, type: 3}
