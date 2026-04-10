@@ -108,7 +108,7 @@ MonoBehaviour:
   hasTwoPaths: 0
   displayLevel: 1
   upgradeADescription: Bigger range and shoots in more directions!
-  upgradeACost: 200
+  upgradeACost: 400
   upgradeAPrefab: {fileID: 1937534747383321431, guid: 9fbd5c65a0cb5cf4ab5857d6bf5cff3a, type: 3}
   upgradeBDescription: Increased Fire Rate & Damage
   upgradeBCost: 65
