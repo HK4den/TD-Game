@@ -25,7 +25,7 @@ GameObject:
   - component: {fileID: 2162596195956399744}
   - component: {fileID: 3456567469178072908}
   m_Layer: 6
-  m_Name: Causticist2
+  m_Name: Causticist4a
   m_TagString: Tower
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -101,14 +101,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b017d1163a12565449ef5c655fb61e62, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TowerUpgradeState
-  canUpgrade: 1
+  canUpgrade: 0
   hasTwoPaths: 0
-  displayLevel: 2
-  upgradeADescription: Increased range & shoot speed!
-  upgradeACost: 1
+  displayLevel: 4
+  upgradeADescription: Puddle damage massively increased, but will only hit once
+    per target!
+  upgradeACost: 1000
   upgradeAPrefab: {fileID: 1937534747383321431}
-  upgradeBDescription: Increased Fire Rate & Damage
-  upgradeBCost: 65
+  upgradeBDescription: Puddle hits targets way quicker with slightly increased damage!
+  upgradeBCost: 1200
   upgradeBPrefab: {fileID: 1937534747383321431, guid: ffd5b89fb7f7e0745aeac0122574159e, type: 3}
   levelUpTextPrefab: {fileID: 8985348834640522180, guid: 717c04aa96991dd43925ff0960dfe6fb, type: 3}
   levelUpYOffset: 0
@@ -138,10 +139,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7d581701fda38fc4c8e3b300b45b9d9c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TowerCombatStats
-  basePower: 2
-  baseSecondsBetweenShots: 2
+  basePower: 4
+  baseSecondsBetweenShots: 1.65
   basePierce: 1
-  baseRange: 2.5
+  baseRange: 3.25
 --- !u!114 &8455232979921060398
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -206,7 +207,7 @@ MonoBehaviour:
   rotationController: {fileID: -5336945119137476084}
   towerIdentity: {fileID: -2177105339483779199}
   visualSquash: {fileID: 0}
-  projectilePrefab: {fileID: 7313397994648493523, guid: 17fab8b5ce342cc41bb7b6b95788f840, type: 3}
+  projectilePrefab: {fileID: 7313397994648493523, guid: e42918193da2b6d41b212b7ae9228f17, type: 3}
   projectileSpeed: 16
   projectileLifetime: 0.3
   effectMode: 0

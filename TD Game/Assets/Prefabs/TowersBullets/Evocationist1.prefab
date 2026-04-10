@@ -87,7 +87,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TowerIdentity
   displayName: Evocationist
   icon: {fileID: 21300000, guid: 63547566a6a728b4f91d249aeb220873, type: 3}
-  towerFamilyKey: 
+  towerFamilyKey: Evocationist
   extraTags: []
 --- !u!114 &9198767423989168895
 MonoBehaviour:

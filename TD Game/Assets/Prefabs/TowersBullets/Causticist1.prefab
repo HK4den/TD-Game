@@ -105,7 +105,7 @@ MonoBehaviour:
   hasTwoPaths: 0
   displayLevel: 1
   upgradeADescription: Stronger puddles, faster projectile speed!
-  upgradeACost: 1
+  upgradeACost: 400
   upgradeAPrefab: {fileID: 1937534747383321431, guid: 45a4eb6a7b9455e498975ecf17929bd7, type: 3}
   upgradeBDescription: Increased Fire Rate & Damage
   upgradeBCost: 65
