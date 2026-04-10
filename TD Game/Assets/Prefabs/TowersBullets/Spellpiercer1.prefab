@@ -72,7 +72,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 35646f14cd32b504db0d206eca515b64, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TowerCost
-  cost: 500
+  cost: 350
 --- !u!114 &-2177105339483779199
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -102,11 +102,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TowerUpgradeState
   canUpgrade: 1
-  hasTwoPaths: 1
+  hasTwoPaths: 0
   displayLevel: 1
-  upgradeADescription: lets you spam upgrade for fun
-  upgradeACost: 1
-  upgradeAPrefab: {fileID: 1937534747383321431}
+  upgradeADescription: Better fire rate, pierce, & slows!
+  upgradeACost: 400
+  upgradeAPrefab: {fileID: 1937534747383321431, guid: a0fe1ac949cd488498fb60310b047ec7, type: 3}
   upgradeBDescription: Increased Fire Rate & Damage
   upgradeBCost: 65
   upgradeBPrefab: {fileID: 1937534747383321431, guid: ffd5b89fb7f7e0745aeac0122574159e, type: 3}
@@ -206,7 +206,7 @@ MonoBehaviour:
   rotationController: {fileID: -5336945119137476084}
   towerIdentity: {fileID: -2177105339483779199}
   visualSquash: {fileID: 0}
-  projectilePrefab: {fileID: 7313397994648493523, guid: 2aed411d043d1594d859d0537bcd28db, type: 3}
+  projectilePrefab: {fileID: 7313397994648493523, guid: 7cb40c470b40b8142b741024650284b3, type: 3}
   projectileSpeed: 20
   projectileLifetime: 0.18
   effectMode: 0

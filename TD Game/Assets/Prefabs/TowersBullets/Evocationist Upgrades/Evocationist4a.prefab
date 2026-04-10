@@ -14,12 +14,18 @@ GameObject:
   - component: {fileID: -2177105339483779199}
   - component: {fileID: 9198767423989168895}
   - component: {fileID: 4221621356532786706}
+  - component: {fileID: 3602398885712497751}
+  - component: {fileID: 8455232979921060398}
+  - component: {fileID: 6630877168591428445}
+  - component: {fileID: 6772138513667187524}
+  - component: {fileID: -5030970616454914048}
+  - component: {fileID: -8808299984456531476}
+  - component: {fileID: -4418911605106883157}
   - component: {fileID: -5336945119137476084}
   - component: {fileID: 2162596195956399744}
-  - component: {fileID: 1138612233970405445}
-  - component: {fileID: 1767062970180267421}
+  - component: {fileID: 4013274797365652579}
   m_Layer: 6
-  m_Name: Coincaster3
+  m_Name: Evocationist4a
   m_TagString: Tower
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -34,11 +40,12 @@ Transform:
   m_GameObject: {fileID: 1937534747383321431}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0.108, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 2151728958987135308}
+  - {fileID: 689398155025200244}
+  - {fileID: 2677507177568320531}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &-6372878388460448235
@@ -53,7 +60,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 35646f14cd32b504db0d206eca515b64, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TowerCost
-  cost: 450
+  cost: 125
 --- !u!114 &6825880120995313783
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -78,9 +85,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4a19a91366db874c9bdb2c6a84843d4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TowerIdentity
-  displayName: Coincaster
-  icon: {fileID: 21300000, guid: be93790986ec1914fafdf0d34dd8bb3b, type: 3}
-  towerFamilyKey: Coincaster
+  displayName: Evocationist
+  icon: {fileID: 21300000, guid: 63547566a6a728b4f91d249aeb220873, type: 3}
+  towerFamilyKey: 
   extraTags: []
 --- !u!114 &9198767423989168895
 MonoBehaviour:
@@ -94,14 +101,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b017d1163a12565449ef5c655fb61e62, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TowerUpgradeState
-  canUpgrade: 1
+  canUpgrade: 0
   hasTwoPaths: 0
-  displayLevel: 1
-  upgradeADescription: lets you spam upgrade for fun
-  upgradeACost: 1
+  displayLevel: 4
+  upgradeADescription: Shoots double projectiles with extra pierce!
+  upgradeACost: 1500
   upgradeAPrefab: {fileID: 1937534747383321431}
-  upgradeBDescription: Increased Fire Rate & Damage
-  upgradeBCost: 65
+  upgradeBDescription: Shoots higher damage projectiles!
+  upgradeBCost: 1500
   upgradeBPrefab: {fileID: 1937534747383321431, guid: ffd5b89fb7f7e0745aeac0122574159e, type: 3}
   levelUpTextPrefab: {fileID: 8985348834640522180, guid: 717c04aa96991dd43925ff0960dfe6fb, type: 3}
   levelUpYOffset: 0
@@ -119,6 +126,131 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TowerValueLedger
   canSell: 1
   totalSpent: 0
+--- !u!114 &3602398885712497751
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1937534747383321431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d581701fda38fc4c8e3b300b45b9d9c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TowerCombatStats
+  basePower: 3
+  baseSecondsBetweenShots: 0.45
+  basePierce: 8
+  baseRange: 3
+--- !u!114 &8455232979921060398
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1937534747383321431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 07871fc07221521458e810cd531370bf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TowerRangeProfile
+  shape: 0
+  singleBoxLocalCenter: {x: 0, y: 0, z: 0}
+  singleBoxBaseSize: {x: 1, y: 1, z: 4}
+  multiBoxDefinitions:
+  - localCenter: {x: 0, y: 0, z: 0}
+    baseSize: {x: 0.01, y: 0.01, z: 0.01}
+    extensionAxis: {x: 0, y: 0, z: 1}
+--- !u!114 &6630877168591428445
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1937534747383321431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a60dc3537bbf82c4881528875c85bb9e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TowerRangeQuery
+  combatStats: {fileID: 3602398885712497751}
+  rangeProfile: {fileID: 8455232979921060398}
+--- !u!114 &6772138513667187524
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1937534747383321431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2a89e224cdfcdc044b43518684866970, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TowerTargetingController
+  useTargetingModes: 1
+  defaultTargetingMode: 1
+  rangeQuery: {fileID: 6630877168591428445}
+--- !u!114 &-5030970616454914048
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1937534747383321431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aeff611ed2258e1479563c2e8eddebdb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TowerProjectileEmitter
+  combatStats: {fileID: 3602398885712497751}
+  rotationController: {fileID: -5336945119137476084}
+  towerIdentity: {fileID: -2177105339483779199}
+  visualSquash: {fileID: 4013274797365652579}
+  projectilePrefab: {fileID: 7313397994648493523, guid: 7cb40c470b40b8142b741024650284b3, type: 3}
+  projectileSpeed: 18
+  projectileLifetime: 0.15
+  effectMode: 0
+  firePoints:
+  - {fileID: 689398155025200244}
+  useAllFirePointsPerShot: 1
+  delayBeforeFirstShot: 0
+  burstCount: 2
+  delayBetweenBurstShots: 0.15
+  fireDirectionMode: 2
+  flattenAimedShotsToXZPlane: 1
+  flattenFixedForwardShotsToXZPlane: 0
+  shootSoundPrefab: {fileID: 7125198490331484351, guid: 5aa708711f22b7a49ab25091640a8a4c, type: 3}
+  soundOffset: {x: 0, y: 0, z: 0}
+--- !u!114 &-8808299984456531476
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1937534747383321431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bf3172c51ce2ef9478f82db91aae24c2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TowerAttackController
+  combatStats: {fileID: 3602398885712497751}
+  targetingController: {fileID: 6772138513667187524}
+  projectileEmitter: {fileID: -5030970616454914048}
+  debugLogAttacks: 0
+--- !u!114 &-4418911605106883157
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1937534747383321431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b230df570326cc143b29616b681fe6e6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TowerTargetingFeedback
+  worldSpacePopupPrefab: {fileID: 6565176689698462858, guid: f9c62a44afb42b647907b335e527ad68, type: 3}
+  worldOffset: {x: 0, y: 0.4, z: 0}
 --- !u!114 &-5336945119137476084
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -135,8 +267,8 @@ MonoBehaviour:
   functionalRoot: {fileID: 4607724837775410472}
   allowManualRotation: 1
   cardinalOnlyManualRotation: 0
-  nonCardinalManualStepDegrees: 15
-  manualRotationMode: 0
+  nonCardinalManualStepDegrees: 20
+  manualRotationMode: 1
   allowAttackWindupRotation: 1
   windupUsesYawOnly: 1
 --- !u!114 &2162596195956399744
@@ -153,23 +285,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TowerPlacementOrientation
   facingRule: 0
   cardinalOnly: 0
---- !u!114 &1138612233970405445
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1937534747383321431}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 90325b25824f708458e4c3f7dc428159, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EndOfWaveMoneyTower
-  towerIdentity: {fileID: -2177105339483779199}
-  outcomes:
-  - chance: 1
-    moneyChange: 175
---- !u!114 &1767062970180267421
+--- !u!114 &4013274797365652579
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -181,7 +297,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fba9ac3aa000a464681e51ce4802a129, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TowerVisualSquash
-  visualTarget: {fileID: 2151728958987135308}
+  visualTarget: {fileID: 2677507177568320531}
   fireCurve:
     serializedVersion: 2
     m_Curve:
@@ -286,14 +402,14 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  moneyDuration: 0.35
-  moneyIntensity: 5
+  moneyDuration: 0.28
+  moneyIntensity: 1
   horizontalScaleStrength: 0.22
   verticalScaleStrength: 0.22
   retriggerIntensityAdd: 0.2
   maxIntensity: 2
   visualHeight: 0
---- !u!1 &3618796580711442806
+--- !u!1 &2906364562466434970
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -301,7 +417,7 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 2151728958987135308}
+  - component: {fileID: 2677507177568320531}
   m_Layer: 0
   m_Name: Visual Pivot
   m_TagString: Untagged
@@ -309,93 +425,124 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &2151728958987135308
+--- !u!4 &2677507177568320531
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3618796580711442806}
+  m_GameObject: {fileID: 2906364562466434970}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.9, z: 0}
+  m_LocalPosition: {x: 0.49833608, y: -0.5, z: 0.04086686}
   m_LocalScale: {x: 2.662336, y: 2.662336, z: 2.662336}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 247906162866031629}
+  - {fileID: 8810770217578205347}
   m_Father: {fileID: 4607724837775410472}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1001 &358603698932280294
+--- !u!1 &4103327753956445793
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 689398155025200244}
+  m_Layer: 6
+  m_Name: Firepoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &689398155025200244
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4103327753956445793}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.375, z: 0.3}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4607724837775410472}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1001 &9064793501965383496
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 2151728958987135308}
+    m_TransformParent: {fileID: 2677507177568320531}
     m_Modifications:
-    - target: {fileID: -8679921383154817045, guid: 1381f45e69400644a972136ce6850e47, type: 3}
+    - target: {fileID: -8679921383154817045, guid: db6bfa115797e774c9f5aae21286574b, type: 3}
       propertyPath: m_LocalScale.x
       value: 0.37561
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 1381f45e69400644a972136ce6850e47, type: 3}
+    - target: {fileID: -8679921383154817045, guid: db6bfa115797e774c9f5aae21286574b, type: 3}
       propertyPath: m_LocalScale.y
       value: 0.37561
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 1381f45e69400644a972136ce6850e47, type: 3}
+    - target: {fileID: -8679921383154817045, guid: db6bfa115797e774c9f5aae21286574b, type: 3}
       propertyPath: m_LocalScale.z
       value: 0.37561
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 1381f45e69400644a972136ce6850e47, type: 3}
+    - target: {fileID: -8679921383154817045, guid: db6bfa115797e774c9f5aae21286574b, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: -0.18718001
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 1381f45e69400644a972136ce6850e47, type: 3}
+    - target: {fileID: -8679921383154817045, guid: db6bfa115797e774c9f5aae21286574b, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.338049
+      value: 0.19719523
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 1381f45e69400644a972136ce6850e47, type: 3}
+    - target: {fileID: -8679921383154817045, guid: db6bfa115797e774c9f5aae21286574b, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: -0.015350001
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 1381f45e69400644a972136ce6850e47, type: 3}
+    - target: {fileID: -8679921383154817045, guid: db6bfa115797e774c9f5aae21286574b, type: 3}
       propertyPath: m_LocalRotation.w
       value: -0.7071068
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 1381f45e69400644a972136ce6850e47, type: 3}
+    - target: {fileID: -8679921383154817045, guid: db6bfa115797e774c9f5aae21286574b, type: 3}
       propertyPath: m_LocalRotation.x
       value: -0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 1381f45e69400644a972136ce6850e47, type: 3}
+    - target: {fileID: -8679921383154817045, guid: db6bfa115797e774c9f5aae21286574b, type: 3}
       propertyPath: m_LocalRotation.y
       value: 0.7071068
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 1381f45e69400644a972136ce6850e47, type: 3}
+    - target: {fileID: -8679921383154817045, guid: db6bfa115797e774c9f5aae21286574b, type: 3}
       propertyPath: m_LocalRotation.z
       value: -0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 1381f45e69400644a972136ce6850e47, type: 3}
+    - target: {fileID: -8679921383154817045, guid: db6bfa115797e774c9f5aae21286574b, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 1381f45e69400644a972136ce6850e47, type: 3}
+    - target: {fileID: -8679921383154817045, guid: db6bfa115797e774c9f5aae21286574b, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
       value: 270
       objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 1381f45e69400644a972136ce6850e47, type: 3}
+    - target: {fileID: -8679921383154817045, guid: db6bfa115797e774c9f5aae21286574b, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 919132149155446097, guid: 1381f45e69400644a972136ce6850e47, type: 3}
+    - target: {fileID: 919132149155446097, guid: db6bfa115797e774c9f5aae21286574b, type: 3}
       propertyPath: m_Name
-      value: coincaster
+      value: evocationist
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 1381f45e69400644a972136ce6850e47, type: 3}
---- !u!4 &247906162866031629 stripped
+  m_SourcePrefab: {fileID: 100100000, guid: db6bfa115797e774c9f5aae21286574b, type: 3}
+--- !u!4 &8810770217578205347 stripped
 Transform:
-  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 1381f45e69400644a972136ce6850e47, type: 3}
-  m_PrefabInstance: {fileID: 358603698932280294}
+  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: db6bfa115797e774c9f5aae21286574b, type: 3}
+  m_PrefabInstance: {fileID: 9064793501965383496}
   m_PrefabAsset: {fileID: 0}

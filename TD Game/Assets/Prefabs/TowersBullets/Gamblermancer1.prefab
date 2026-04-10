@@ -173,12 +173,16 @@ MonoBehaviour:
     moneyChange: -25
   - chance: 0.2
     moneyChange: 0
-  - chance: 0.15
+  - chance: 0.13
     moneyChange: 50
-  - chance: 0.15
+  - chance: 0.12
     moneyChange: 100
   - chance: 0.1
     moneyChange: 200
+  - chance: 0.03
+    moneyChange: 500
+  - chance: 0.02
+    moneyChange: 1000
 --- !u!114 &1767062970180267421
 MonoBehaviour:
   m_ObjectHideFlags: 0

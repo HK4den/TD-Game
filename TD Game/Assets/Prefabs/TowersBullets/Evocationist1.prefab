@@ -60,7 +60,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 35646f14cd32b504db0d206eca515b64, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TowerCost
-  cost: 125
+  cost: 110
 --- !u!114 &6825880120995313783
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -102,11 +102,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TowerUpgradeState
   canUpgrade: 1
-  hasTwoPaths: 1
+  hasTwoPaths: 0
   displayLevel: 1
-  upgradeADescription: lets you spam upgrade for fun
-  upgradeACost: 1
-  upgradeAPrefab: {fileID: 1937534747383321431}
+  upgradeADescription: Bigger range & faster shooting
+  upgradeACost: 75
+  upgradeAPrefab: {fileID: 1937534747383321431, guid: 4ea08820fedc3df4db60dae022a2f38a, type: 3}
   upgradeBDescription: Increased Fire Rate & Damage
   upgradeBCost: 65
   upgradeBPrefab: {fileID: 1937534747383321431, guid: ffd5b89fb7f7e0745aeac0122574159e, type: 3}
@@ -139,7 +139,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TowerCombatStats
   basePower: 2
-  baseSecondsBetweenShots: 0.75
+  baseSecondsBetweenShots: 0.7
   basePierce: 3
   baseRange: 2
 --- !u!114 &8455232979921060398
