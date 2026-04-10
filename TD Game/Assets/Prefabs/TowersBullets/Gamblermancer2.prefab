@@ -19,7 +19,7 @@ GameObject:
   - component: {fileID: 1138612233970405445}
   - component: {fileID: 1767062970180267421}
   m_Layer: 6
-  m_Name: Gamblermancer1
+  m_Name: Gamblermancer2
   m_TagString: Tower
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -168,21 +168,21 @@ MonoBehaviour:
   towerIdentity: {fileID: -2177105339483779199}
   outcomes:
   - chance: 0.2
-    moneyChange: -100
+    moneyChange: -150
   - chance: 0.2
-    moneyChange: -50
+    moneyChange: -75
   - chance: 0.2
     moneyChange: 0
   - chance: 0.13
-    moneyChange: 100
+    moneyChange: 150
   - chance: 0.12
-    moneyChange: 200
+    moneyChange: 300
   - chance: 0.1
-    moneyChange: 400
+    moneyChange: 600
   - chance: 0.03
-    moneyChange: 900
+    moneyChange: 1200
   - chance: 0.02
-    moneyChange: 1300
+    moneyChange: 2175
 --- !u!114 &1767062970180267421
 MonoBehaviour:
   m_ObjectHideFlags: 0
