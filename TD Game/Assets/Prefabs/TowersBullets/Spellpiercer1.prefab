@@ -72,7 +72,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 35646f14cd32b504db0d206eca515b64, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TowerCost
-  cost: 350
+  cost: 275
 --- !u!114 &-2177105339483779199
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -138,7 +138,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7d581701fda38fc4c8e3b300b45b9d9c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TowerCombatStats
-  basePower: 6
+  basePower: 9
   baseSecondsBetweenShots: 2
   basePierce: 6
   baseRange: 4

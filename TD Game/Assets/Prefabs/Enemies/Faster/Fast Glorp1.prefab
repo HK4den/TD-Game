@@ -179,7 +179,7 @@ MonoBehaviour:
   baseHealth: {fileID: 0}
   nodeArriveDist: 0.08
   yOffset: 0
-  speed: 6
+  speed: 7.5
 --- !u!114 &-4781632782304773973
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -193,7 +193,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
   maxHP: 10
-  rewardMoney: 3
+  rewardMoney: 4
   visualRoot: {fileID: 0}
   deathAnimationDuration: 0.35
   minAxisRotationSpeed: 220

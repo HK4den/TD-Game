@@ -105,11 +105,11 @@ MonoBehaviour:
   hasTwoPaths: 1
   displayLevel: 3
   upgradeADescription: Shoots double projectiles with extra pierce!
-  upgradeACost: 1500
+  upgradeACost: 800
   upgradeAPrefab: {fileID: 1937534747383321431, guid: 1e758e28825441044865149c4c3ae61b, type: 3}
   upgradeBDescription: Lowers pierce by 1, but shoots higher damage projectiles &
     slows slightly!!
-  upgradeBCost: 2000
+  upgradeBCost: 100
   upgradeBPrefab: {fileID: 1937534747383321431, guid: acc3126fb8b937c41998b9151760c9d8, type: 3}
   levelUpTextPrefab: {fileID: 8985348834640522180, guid: 717c04aa96991dd43925ff0960dfe6fb, type: 3}
   levelUpYOffset: 0
@@ -139,7 +139,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7d581701fda38fc4c8e3b300b45b9d9c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TowerCombatStats
-  basePower: 3
+  basePower: 4
   baseSecondsBetweenShots: 0.45
   basePierce: 3
   baseRange: 3

@@ -5333,10 +5333,10 @@ MonoBehaviour:
   hasTwoPaths: 1
   displayLevel: 2
   upgradeADescription: Better slowing!
-  upgradeACost: 1
+  upgradeACost: 450
   upgradeAPrefab: {fileID: 1937534747383321431, guid: 07617a23073f0c540b3ac22ce27c57a0, type: 3}
   upgradeBDescription: Enemies in range take extra damage
-  upgradeBCost: 65
+  upgradeBCost: 1000
   upgradeBPrefab: {fileID: 1937534747383321431, guid: e2440165db551f84abaae623c70b79f9, type: 3}
   levelUpTextPrefab: {fileID: 8985348834640522180, guid: 717c04aa96991dd43925ff0960dfe6fb, type: 3}
   levelUpYOffset: 0

@@ -180,7 +180,7 @@ MonoBehaviour:
   baseHealth: {fileID: 0}
   nodeArriveDist: 0.08
   yOffset: 0
-  speed: 7.5
+  speed: 8
 --- !u!114 &-4781632782304773973
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -194,7 +194,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
   maxHP: 35
-  rewardMoney: 5
+  rewardMoney: 23
   visualRoot: {fileID: 0}
   deathAnimationDuration: 0.35
   minAxisRotationSpeed: 220
@@ -292,14 +292,14 @@ MonoBehaviour:
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
-      time: 0.339921
-      value: 1.1470395
-      inSlope: -0.6902108
-      outSlope: -0.6902108
+      time: 0.5250559
+      value: 1.2678891
+      inSlope: -0.49620384
+      outSlope: -0.49620384
       tangentMode: 0
       weightedMode: 0
       inWeight: 0.33333334
-      outWeight: 0.11680083
+      outWeight: 0.69902325
     - serializedVersion: 3
       time: 1
       value: 1
@@ -313,7 +313,7 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   minMultiplier: 0
-  maxMultiplier: 2
+  maxMultiplier: 8
   applyOnAwake: 1
   resetToOneOnDeath: 1
 --- !u!1 &8444857975423657386

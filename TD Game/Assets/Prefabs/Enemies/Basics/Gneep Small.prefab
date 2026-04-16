@@ -17,7 +17,7 @@ GameObject:
   - component: {fileID: 1884180157346559113}
   - component: {fileID: 5772933166727250945}
   m_Layer: 7
-  m_Name: Gneep
+  m_Name: Gneep Small
   m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -101,7 +101,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
   maxHP: 5
-  rewardMoney: 2
+  rewardMoney: 4
   visualRoot: {fileID: 6242888042476496939}
   deathAnimationDuration: 0.35
   minAxisRotationSpeed: 220

@@ -406,6 +406,17 @@
                 },
                 {
                     "name": "",
+                    "id": "41517043-47d1-4e9b-98d8-815fd41cd9bd",
+                    "path": "<Keyboard>/leftArrow",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "SecondaryClick",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "6fc058db-4504-4524-93be-ede74abfb1a4",
                     "path": "<Keyboard>/e",
                     "interactions": "",

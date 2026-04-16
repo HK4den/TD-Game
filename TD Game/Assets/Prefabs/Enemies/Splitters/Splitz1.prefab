@@ -103,7 +103,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
   maxHP: 25
-  rewardMoney: 5
+  rewardMoney: 16
   visualRoot: {fileID: 6242888042476496939}
   deathAnimationDuration: 0.35
   minAxisRotationSpeed: 220

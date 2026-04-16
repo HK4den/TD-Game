@@ -16,8 +16,9 @@ GameObject:
   - component: {fileID: 8133276463507527364}
   - component: {fileID: 1884180157346559113}
   - component: {fileID: 5772933166727250945}
+  - component: {fileID: 8052846248722007916}
   m_Layer: 7
-  m_Name: Gneeple
+  m_Name: Med Gneep
   m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -58,7 +59,7 @@ Rigidbody:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 256
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
   m_UseGravity: 1
@@ -87,7 +88,7 @@ MonoBehaviour:
   baseHealth: {fileID: 0}
   nodeArriveDist: 0.08
   yOffset: 0
-  speed: 1.75
+  speed: 1.5
 --- !u!114 &-4781632782304773973
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -100,8 +101,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 36df885e8b6ae464fbd208f8ff19e361, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
-  maxHP: 2
-  rewardMoney: 1
+  maxHP: 18
+  rewardMoney: 12
   visualRoot: {fileID: 6242888042476496939}
   deathAnimationDuration: 0.35
   minAxisRotationSpeed: 220
@@ -122,7 +123,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAbilities
   slowImmune: 0
-  slowResistancePercent: 0
+  slowResistancePercent: 0.3
   extraDamageTakenImmune: 0
   extraDamageTakenResistancePercent: 0
 --- !u!114 &8133276463507527364
@@ -172,6 +173,25 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.9999998, y: 1.2466522, z: 0.9999998}
   m_Center: {x: 0, y: 0.49564177, z: 0}
+--- !u!114 &8052846248722007916
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2509369039561855588}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b51b97734a12afe4197867474926b3d7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemySelfRegen
+  enemyHealth: {fileID: -4781632782304773973}
+  healPercentOfMaxPerTick: 0.2
+  tickInterval: 1.5
+  requireDelayAfterDamage: 0
+  delayAfterTakingDamage: 1.5
+  allowRegenAtFullHealth: 0
+  startReadyImmediately: 1
 --- !u!1001 &5848356105274855360
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -182,15 +202,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: eebff03b42dc4fc4aa9be8088199f413, type: 3}
       propertyPath: m_LocalScale.x
-      value: 25.197
+      value: 41.15118
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: eebff03b42dc4fc4aa9be8088199f413, type: 3}
       propertyPath: m_LocalScale.y
-      value: 25.197
+      value: 41.15118
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: eebff03b42dc4fc4aa9be8088199f413, type: 3}
       propertyPath: m_LocalScale.z
-      value: 25.197
+      value: 41.15118
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: eebff03b42dc4fc4aa9be8088199f413, type: 3}
       propertyPath: m_LocalPosition.x
@@ -206,7 +226,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: eebff03b42dc4fc4aa9be8088199f413, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.7071067
+      value: 0.7071068
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: eebff03b42dc4fc4aa9be8088199f413, type: 3}
       propertyPath: m_LocalRotation.x
@@ -218,11 +238,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: eebff03b42dc4fc4aa9be8088199f413, type: 3}
       propertyPath: m_LocalRotation.z
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: eebff03b42dc4fc4aa9be8088199f413, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
+      value: -90
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: eebff03b42dc4fc4aa9be8088199f413, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y

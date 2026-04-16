@@ -25,49 +25,49 @@ using UnityEngine.InputSystem.Utilities;
 /// <code>
 /// using namespace UnityEngine;
 /// using UnityEngine.InputSystem;
-///
+/// 
 /// // Example of using an InputActionMap named "Player" from a UnityEngine.MonoBehaviour implementing callback interface.
 /// public class Example : MonoBehaviour, MyActions.IPlayerActions
 /// {
 ///     private MyActions_Actions m_Actions;                  // Source code representation of asset.
 ///     private MyActions_Actions.PlayerActions m_Player;     // Source code representation of action map.
-///
+/// 
 ///     void Awake()
 ///     {
 ///         m_Actions = new MyActions_Actions();              // Create asset object.
 ///         m_Player = m_Actions.Player;                      // Extract action map object.
 ///         m_Player.AddCallbacks(this);                      // Register callback interface IPlayerActions.
 ///     }
-///
+/// 
 ///     void OnDestroy()
 ///     {
 ///         m_Actions.Dispose();                              // Destroy asset object.
 ///     }
-///
+/// 
 ///     void OnEnable()
 ///     {
 ///         m_Player.Enable();                                // Enable all actions within map.
 ///     }
-///
+/// 
 ///     void OnDisable()
 ///     {
 ///         m_Player.Disable();                               // Disable all actions within map.
 ///     }
-///
+/// 
 ///     #region Interface implementation of MyActions.IPlayerActions
-///
+/// 
 ///     // Invoked when "Move" action is either started, performed or canceled.
 ///     public void OnMove(InputAction.CallbackContext context)
 ///     {
 ///         Debug.Log($"OnMove: {context.ReadValue&lt;Vector2&gt;()}");
 ///     }
-///
+/// 
 ///     // Invoked when "Attack" action is either started, performed or canceled.
 ///     public void OnAttack(InputAction.CallbackContext context)
 ///     {
 ///         Debug.Log($"OnAttack: {context.ReadValue&lt;float&gt;()}");
 ///     }
-///
+/// 
 ///     #endregion
 /// }
 /// </code>
@@ -483,6 +483,17 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""name"": """",
                     ""id"": ""f36bc54b-404b-413a-9471-0ba84a17e481"",
                     ""path"": ""<Gamepad>/leftTrigger"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""SecondaryClick"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""41517043-47d1-4e9b-98d8-815fd41cd9bd"",
+                    ""path"": ""<Keyboard>/leftArrow"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",

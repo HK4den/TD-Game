@@ -60,7 +60,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 35646f14cd32b504db0d206eca515b64, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TowerCost
-  cost: 300
+  cost: 225
 --- !u!114 &6825880120995313783
 MonoBehaviour:
   m_ObjectHideFlags: 0

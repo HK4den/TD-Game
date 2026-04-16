@@ -94,9 +94,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b017d1163a12565449ef5c655fb61e62, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TowerUpgradeState
-  canUpgrade: 1
+  canUpgrade: 0
   hasTwoPaths: 0
-  displayLevel: 1
+  displayLevel: 3
   upgradeADescription: LET IT RIIIIDE
   upgradeACost: 750
   upgradeAPrefab: {fileID: 1937534747383321431}

@@ -63,7 +63,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 35646f14cd32b504db0d206eca515b64, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TowerCost
-  cost: 75
+  cost: 85
 --- !u!114 &6825880120995313783
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -108,7 +108,7 @@ MonoBehaviour:
   hasTwoPaths: 0
   displayLevel: 1
   upgradeADescription: Bigger range and shoots in more directions!
-  upgradeACost: 400
+  upgradeACost: 325
   upgradeAPrefab: {fileID: 1937534747383321431, guid: 9fbd5c65a0cb5cf4ab5857d6bf5cff3a, type: 3}
   upgradeBDescription: Increased Fire Rate & Damage
   upgradeBCost: 65

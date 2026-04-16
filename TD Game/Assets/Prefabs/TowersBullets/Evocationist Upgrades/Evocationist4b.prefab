@@ -138,7 +138,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7d581701fda38fc4c8e3b300b45b9d9c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TowerCombatStats
-  basePower: 10
+  basePower: 14
   baseSecondsBetweenShots: 0.45
   basePierce: 2
   baseRange: 3

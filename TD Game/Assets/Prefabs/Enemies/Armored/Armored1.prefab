@@ -100,8 +100,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 36df885e8b6ae464fbd208f8ff19e361, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
-  maxHP: 50
-  rewardMoney: 5
+  maxHP: 40
+  rewardMoney: 26
   visualRoot: {fileID: 0}
   deathAnimationDuration: 0.35
   minAxisRotationSpeed: 220
@@ -122,9 +122,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAbilities
   slowImmune: 0
-  slowResistancePercent: 0.5
+  slowResistancePercent: 0.35
   extraDamageTakenImmune: 0
-  extraDamageTakenResistancePercent: 0.5
+  extraDamageTakenResistancePercent: 0.35
 --- !u!114 &8133276463507527364
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -182,15 +182,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: eebff03b42dc4fc4aa9be8088199f413, type: 3}
       propertyPath: m_LocalScale.x
-      value: 18.141937
+      value: 21.888319
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: eebff03b42dc4fc4aa9be8088199f413, type: 3}
       propertyPath: m_LocalScale.y
-      value: 18.141937
+      value: 21.888319
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: eebff03b42dc4fc4aa9be8088199f413, type: 3}
       propertyPath: m_LocalScale.z
-      value: 18.141937
+      value: 21.888319
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: eebff03b42dc4fc4aa9be8088199f413, type: 3}
       propertyPath: m_LocalPosition.x

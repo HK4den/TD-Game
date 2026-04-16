@@ -193,8 +193,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 36df885e8b6ae464fbd208f8ff19e361, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
-  maxHP: 75
-  rewardMoney: 10
+  maxHP: 65
+  rewardMoney: 35
   visualRoot: {fileID: 0}
   deathAnimationDuration: 0.35
   minAxisRotationSpeed: 220
@@ -313,7 +313,7 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   minMultiplier: 0
-  maxMultiplier: 4
+  maxMultiplier: 6
   applyOnAwake: 1
   resetToOneOnDeath: 1
 --- !u!1 &8444857975423657386
