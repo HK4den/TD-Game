@@ -61,12 +61,12 @@ public class EconomyManager : MonoBehaviour
 
         if (Money < amount)
         {
-            Debug.Log($"[Economy] FAILED spend {amount} (have {Money}) (manager: {name})");
+            //Debug.Log($"[Economy] FAILED spend {amount} (have {Money}) (manager: {name})");
             return false;
         }
 
         Money -= amount;
-        Debug.Log($"[Economy] -{amount} => {Money} (manager: {name})");
+        //Debug.Log($"[Economy] -{amount} => {Money} (manager: {name})");
         OnMoneyChanged?.Invoke(Money);
         return true;
     }

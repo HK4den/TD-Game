@@ -81,7 +81,7 @@ public class TowerAttackController : MonoBehaviour
         if (debugLogAttacks)
         {
             string targetName = lockedTarget != null ? lockedTarget.name : "(none)";
-            Debug.Log($"[TowerAttackController] Attack started by {name} target={targetName}");
+            //Debug.Log($"[TowerAttackController] Attack started by {name} target={targetName}");
         }
     }
 

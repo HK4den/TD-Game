@@ -107,6 +107,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 248a94cdee24dc644a2ee23e4b733b50, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Billboard
+  rotateOverTime: 0
+  rotationSpeed: 90
+  rotationMode: 0
 --- !u!1 &5053428989181277274
 GameObject:
   m_ObjectHideFlags: 0
