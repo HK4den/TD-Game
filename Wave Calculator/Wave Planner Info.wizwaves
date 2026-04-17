@@ -1,0 +1,205 @@
+{
+  "meta": {
+    "project_name": "Wizliens Wave Planner"
+  },
+  "settings": {
+    "default_completion_reward": 75.0
+  },
+  "enemies": [
+    {
+      "name": "gneep xsmall",
+      "hp": 2.0,
+      "speed": 1.75,
+      "money_on_death": 2.0,
+      "description": "default 2hp starter enemy"
+    },
+    {
+      "name": "gneep small",
+      "hp": 5.0,
+      "speed": 2.25,
+      "money_on_death": 4.0,
+      "description": ""
+    },
+    {
+      "name": "gneep norm",
+      "hp": 12.0,
+      "speed": 2.4,
+      "money_on_death": 8.0,
+      "description": ""
+    },
+    {
+      "name": "gleep med",
+      "hp": 18.0,
+      "speed": 1.5,
+      "money_on_death": 12.0,
+      "description": ""
+    },
+    {
+      "name": "gleep big",
+      "hp": 26.0,
+      "speed": 2.5,
+      "money_on_death": 18.0,
+      "description": ""
+    },
+    {
+      "name": "splitz 1",
+      "hp": 25.0,
+      "speed": 5.0,
+      "money_on_death": 16.0,
+      "description": "Splits into 8 4 hp enemies on death"
+    },
+    {
+      "name": "splitz 2",
+      "hp": 55.0,
+      "speed": 5.0,
+      "money_on_death": 36.0,
+      "description": "Splits into 10 10 hp little enemies on death"
+    },
+    {
+      "name": "armored 1",
+      "hp": 40.0,
+      "speed": 3.5,
+      "money_on_death": 26.0,
+      "description": "30% resistant to slowness and extra damage effects"
+    },
+    {
+      "name": "armored 2",
+      "hp": 75.0,
+      "speed": 3.5,
+      "money_on_death": 50.0,
+      "description": "40% resistant to slowness and extra damage effects"
+    },
+    {
+      "name": "Fast Glorp 1",
+      "hp": 10.0,
+      "speed": 7.5,
+      "money_on_death": 4.0,
+      "description": "Just basic & fast"
+    },
+    {
+      "name": "Fast Glorp 2",
+      "hp": 35.0,
+      "speed": 8.0,
+      "money_on_death": 23.0,
+      "description": "Gets faster with less hp"
+    },
+    {
+      "name": "Fast Glorp 3",
+      "hp": 65.0,
+      "speed": 12.0,
+      "money_on_death": 35.0,
+      "description": "Gets faster with less hp"
+    },
+    {
+      "name": "Fast Glorp 4",
+      "hp": 250.0,
+      "speed": 6.0,
+      "money_on_death": 166.0,
+      "description": "Gets really fast with less hp"
+    }
+  ],
+  "waves": [
+    {
+      "name": "Wave 1",
+      "completion_reward": 50.0,
+      "groups": [
+        {
+          "enemy_name": "gneep xsmall",
+          "count": 5,
+          "spawn_interval": 1.25,
+          "delay_after_group": 1.0
+        },
+        {
+          "enemy_name": "gneep xsmall",
+          "count": 5,
+          "spawn_interval": 0.75,
+          "delay_after_group": 0.25
+        }
+      ]
+    },
+    {
+      "name": "Wave 2",
+      "completion_reward": 75.0,
+      "groups": [
+        {
+          "enemy_name": "gneep xsmall",
+          "count": 5,
+          "spawn_interval": 0.75,
+          "delay_after_group": 0.5
+        },
+        {
+          "enemy_name": "gneep xsmall",
+          "count": 3,
+          "spawn_interval": 0.35,
+          "delay_after_group": 0.35
+        },
+        {
+          "enemy_name": "gneep xsmall",
+          "count": 10,
+          "spawn_interval": 0.6,
+          "delay_after_group": 0.25
+        }
+      ]
+    },
+    {
+      "name": "Wave 3",
+      "completion_reward": 75.0,
+      "groups": [
+        {
+          "enemy_name": "gneep xsmall",
+          "count": 5,
+          "spawn_interval": 0.3,
+          "delay_after_group": 0.4
+        },
+        {
+          "enemy_name": "gneep xsmall",
+          "count": 3,
+          "spawn_interval": 0.8,
+          "delay_after_group": 0.35
+        },
+        {
+          "enemy_name": "gneep xsmall",
+          "count": 12,
+          "spawn_interval": 0.6,
+          "delay_after_group": 0.3
+        },
+        {
+          "enemy_name": "gneep xsmall",
+          "count": 12,
+          "spawn_interval": 0.45,
+          "delay_after_group": 0.25
+        }
+      ]
+    },
+    {
+      "name": "Wave 4",
+      "completion_reward": 75.0,
+      "groups": [
+        {
+          "enemy_name": "gneep xsmall",
+          "count": 5,
+          "spawn_interval": 0.65,
+          "delay_after_group": 0.75
+        },
+        {
+          "enemy_name": "gneep small",
+          "count": 3,
+          "spawn_interval": 1.5,
+          "delay_after_group": 0.75
+        },
+        {
+          "enemy_name": "gneep xsmall",
+          "count": 5,
+          "spawn_interval": 0.3,
+          "delay_after_group": 0.25
+        },
+        {
+          "enemy_name": "gneep small",
+          "count": 5,
+          "spawn_interval": 1.0,
+          "delay_after_group": 0.25
+        }
+      ]
+    }
+  ]
+}
