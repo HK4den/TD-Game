@@ -3,22 +3,27 @@ using UnityEngine.SceneManagement;
 
 public class MainMenu : MonoBehaviour
 {
-    // Load the main game scene
+    private void ResetTime()
+    {
+        Time.timeScale = 1f;
+        Time.fixedDeltaTime = 0.02f;
+    }
+
     public void StartGame()
     {
-        SceneManager.LoadScene("Tower Defense Test"); // Replace with your actual scene name
+        ResetTime();
+        SceneManager.LoadScene("Tower Defense Test");
     }
 
-    // Load the cutscene scene
     public void RestartCutscene()
     {
-        SceneManager.LoadScene("Opening"); // Replace with your actual scene name
+        ResetTime();
+        SceneManager.LoadScene("Opening");
     }
 
-    // Quit the game
     public void QuitGame()
     {
-        Debug.Log("Quit Game"); // Helps in editor testing
+        Debug.Log("Quit Game");
         Application.Quit();
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
@@ -27,6 +32,7 @@ public class MainMenu : MonoBehaviour
 
     public void MainMenuTeleport()
     {
-        SceneManager.LoadScene("MainMenu"); // Replace with your actual scene name
+        ResetTime();
+        SceneManager.LoadScene("MainMenu");
     }
 }

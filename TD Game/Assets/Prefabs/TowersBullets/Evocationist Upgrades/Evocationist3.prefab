@@ -109,7 +109,7 @@ MonoBehaviour:
   upgradeAPrefab: {fileID: 1937534747383321431, guid: 1e758e28825441044865149c4c3ae61b, type: 3}
   upgradeBDescription: Lowers pierce by 1, but shoots higher damage projectiles &
     slows slightly!!
-  upgradeBCost: 100
+  upgradeBCost: 1350
   upgradeBPrefab: {fileID: 1937534747383321431, guid: acc3126fb8b937c41998b9151760c9d8, type: 3}
   levelUpTextPrefab: {fileID: 8985348834640522180, guid: 717c04aa96991dd43925ff0960dfe6fb, type: 3}
   levelUpYOffset: 0

@@ -53,7 +53,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 35646f14cd32b504db0d206eca515b64, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TowerCost
-  cost: 300
+  cost: 350
 --- !u!114 &6825880120995313783
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -98,7 +98,7 @@ MonoBehaviour:
   hasTwoPaths: 0
   displayLevel: 1
   upgradeADescription: Win bigger lose more-er!
-  upgradeACost: 450
+  upgradeACost: 525
   upgradeAPrefab: {fileID: 1937534747383321431, guid: 0fc624067ccc53c4e8962d986bb4ffc5, type: 3}
   upgradeBDescription: Increased Fire Rate & Damage
   upgradeBCost: 65

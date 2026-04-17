@@ -21,7 +21,10 @@ public class GameEndController : MonoBehaviour
     private void Awake()
     {
         originalFixedDeltaTime = Time.fixedDeltaTime;
+
         IsGameEnded = false;
+        Time.timeScale = 1f;
+        Time.fixedDeltaTime = originalFixedDeltaTime;
 
         if (baseHealth == null)
             baseHealth = FindFirstObjectByType<BaseHealth>();
@@ -67,10 +70,7 @@ public class GameEndController : MonoBehaviour
 
     private void HandleWaveCompleted(int completedWaveNumber, int reward)
     {
-        if (IsGameEnded)
-            return;
-
-        if (waveSpawner == null)
+        if (IsGameEnded || waveSpawner == null)
             return;
 
         if (completedWaveNumber >= waveSpawner.TotalWaves)
@@ -81,7 +81,7 @@ public class GameEndController : MonoBehaviour
     {
         IsGameEnded = true;
 
-        // Force the regular pause state off so the pause menu does not stay open.
+        // Make sure normal pause state is off so the pause menu doesn't stay open.
         PauseState.SetPaused(false);
 
         if (winPanelRoot != null)
@@ -90,8 +90,8 @@ public class GameEndController : MonoBehaviour
         if (losePanelRoot != null)
             losePanelRoot.SetActive(!won);
 
+        // Pause game.
         Time.timeScale = 0f;
-        Time.fixedDeltaTime = 0f;
 
         if (playerLook != null)
         {
@@ -107,20 +107,13 @@ public class GameEndController : MonoBehaviour
         Debug.Log(won ? "YOU WIN" : "YOU LOSE");
     }
 
-    public static void ResetGameEndState()
-    {
-        IsGameEnded = false;
-    }
-
     private void OnDestroy()
     {
         if (!Application.isPlaying)
             return;
 
-        if (!IsGameEnded)
-        {
-            Time.timeScale = 1f;
-            Time.fixedDeltaTime = originalFixedDeltaTime;
-        }
+        // Always restore time when this controller is destroyed.
+        Time.timeScale = 1f;
+        Time.fixedDeltaTime = originalFixedDeltaTime;
     }
 }

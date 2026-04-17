@@ -98,7 +98,7 @@ MonoBehaviour:
   hasTwoPaths: 0
   displayLevel: 2
   upgradeADescription: LET IT RIIIIDE
-  upgradeACost: 750
+  upgradeACost: 875
   upgradeAPrefab: {fileID: 1937534747383321431, guid: 08dce9826d2ec55479a4d4d154f83d7e, type: 3}
   upgradeBDescription: Increased Fire Rate & Damage
   upgradeBCost: 65

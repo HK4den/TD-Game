@@ -95,7 +95,6 @@ public class PauseMenuController : MonoBehaviour
         if (paused)
         {
             Time.timeScale = 0f;
-            Time.fixedDeltaTime = 0f;
 
             Cursor.visible = true;
             Cursor.lockState = CursorLockMode.None;
@@ -162,8 +161,6 @@ public class PauseMenuController : MonoBehaviour
 
     public void QuitToMenu()
     {
-        GameEndController.ResetGameEndState();
-
         Time.timeScale = 1f;
         Time.fixedDeltaTime = originalFixedDeltaTime;
         PauseState.SetPaused(false);
