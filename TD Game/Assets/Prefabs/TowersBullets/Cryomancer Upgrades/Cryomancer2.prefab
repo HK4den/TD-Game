@@ -47,18 +47,15 @@ GameObject:
   - component: {fileID: 1437726011874828955}
   - component: {fileID: 5995808398355420564}
   - component: {fileID: 1195776450805550954}
-  - component: {fileID: 5573293120056219482}
   - component: {fileID: 4061192158899517758}
-  - component: {fileID: 6061209613409951065}
   - component: {fileID: 5078816105776202478}
-  - component: {fileID: 7301227135809037560}
   m_Layer: 6
   m_Name: Cryomancer1
   m_TagString: Tower
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &2660184461183932244
 Transform:
   m_ObjectHideFlags: 0
@@ -71,13 +68,7 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 3545736205725912389}
-  - {fileID: 7477394381190730186}
-  - {fileID: 5712333010446305965}
-  - {fileID: 6555110766356908378}
-  - {fileID: 5076115052585815172}
-  - {fileID: 9106917443306564459}
+  m_Children: []
   m_Father: {fileID: 4607724837775410472}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &6791343731518469491
@@ -173,9 +164,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TowerProjectileEmitter
   combatStats: {fileID: 5683179169420486940}
-  rotationController: {fileID: 6061209613409951065}
+  rotationController: {fileID: 0}
   towerIdentity: {fileID: 6791343731518469491}
-  visualSquash: {fileID: 7301227135809037560}
+  visualSquash: {fileID: 0}
   projectilePrefab: {fileID: 7313397994648493523, guid: 8f2713eb34a2f204e944b010f049fc42, type: 3}
   projectileSpeed: 10
   projectileLifetime: 0.15
@@ -191,22 +182,6 @@ MonoBehaviour:
   flattenFixedForwardShotsToXZPlane: 0
   shootSoundPrefab: {fileID: 7125198490331484351, guid: 5aa708711f22b7a49ab25091640a8a4c, type: 3}
   soundOffset: {x: 0, y: 0, z: 0}
---- !u!114 &5573293120056219482
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1093286404783710503}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bf3172c51ce2ef9478f82db91aae24c2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TowerAttackController
-  combatStats: {fileID: 5683179169420486940}
-  targetingController: {fileID: 5995808398355420564}
-  projectileEmitter: {fileID: 1195776450805550954}
-  debugLogAttacks: 0
 --- !u!114 &4061192158899517758
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -221,26 +196,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TowerTargetingFeedback
   worldSpacePopupPrefab: {fileID: 6565176689698462858, guid: f9c62a44afb42b647907b335e527ad68, type: 3}
   worldOffset: {x: 0, y: 0.4, z: 0}
---- !u!114 &6061209613409951065
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1093286404783710503}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8c83c8479aa25094a8a67132e712e21d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TowerRotationController
-  visualRoot: {fileID: 2660184461183932244}
-  functionalRoot: {fileID: 2660184461183932244}
-  allowManualRotation: 1
-  cardinalOnlyManualRotation: 1
-  nonCardinalManualStepDegrees: 90
-  manualRotationMode: 0
-  allowAttackWindupRotation: 1
-  windupUsesYawOnly: 1
 --- !u!114 &5078816105776202478
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -255,130 +210,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TowerPlacementOrientation
   facingRule: 1
   cardinalOnly: 1
---- !u!114 &7301227135809037560
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1093286404783710503}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fba9ac3aa000a464681e51ce4802a129, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TowerVisualSquash
-  visualTarget: {fileID: 2634816892726002007}
-  fireCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 0.1670875
-      value: 0.40495104
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 0.56851697
-      value: -0.14535776
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 0.8639801
-      value: -0.0005828887
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  fireDuration: 1
-  fireIntensity: 2
-  moneyCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 0.18
-      value: -0.8
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 0.42
-      value: 0.9
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 0.7
-      value: -0.15
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  moneyDuration: 0.28
-  moneyIntensity: 1
-  horizontalScaleStrength: 0.22
-  verticalScaleStrength: 0.22
-  retriggerIntensityAdd: 0.2
-  maxIntensity: 2
-  visualHeight: 0
 --- !u!1 &1882143443704479512
 GameObject:
   m_ObjectHideFlags: 0
@@ -405,12 +236,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1882143443704479512}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
+  m_LocalRotation: {x: 0.7071068, y: -0, z: -0, w: 0.7071068}
   m_LocalPosition: {x: 0, y: 0.21799996, z: 0}
-  m_LocalScale: {x: 0.10643598, y: 0.10643598, z: 0.10643598}
+  m_LocalScale: {x: 0.10643598, y: 0.106435984, z: 0.106435984}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 2660184461183932244}
+  m_Father: {fileID: 4607724837775410472}
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
 --- !u!198 &7553189318687379095
 ParticleSystem:
@@ -5146,7 +4977,7 @@ ParticleSystem:
     vectorLabel1_3: W
 --- !u!199 &6414680701685480868
 ParticleSystemRenderer:
-  serializedVersion: 6
+  serializedVersion: 7
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -5192,6 +5023,7 @@ ParticleSystemRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_RenderMode: 0
   m_MeshDistribution: 0
   m_SortMode: 0
@@ -5223,7 +5055,6 @@ ParticleSystemRenderer:
   m_MeshWeighting1: 1
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
-  m_MaskInteraction: 0
 --- !u!1 &1937534747383321431
 GameObject:
   m_ObjectHideFlags: 0
@@ -5241,11 +5072,14 @@ GameObject:
   - component: {fileID: 3602398885712497751}
   - component: {fileID: 8455232979921060398}
   - component: {fileID: 6630877168591428445}
+  - component: {fileID: 6887654037786858985}
   - component: {fileID: 6772138513667187524}
   - component: {fileID: -4418911605106883157}
   - component: {fileID: -5336945119137476084}
   - component: {fileID: 2162596195956399744}
   - component: {fileID: 8362256265528784992}
+  - component: {fileID: 638894840584132351}
+  - component: {fileID: 5447558017506150686}
   m_Layer: 6
   m_Name: Cryomancer2
   m_TagString: Tower
@@ -5267,6 +5101,12 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2660184461183932244}
+  - {fileID: 3545736205725912389}
+  - {fileID: 7477394381190730186}
+  - {fileID: 5712333010446305965}
+  - {fileID: 6555110766356908378}
+  - {fileID: 5076115052585815172}
+  - {fileID: 9106917443306564459}
   - {fileID: 689398155025200244}
   - {fileID: 2807361789616891304}
   - {fileID: 6311420003206680929}
@@ -5367,7 +5207,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TowerCombatStats
   basePower: 1
-  baseSecondsBetweenShots: 1.5
+  baseSecondsBetweenShots: 2
   basePierce: 1
   baseRange: 1
 --- !u!114 &8455232979921060398
@@ -5403,6 +5243,37 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TowerRangeQuery
   combatStats: {fileID: 3602398885712497751}
   rangeProfile: {fileID: 8455232979921060398}
+--- !u!114 &6887654037786858985
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1937534747383321431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aeff611ed2258e1479563c2e8eddebdb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TowerProjectileEmitter
+  combatStats: {fileID: 3602398885712497751}
+  rotationController: {fileID: -5336945119137476084}
+  towerIdentity: {fileID: -2177105339483779199}
+  visualSquash: {fileID: 638894840584132351}
+  projectilePrefab: {fileID: 7313397994648493523, guid: 8f2713eb34a2f204e944b010f049fc42, type: 3}
+  projectileSpeed: 10
+  projectileLifetime: 0.15
+  effectMode: 0
+  firePoints:
+  - {fileID: 3545736205725912389}
+  useAllFirePointsPerShot: 1
+  delayBeforeFirstShot: 0
+  burstCount: 1
+  delayBetweenBurstShots: 0
+  fireDirectionMode: 2
+  flattenAimedShotsToXZPlane: 0
+  flattenFixedForwardShotsToXZPlane: 0
+  shootSoundPrefab: {fileID: 7125198490331484351, guid: 5aa708711f22b7a49ab25091640a8a4c, type: 3}
+  soundOffset: {x: 0, y: 0, z: 0}
 --- !u!114 &6772138513667187524
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5485,6 +5356,146 @@ MonoBehaviour:
   slowPercent: 0.45
   applyExtraDamageTaken: 0
   extraDamageTakenPercent: 5
+--- !u!114 &638894840584132351
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1937534747383321431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fba9ac3aa000a464681e51ce4802a129, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TowerVisualSquash
+  visualTarget: {fileID: 2634816892726002007}
+  fireCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.1670875
+      value: 0.40495104
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.56851697
+      value: -0.14535776
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.8639801
+      value: -0.0005828887
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  fireDuration: 1
+  fireIntensity: 2
+  moneyCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.18
+      value: -0.8
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.42
+      value: 0.9
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.7
+      value: -0.15
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  moneyDuration: 0.28
+  moneyIntensity: 1
+  horizontalScaleStrength: 0.22
+  verticalScaleStrength: 0.22
+  retriggerIntensityAdd: 0.2
+  maxIntensity: 2
+  visualHeight: 0
+--- !u!114 &5447558017506150686
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1937534747383321431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bf3172c51ce2ef9478f82db91aae24c2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TowerAttackController
+  combatStats: {fileID: 3602398885712497751}
+  targetingController: {fileID: 6772138513667187524}
+  projectileEmitter: {fileID: 6887654037786858985}
+  debugLogAttacks: 0
 --- !u!1 &1984869419482278443
 GameObject:
   m_ObjectHideFlags: 0
@@ -5509,12 +5520,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1984869419482278443}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 2660184461183932244}
+  m_Father: {fileID: 4607724837775410472}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2759394893733142830
 GameObject:
@@ -10283,7 +10294,7 @@ ParticleSystem:
     vectorLabel1_3: W
 --- !u!199 &1355514072030472960
 ParticleSystemRenderer:
-  serializedVersion: 6
+  serializedVersion: 7
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -10329,6 +10340,7 @@ ParticleSystemRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_RenderMode: 0
   m_MeshDistribution: 0
   m_SortMode: 0
@@ -10360,7 +10372,6 @@ ParticleSystemRenderer:
   m_MeshWeighting1: 1
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
-  m_MaskInteraction: 0
 --- !u!1 &3143674064347379008
 GameObject:
   m_ObjectHideFlags: 0
@@ -15128,7 +15139,7 @@ ParticleSystem:
     vectorLabel1_3: W
 --- !u!199 &1721261609058810302
 ParticleSystemRenderer:
-  serializedVersion: 6
+  serializedVersion: 7
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -15174,6 +15185,7 @@ ParticleSystemRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_RenderMode: 0
   m_MeshDistribution: 0
   m_SortMode: 0
@@ -15205,7 +15217,6 @@ ParticleSystemRenderer:
   m_MeshWeighting1: 1
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
-  m_MaskInteraction: 0
 --- !u!1 &4103327753956445793
 GameObject:
   m_ObjectHideFlags: 0
@@ -15263,12 +15274,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5162333675589039693}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
+  m_LocalRotation: {x: 0.7071068, y: -0, z: -0, w: 0.7071068}
   m_LocalPosition: {x: -0.5, y: 0.218, z: -0.5}
-  m_LocalScale: {x: 0.10643598, y: 0.10643598, z: 0.10643598}
+  m_LocalScale: {x: 0.10643598, y: 0.106435984, z: 0.106435984}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 2660184461183932244}
+  m_Father: {fileID: 4607724837775410472}
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
 --- !u!198 &5005948541954527825
 ParticleSystem:
@@ -20004,7 +20015,7 @@ ParticleSystem:
     vectorLabel1_3: W
 --- !u!199 &5785888276116483897
 ParticleSystemRenderer:
-  serializedVersion: 6
+  serializedVersion: 7
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -20050,6 +20061,7 @@ ParticleSystemRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_RenderMode: 0
   m_MeshDistribution: 0
   m_SortMode: 0
@@ -20081,7 +20093,6 @@ ParticleSystemRenderer:
   m_MeshWeighting1: 1
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
-  m_MaskInteraction: 0
 --- !u!1 &5575211991500497215
 GameObject:
   m_ObjectHideFlags: 0
@@ -24849,7 +24860,7 @@ ParticleSystem:
     vectorLabel1_3: W
 --- !u!199 &833474180000392539
 ParticleSystemRenderer:
-  serializedVersion: 6
+  serializedVersion: 7
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -24895,6 +24906,7 @@ ParticleSystemRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_RenderMode: 0
   m_MeshDistribution: 0
   m_SortMode: 0
@@ -24926,7 +24938,6 @@ ParticleSystemRenderer:
   m_MeshWeighting1: 1
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
-  m_MaskInteraction: 0
 --- !u!1 &6563724055169786591
 GameObject:
   m_ObjectHideFlags: 0
@@ -24953,12 +24964,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6563724055169786591}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
+  m_LocalRotation: {x: 0.7071068, y: -0, z: -0, w: 0.7071068}
   m_LocalPosition: {x: 0.5, y: 0.21799996, z: 0.5}
-  m_LocalScale: {x: 0.10643598, y: 0.10643598, z: 0.10643598}
+  m_LocalScale: {x: 0.10643598, y: 0.106435984, z: 0.106435984}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 2660184461183932244}
+  m_Father: {fileID: 4607724837775410472}
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
 --- !u!198 &1674365528527962289
 ParticleSystem:
@@ -29694,7 +29705,7 @@ ParticleSystem:
     vectorLabel1_3: W
 --- !u!199 &2415166690211276860
 ParticleSystemRenderer:
-  serializedVersion: 6
+  serializedVersion: 7
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -29740,6 +29751,7 @@ ParticleSystemRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_RenderMode: 0
   m_MeshDistribution: 0
   m_SortMode: 0
@@ -29771,7 +29783,6 @@ ParticleSystemRenderer:
   m_MeshWeighting1: 1
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
-  m_MaskInteraction: 0
 --- !u!1 &7165319388046551407
 GameObject:
   m_ObjectHideFlags: 0
@@ -34539,7 +34550,7 @@ ParticleSystem:
     vectorLabel1_3: W
 --- !u!199 &8161964412567695091
 ParticleSystemRenderer:
-  serializedVersion: 6
+  serializedVersion: 7
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -34585,6 +34596,7 @@ ParticleSystemRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_RenderMode: 0
   m_MeshDistribution: 0
   m_SortMode: 0
@@ -34616,7 +34628,6 @@ ParticleSystemRenderer:
   m_MeshWeighting1: 1
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
-  m_MaskInteraction: 0
 --- !u!1 &8097506555304647688
 GameObject:
   m_ObjectHideFlags: 0
@@ -34643,12 +34654,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8097506555304647688}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
+  m_LocalRotation: {x: 0.7071068, y: -0, z: -0, w: 0.7071068}
   m_LocalPosition: {x: 0.5, y: 0.21799996, z: -0.5}
-  m_LocalScale: {x: 0.10643598, y: 0.10643598, z: 0.10643598}
+  m_LocalScale: {x: 0.10643598, y: 0.106435984, z: 0.106435984}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 2660184461183932244}
+  m_Father: {fileID: 4607724837775410472}
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
 --- !u!198 &7352448864292061532
 ParticleSystem:
@@ -39384,7 +39395,7 @@ ParticleSystem:
     vectorLabel1_3: W
 --- !u!199 &8981799973299116263
 ParticleSystemRenderer:
-  serializedVersion: 6
+  serializedVersion: 7
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -39430,6 +39441,7 @@ ParticleSystemRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_RenderMode: 0
   m_MeshDistribution: 0
   m_SortMode: 0
@@ -39461,7 +39473,6 @@ ParticleSystemRenderer:
   m_MeshWeighting1: 1
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
-  m_MaskInteraction: 0
 --- !u!1 &8105725963085365351
 GameObject:
   m_ObjectHideFlags: 0
@@ -39488,12 +39499,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8105725963085365351}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
+  m_LocalRotation: {x: 0.7071068, y: -0, z: -0, w: 0.7071068}
   m_LocalPosition: {x: -0.5, y: 0.21799996, z: 0.5}
-  m_LocalScale: {x: 0.10643598, y: 0.10643598, z: 0.10643598}
+  m_LocalScale: {x: 0.10643598, y: 0.106435984, z: 0.106435984}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 2660184461183932244}
+  m_Father: {fileID: 4607724837775410472}
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
 --- !u!198 &7932284817711106270
 ParticleSystem:
@@ -44229,7 +44240,7 @@ ParticleSystem:
     vectorLabel1_3: W
 --- !u!199 &648720069644552959
 ParticleSystemRenderer:
-  serializedVersion: 6
+  serializedVersion: 7
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -44275,6 +44286,7 @@ ParticleSystemRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_RenderMode: 0
   m_MeshDistribution: 0
   m_SortMode: 0
@@ -44306,7 +44318,6 @@ ParticleSystemRenderer:
   m_MeshWeighting1: 1
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
-  m_MaskInteraction: 0
 --- !u!1 &8909611864233545552
 GameObject:
   m_ObjectHideFlags: 0
@@ -49074,7 +49085,7 @@ ParticleSystem:
     vectorLabel1_3: W
 --- !u!199 &3719421512041347715
 ParticleSystemRenderer:
-  serializedVersion: 6
+  serializedVersion: 7
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -49120,6 +49131,7 @@ ParticleSystemRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_RenderMode: 0
   m_MeshDistribution: 0
   m_SortMode: 0
@@ -49151,7 +49163,6 @@ ParticleSystemRenderer:
   m_MeshWeighting1: 1
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
-  m_MaskInteraction: 0
 --- !u!1001 &7144264855127934900
 PrefabInstance:
   m_ObjectHideFlags: 0

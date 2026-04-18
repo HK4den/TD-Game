@@ -140,7 +140,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TowerCombatStats
   basePower: 2
   baseSecondsBetweenShots: 0.55
-  basePierce: 3
+  basePierce: 2
   baseRange: 2.5
 --- !u!114 &8455232979921060398
 MonoBehaviour:

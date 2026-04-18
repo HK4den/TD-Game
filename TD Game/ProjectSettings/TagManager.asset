@@ -44,14 +44,11 @@ TagManager:
   - 
   - 
   m_SortingLayers:
+  - name: Picture
+    uniqueID: 421348149
+    locked: 0
   - name: Default
     uniqueID: 0
-    locked: 0
-  - name: Tower
-    uniqueID: 2317596915
-    locked: 0
-  - name: Enemy
-    uniqueID: 2075112311
     locked: 0
   m_RenderingLayers:
   - Default

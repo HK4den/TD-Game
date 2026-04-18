@@ -36,6 +36,8 @@ public class TowerProjectile : MonoBehaviour
     private Collider ownCollider;
     private Rigidbody rb;
 
+    private bool isSpent = false;
+
     private readonly HashSet<EnemyHealth> alreadyHit = new HashSet<EnemyHealth>();
 
     private void Awake()
@@ -72,21 +74,25 @@ public class TowerProjectile : MonoBehaviour
         slowSourceInstanceId = sourceInstanceId;
 
         lifetimeTimer = 0f;
+        isSpent = false;
         alreadyHit.Clear();
+
+        if (ownCollider != null)
+            ownCollider.enabled = true;
 
         transform.forward = moveDirection;
     }
 
     private void Update()
     {
-        if (PauseState.IsPaused)
+        if (PauseState.IsPaused || isSpent)
             return;
 
         transform.position += moveDirection * speed * Time.deltaTime;
 
         lifetimeTimer += Time.deltaTime;
         if (lifetimeTimer >= maxLifetime)
-            Destroy(gameObject);
+            DestroyProjectile();
     }
 
     private void OnTriggerEnter(Collider other)
@@ -104,6 +110,9 @@ public class TowerProjectile : MonoBehaviour
 
     private void TryHit(Collider other)
     {
+        if (isSpent)
+            return;
+
         if (other == null)
             return;
 
@@ -156,6 +165,19 @@ public class TowerProjectile : MonoBehaviour
         remainingPierce--;
 
         if (remainingPierce <= 0)
-            Destroy(gameObject);
+            DestroyProjectile();
+    }
+
+    private void DestroyProjectile()
+    {
+        if (isSpent)
+            return;
+
+        isSpent = true;
+
+        if (ownCollider != null)
+            ownCollider.enabled = false;
+
+        Destroy(gameObject);
     }
 }
