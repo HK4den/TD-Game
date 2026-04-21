@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Boost Blue
+  m_Name: Cloud Boost Combined
   m_Shader: {fileID: -6465566751694194690, guid: ee3106dfabe716c448ecf21dfa974db1, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
@@ -38,13 +38,17 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _Alpha_Strength: 0.25
+    - _Alpha_Strength: 0.72
+    - _Blue_Swirl_Speed: 0.15
     - _Noise_Scale: 10
+    - _Pink_Swirl_Speed: -0.15
     - _QueueControl: 0
     - _QueueOffset: 0
     - _Swirl_Speed: -0.15
     m_Colors:
+    - _Blue_Cloud_Color: {r: 0.54509807, g: 0.772549, b: 1, a: 1}
     - _Cloud_Color: {r: 0.9216803, g: 0.5356508, b: 0.8326951, a: 1}
+    - _Pink_Cloud_Color: {r: 0.9764706, g: 0.70980394, b: 1, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
 --- !u!114 &4748891463865304455
