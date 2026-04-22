@@ -55,8 +55,9 @@ GameObject:
   - component: {fileID: -5336945119137476084}
   - component: {fileID: 2162596195956399744}
   - component: {fileID: 3145777776468631667}
+  - component: {fileID: -2709424382074701036}
   m_Layer: 6
-  m_Name: Pyromancer3a
+  m_Name: Pyromancer4b
   m_TagString: Tower
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -142,9 +143,9 @@ MonoBehaviour:
   canUpgrade: 0
   hasTwoPaths: 0
   displayLevel: 3
-  upgradeADescription: lets you spam upgrade for fun
+  upgradeADescription: Extra fire speed, slight damage boost!
   upgradeACost: 1
-  upgradeAPrefab: {fileID: 1937534747383321431}
+  upgradeAPrefab: {fileID: 1937534747383321431, guid: ce31ad6b3aea87143af4db3ac39c165e, type: 3}
   upgradeBDescription: Increased Fire Rate & Damage
   upgradeBCost: 65
   upgradeBPrefab: {fileID: 1937534747383321431, guid: ffd5b89fb7f7e0745aeac0122574159e, type: 3}
@@ -176,8 +177,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7d581701fda38fc4c8e3b300b45b9d9c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TowerCombatStats
-  basePower: 4
-  baseSecondsBetweenShots: 0.45
+  basePower: 1
+  baseSecondsBetweenShots: 0.8
   basePierce: 2
   baseRange: 1
 --- !u!114 &8455232979921060398
@@ -463,6 +464,25 @@ MonoBehaviour:
   retriggerIntensityAdd: 0.2
   maxIntensity: 2
   visualHeight: -1
+--- !u!114 &-2709424382074701036
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1937534747383321431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1f49db40544d44446967474092471841, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TowerAuraDebuff
+  rangeQuery: {fileID: 6630877168591428445}
+  towerIdentity: {fileID: -2177105339483779199}
+  auraTickInterval: 0.2
+  applySlow: 0
+  slowPercent: 0.15
+  applyExtraDamageTaken: 1
+  extraDamageTakenPercent: 0.25
 --- !u!1 &1943668923782669428
 GameObject:
   m_ObjectHideFlags: 0
@@ -760,9 +780,41 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -2484921068739079471, guid: aade1eb965546ab4cb5c797c25305121, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1.15
+      objectReference: {fileID: 0}
+    - target: {fileID: -2484921068739079471, guid: aade1eb965546ab4cb5c797c25305121, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1.2040373
+      objectReference: {fileID: 0}
+    - target: {fileID: -2484921068739079471, guid: aade1eb965546ab4cb5c797c25305121, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1.15
+      objectReference: {fileID: 0}
+    - target: {fileID: -2484921068739079471, guid: aade1eb965546ab4cb5c797c25305121, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.7253
+      objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: aade1eb965546ab4cb5c797c25305121, type: 3}
       propertyPath: m_Name
       value: pyromancer
+      objectReference: {fileID: 0}
+    - target: {fileID: 3316992658331686828, guid: aade1eb965546ab4cb5c797c25305121, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1.15
+      objectReference: {fileID: 0}
+    - target: {fileID: 3316992658331686828, guid: aade1eb965546ab4cb5c797c25305121, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1.2040373
+      objectReference: {fileID: 0}
+    - target: {fileID: 3316992658331686828, guid: aade1eb965546ab4cb5c797c25305121, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1.15
+      objectReference: {fileID: 0}
+    - target: {fileID: 3316992658331686828, guid: aade1eb965546ab4cb5c797c25305121, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.7519
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

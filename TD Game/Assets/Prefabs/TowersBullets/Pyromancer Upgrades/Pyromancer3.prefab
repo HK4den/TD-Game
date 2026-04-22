@@ -55,9 +55,8 @@ GameObject:
   - component: {fileID: -5336945119137476084}
   - component: {fileID: 2162596195956399744}
   - component: {fileID: 3145777776468631667}
-  - component: {fileID: -2709424382074701036}
   m_Layer: 6
-  m_Name: Pyromancer3b
+  m_Name: Pyromancer3
   m_TagString: Tower
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -140,15 +139,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b017d1163a12565449ef5c655fb61e62, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TowerUpgradeState
-  canUpgrade: 0
-  hasTwoPaths: 0
-  displayLevel: 3
+  canUpgrade: 1
+  hasTwoPaths: 1
+  displayLevel: 2
   upgradeADescription: Extra fire speed, slight damage boost!
-  upgradeACost: 1
+  upgradeACost: 750
   upgradeAPrefab: {fileID: 1937534747383321431, guid: ce31ad6b3aea87143af4db3ac39c165e, type: 3}
-  upgradeBDescription: Increased Fire Rate & Damage
-  upgradeBCost: 65
-  upgradeBPrefab: {fileID: 1937534747383321431, guid: ffd5b89fb7f7e0745aeac0122574159e, type: 3}
+  upgradeBDescription: Weaker attack, but makes enemies in range take more damage!
+  upgradeBCost: 1200
+  upgradeBPrefab: {fileID: 1937534747383321431, guid: 65685611a699f1a49b13d4ab06162da4, type: 3}
   levelUpTextPrefab: {fileID: 8985348834640522180, guid: 717c04aa96991dd43925ff0960dfe6fb, type: 3}
   levelUpYOffset: 0
 --- !u!114 &4221621356532786706
@@ -177,8 +176,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7d581701fda38fc4c8e3b300b45b9d9c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TowerCombatStats
-  basePower: 1
-  baseSecondsBetweenShots: 0.8
+  basePower: 2
+  baseSecondsBetweenShots: 0.58
   basePierce: 2
   baseRange: 1
 --- !u!114 &8455232979921060398
@@ -464,25 +463,6 @@ MonoBehaviour:
   retriggerIntensityAdd: 0.2
   maxIntensity: 2
   visualHeight: -1
---- !u!114 &-2709424382074701036
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1937534747383321431}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1f49db40544d44446967474092471841, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TowerAuraDebuff
-  rangeQuery: {fileID: 6630877168591428445}
-  towerIdentity: {fileID: -2177105339483779199}
-  auraTickInterval: 0.2
-  applySlow: 0
-  slowPercent: 0.15
-  applyExtraDamageTaken: 1
-  extraDamageTakenPercent: 0.25
 --- !u!1 &1943668923782669428
 GameObject:
   m_ObjectHideFlags: 0
