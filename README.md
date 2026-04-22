@@ -27,3 +27,12 @@ git lfs track "*.mp4"
 git lfs track "*.dylib"
 
 After adding all of these then the file size limitation shouldn't be an issue, but if theres another file that it gets mad at you for then add its file type to it. Also if you're having to push big stuff that's requiring git LFS
+
+For Me: 
+To get all the scripts:
+Get-ChildItem -Recurse -Filter *.cs | 
+ForEach-Object { 
+    "`n===== $($_.Name) =====`n" + (Get-Content $_.FullName -Raw)
+} | Set-Content FullScriptsDump.txt
+
+Other people dont need this.
