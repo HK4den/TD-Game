@@ -8,19 +8,22 @@ public struct EnemyDamageInfo
     public bool isRedirectedDamage;
     public bool showDamageNumber;
     public GameObject source;
+    public bool canAffectCamo;
 
     public EnemyDamageInfo(
         float damage,
         bool ignoreDamageTakenModifiers = false,
         bool isRedirectedDamage = false,
         bool showDamageNumber = true,
-        GameObject source = null)
+        GameObject source = null,
+        bool canAffectCamo = false)
     {
         this.damage = damage;
         this.ignoreDamageTakenModifiers = ignoreDamageTakenModifiers;
         this.isRedirectedDamage = isRedirectedDamage;
         this.showDamageNumber = showDamageNumber;
         this.source = source;
+        this.canAffectCamo = canAffectCamo;
     }
 }
 

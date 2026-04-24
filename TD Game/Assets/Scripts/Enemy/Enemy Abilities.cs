@@ -2,6 +2,9 @@ using UnityEngine;
 
 public class EnemyAbilities : MonoBehaviour
 {
+    [Header("Stealth")]
+    [SerializeField] private bool alwaysCamo = false;
+
     [Header("Slow Resistance")]
     [SerializeField] private bool slowImmune = false;
 
@@ -16,9 +19,9 @@ public class EnemyAbilities : MonoBehaviour
     [Range(0f, 1f)]
     [SerializeField] private float extraDamageTakenResistancePercent = 0f;
 
+    public bool AlwaysCamo => alwaysCamo;
     public bool SlowImmune => slowImmune;
     public float SlowResistancePercent => Mathf.Clamp01(slowResistancePercent);
-
     public bool ExtraDamageTakenImmune => extraDamageTakenImmune;
     public float ExtraDamageTakenResistancePercent => Mathf.Clamp01(extraDamageTakenResistancePercent);
 
@@ -34,8 +37,6 @@ public class EnemyAbilities : MonoBehaviour
 
     public float AdjustExtraDamageTakenPercent(float incomingPercent)
     {
-        // Positive values mean "take more damage" and are resisted.
-        // Negative values mean "take less damage" and are allowed through unchanged.
         if (incomingPercent < 0f)
             return incomingPercent;
 

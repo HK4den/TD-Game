@@ -1,4 +1,5 @@
 #if UNITY_EDITOR
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
@@ -12,23 +13,16 @@ public class GridManagerEditor : Editor
         ReplaceTile
     }
 
-    // --- Tool state ---
     private ToolMode toolMode = ToolMode.PaintTerrain;
 
-    // Painter
     private TerrainType currentPaint = TerrainType.Fire;
 
-    // Replacer
     private GridTile replaceWithPrefab;
     private bool keepOldTerrain = true;
 
-    // Hover
     private GridTile hoveredTile;
-
-    // Cache target
     private GridManager gm;
 
-    // --- No-blocking rule (Start->Goal must remain reachable) ---
     private bool enforcePath = true;
     private Vector2Int startCoord = new Vector2Int(0, 0);
     private Vector2Int goalCoord = new Vector2Int(19, 19);
@@ -87,7 +81,7 @@ public class GridManagerEditor : Editor
                 "• Hover a tile to preview outline\n" +
                 "• Left Click: paint selected terrain\n" +
                 "• Right Click: set Normal\n" +
-                "• 1 Normal, 2 Swamp, 3 Fire, 4 Energy, 5 Blocked\n" +
+                "• 1 Normal, 2 Swamp, 3 Fire, 4 Energy, 5 Blocked, 6 Beam, 7 Brush, 8 Thick Brush, 9 Rubble\n" +
                 "• Hold Shift to paint Normal (eraser)\n\n" +
                 "If Enforce Path is ON, painting Blocked is denied if it breaks the path.",
                 MessageType.Info
@@ -123,12 +117,13 @@ public class GridManagerEditor : Editor
 
     private void DuringSceneGUI(SceneView sceneView)
     {
-        if (toolMode == ToolMode.None) return;
+        if (toolMode == ToolMode.None)
+            return;
 
         Event e = Event.current;
-        if (e == null) return;
+        if (e == null)
+            return;
 
-        // Prevent selecting objects while using the tool
         HandleUtility.AddDefaultControl(GUIUtility.GetControlID(FocusType.Passive));
 
         UpdateHoveredTile(e.mousePosition);
@@ -151,17 +146,17 @@ public class GridManagerEditor : Editor
 
         Ray ray = HandleUtility.GUIPointToWorldRay(guiMousePos);
         if (Physics.Raycast(ray, out RaycastHit hit, 9999f, ~0, QueryTriggerInteraction.Ignore))
-        {
             hoveredTile = hit.collider.GetComponent<GridTile>();
-        }
     }
 
     private void DrawHoverOutline()
     {
-        if (hoveredTile == null) return;
+        if (hoveredTile == null)
+            return;
 
         Renderer r = hoveredTile.GetComponent<Renderer>();
-        if (r == null) return;
+        if (r == null)
+            return;
 
         Bounds b = r.bounds;
         float y = b.max.y + 0.01f;
@@ -175,35 +170,40 @@ public class GridManagerEditor : Editor
         Handles.DrawAAPolyLine(3f, p1, p2, p3, p4, p1);
     }
 
-    // -------------------------
-    // Terrain Painting
-    // -------------------------
-
     private void HandlePaintHotkeys(Event e)
     {
-        if (e.type != EventType.KeyDown) return;
+        if (e.type != EventType.KeyDown)
+            return;
 
         if (e.keyCode == KeyCode.Alpha1) { currentPaint = TerrainType.Normal; e.Use(); }
         if (e.keyCode == KeyCode.Alpha2) { currentPaint = TerrainType.Swamp; e.Use(); }
         if (e.keyCode == KeyCode.Alpha3) { currentPaint = TerrainType.Fire; e.Use(); }
         if (e.keyCode == KeyCode.Alpha4) { currentPaint = TerrainType.Energy; e.Use(); }
         if (e.keyCode == KeyCode.Alpha5) { currentPaint = TerrainType.Blocked; e.Use(); }
+        if (e.keyCode == KeyCode.Alpha6) { currentPaint = TerrainType.Beam; e.Use(); }
+        if (e.keyCode == KeyCode.Alpha7) { currentPaint = TerrainType.Brush; e.Use(); }
+        if (e.keyCode == KeyCode.Alpha8) { currentPaint = TerrainType.ThickBrush; e.Use(); }
+        if (e.keyCode == KeyCode.Alpha9) { currentPaint = TerrainType.Rubble; e.Use(); }
     }
 
     private void HandlePainting(Event e)
     {
-        if (hoveredTile == null) return;
+        if (hoveredTile == null)
+            return;
 
         bool leftClick = e.type == EventType.MouseDown && e.button == 0;
         bool rightClick = e.type == EventType.MouseDown && e.button == 1;
-        if (!leftClick && !rightClick) return;
+        if (!leftClick && !rightClick)
+            return;
 
         TerrainType paint = currentPaint;
 
-        if (e.shift) paint = TerrainType.Normal;
-        if (rightClick) paint = TerrainType.Normal;
+        if (e.shift)
+            paint = TerrainType.Normal;
 
-        // Enforce "must still have a path" if we're trying to place a blocking tile
+        if (rightClick)
+            paint = TerrainType.Normal;
+
         if (enforcePath && paint == TerrainType.Blocked)
         {
             if (!WouldStillHavePathIfBlocked(hoveredTile))
@@ -223,18 +223,17 @@ public class GridManagerEditor : Editor
 
     private bool WouldStillHavePathIfBlocked(GridTile tileToBlock)
     {
-        // Need a pathfinder in the scene to reuse your A*
         GridPathfinder pf = Object.FindFirstObjectByType<GridPathfinder>();
         if (pf == null)
         {
             Debug.LogWarning("No GridPathfinder found in scene. Can't enforce path rule.");
-            return true; // allow if we can't check
+            return true;
         }
 
         GridManager grid = (GridManager)target;
-        if (grid == null) return true;
+        if (grid == null)
+            return true;
 
-        // Ensure lookup is current
         grid.RebuildLookupFromChildren();
 
         GridTile startTile = grid.GetTile(startCoord.x, startCoord.y);
@@ -246,33 +245,26 @@ public class GridManagerEditor : Editor
             return true;
         }
 
-        // Temporarily block tile by terrain
         TerrainType old = tileToBlock.Terrain;
         tileToBlock.SetTerrain(TerrainType.Blocked);
 
-        // Compute path
-        var path = pf.FindPathAStar(startTile, goalTile);
+        List<GridTile> path = pf.FindPathAStar(startTile, goalTile);
 
-        // Restore
         tileToBlock.SetTerrain(old);
 
         return path != null && path.Count > 0;
     }
 
-    // -------------------------
-    // Tile Replacing
-    // -------------------------
-
     private void HandleReplacing(Event e)
     {
-        if (hoveredTile == null) return;
-        if (replaceWithPrefab == null) return;
+        if (hoveredTile == null || replaceWithPrefab == null)
+            return;
 
         bool leftClick = e.type == EventType.MouseDown && e.button == 0;
-        if (!leftClick) return;
+        if (!leftClick)
+            return;
 
         ReplaceTilePrefab(hoveredTile, replaceWithPrefab, keepOldTerrain);
-
         e.Use();
     }
 
@@ -286,10 +278,8 @@ public class GridManagerEditor : Editor
         Vector3 pos = oldTile.transform.position;
         Quaternion rot = oldTile.transform.rotation;
 
-        // Remove old tile (Undoable)
         Undo.DestroyObjectImmediate(oldTile.gameObject);
 
-        // Instantiate new prefab (Undoable)
         GameObject newObj = (GameObject)PrefabUtility.InstantiatePrefab(newPrefab.gameObject, parent);
         Undo.RegisterCreatedObjectUndo(newObj, "Replace Tile Prefab");
 

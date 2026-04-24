@@ -23,6 +23,7 @@ public class EnemyAgent : MonoBehaviour
     [SerializeField] private GridPathfinder pathfinder;
     [SerializeField] private EnemySlowController slowController;
     [SerializeField] private EnemyHealth enemyHealth;
+    [SerializeField] private EnemyAbilities enemyAbilities;
 
     [Header("Base / Goal")]
     [SerializeField] private Vector2Int goalCoord = new Vector2Int(19, 19);
@@ -49,20 +50,41 @@ public class EnemyAgent : MonoBehaviour
     private float hpSpeedMultiplier = 1f;
     private float currentExternalMoveSpeedMultiplier = 1f;
 
+    private GridTile currentTile;
+    private TerrainType currentTerrainType = TerrainType.Normal;
+    private float terrainSlowPercent = 0f;
+
     public bool HasReachedGoal => hasReachedGoal;
     public bool HasValidPath => tilePath != null && tilePath.Count > 0;
     public float MoveSpeed => speed;
     public float BaseMoveSpeed => speed;
-    public bool IsTargetable => !hasReachedGoal && (enemyHealth == null || enemyHealth.IsTargetable);
+    public GridTile CurrentTile => currentTile;
+    public TerrainType CurrentTerrainType => currentTerrainType;
     public float CurrentExternalMoveSpeedMultiplier => currentExternalMoveSpeedMultiplier;
     public float CurrentHpSpeedMultiplier => hpSpeedMultiplier;
+    public float TerrainSlowPercent => terrainSlowPercent;
+    public bool IsAlwaysCamo => enemyAbilities != null && enemyAbilities.AlwaysCamo;
+    public bool IsOnBeamTerrain => currentTile != null && currentTile.IsBeamTerrain;
+    public bool IsOnBrushTerrain => currentTile != null && currentTile.IsBrushTerrain;
+    public bool IsOnThickBrushTerrain => currentTile != null && currentTile.IsThickBrushTerrain;
+    public bool IsOnRubbleTerrain => currentTile != null && currentTile.IsRubbleTerrain;
+    public bool IsBeamProtected => IsOnBeamTerrain;
+    public bool IsTerrainCamo => IsOnBrushTerrain || IsOnThickBrushTerrain;
+    public bool IsCamoHidden => IsAlwaysCamo || IsTerrainCamo;
+
+    public bool IsTargetable =>
+        !hasReachedGoal &&
+        !IsBeamProtected &&
+        (enemyHealth == null || enemyHealth.IsTargetable);
+
+    public float TerrainMoveSpeedMultiplier => Mathf.Clamp01(1f - terrainSlowPercent);
 
     public float CurrentTotalMoveSpeedMultiplier
     {
         get
         {
             float slowMultiplier = slowController != null ? slowController.CurrentMoveSpeedMultiplier : 1f;
-            return Mathf.Max(0f, slowMultiplier * currentExternalMoveSpeedMultiplier * hpSpeedMultiplier);
+            return Mathf.Max(0f, slowMultiplier * currentExternalMoveSpeedMultiplier * hpSpeedMultiplier * TerrainMoveSpeedMultiplier);
         }
     }
 
@@ -105,6 +127,7 @@ public class EnemyAgent : MonoBehaviour
 
         FireSpawnedIfNeeded();
         ForceRepath();
+        UpdateCurrentTileAndTerrainState();
     }
 
     public void SetHpSpeedMultiplier(float multiplier)
@@ -162,12 +185,14 @@ public class EnemyAgent : MonoBehaviour
         if (pathfinder == null) pathfinder = FindFirstObjectByType<GridPathfinder>();
         if (slowController == null) slowController = GetComponent<EnemySlowController>();
         if (enemyHealth == null) enemyHealth = GetComponent<EnemyHealth>();
+        if (enemyAbilities == null) enemyAbilities = GetComponent<EnemyAbilities>();
     }
 
     private void Start()
     {
         FireSpawnedIfNeeded();
         ForceRepath();
+        UpdateCurrentTileAndTerrainState();
     }
 
     private void Update()
@@ -188,7 +213,9 @@ public class EnemyAgent : MonoBehaviour
         if (lastSeenPathVersion != PathChangeBroadcaster.Version)
             ForceRepath();
 
+        UpdateCurrentTileAndTerrainState();
         FollowPath();
+        UpdateCurrentTileAndTerrainState();
     }
 
     private void FireSpawnedIfNeeded()
@@ -223,6 +250,36 @@ public class EnemyAgent : MonoBehaviour
 
         tilePath.AddRange(newPath);
         AdvanceIfClose();
+    }
+
+    private void UpdateCurrentTileAndTerrainState()
+    {
+        if (grid == null)
+        {
+            currentTile = null;
+            currentTerrainType = TerrainType.Normal;
+            terrainSlowPercent = 0f;
+            return;
+        }
+
+        Vector2Int coord = grid.WorldToGrid(transform.position);
+        currentTile = grid.GetTile(coord.x, coord.y);
+        currentTerrainType = currentTile != null ? currentTile.Terrain : TerrainType.Normal;
+
+        switch (currentTerrainType)
+        {
+            case TerrainType.Brush:
+                terrainSlowPercent = 0.15f;
+                break;
+
+            case TerrainType.ThickBrush:
+                terrainSlowPercent = 0.25f;
+                break;
+
+            default:
+                terrainSlowPercent = 0f;
+                break;
+        }
     }
 
     private void FollowPath()

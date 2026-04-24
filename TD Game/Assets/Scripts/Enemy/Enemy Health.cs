@@ -34,6 +34,7 @@ public class EnemyHealth : MonoBehaviour
     private Rigidbody[] cachedRigidbodies;
     private EnemyDeathBehavior[] deathBehaviors;
     private MonoBehaviour[] allBehaviours;
+    private EnemyAgent enemyAgent;
 
     private Vector3 initialVisualScale;
     private Vector3 deathRotationSpeed;
@@ -56,11 +57,29 @@ public class EnemyHealth : MonoBehaviour
         cachedRigidbodies = GetComponentsInChildren<Rigidbody>(true);
         deathBehaviors = GetComponents<EnemyDeathBehavior>();
         allBehaviours = GetComponentsInChildren<MonoBehaviour>(true);
+        enemyAgent = GetComponent<EnemyAgent>();
 
         if (visualRoot == null)
             visualRoot = transform;
 
         initialVisualScale = visualRoot.localScale;
+    }
+
+    public bool CanBeAffectedByTower(bool sourceCanDetectCamo)
+    {
+        if (died)
+            return false;
+
+        if (enemyAgent == null)
+            return true;
+
+        if (enemyAgent.IsBeamProtected)
+            return false;
+
+        if (enemyAgent.IsCamoHidden && !sourceCanDetectCamo)
+            return false;
+
+        return true;
     }
 
     public float TakeDamage(float amount)
@@ -77,9 +96,17 @@ public class EnemyHealth : MonoBehaviour
         if (damageInfo.damage <= 0f)
             return 0f;
 
+        if (enemyAgent != null)
+        {
+            if (enemyAgent.IsBeamProtected)
+                return 0f;
+
+            if (damageInfo.source != null && enemyAgent.IsCamoHidden && !damageInfo.canAffectCamo)
+                return 0f;
+        }
+
         EnemyNearbyDamageSiphon.TryRedirectNearbyDamage(this, ref damageInfo);
 
-        // Let plug-on behaviours modify the hit before final application.
         for (int i = 0; i < allBehaviours.Length; i++)
         {
             if (allBehaviours[i] is IEnemyIncomingDamageModifier modifier)
@@ -206,6 +233,7 @@ public class EnemyHealth : MonoBehaviour
         Vector3 pos = transform.position + deathSoundOffset;
         Instantiate(deathSoundPrefab, pos, Quaternion.identity);
     }
+
     private void DisableCombatPresence()
     {
         if (disableAllCollidersOnDeath)
@@ -223,14 +251,12 @@ public class EnemyHealth : MonoBehaviour
             if (rb == null)
                 continue;
 
-            // Only clear velocity if Unity actually allows it.
             if (!rb.isKinematic)
             {
                 rb.linearVelocity = Vector3.zero;
                 rb.angularVelocity = Vector3.zero;
             }
 
-            // After death, this body should no longer participate in collision-driven gameplay.
             rb.detectCollisions = false;
             rb.isKinematic = true;
         }

@@ -32,6 +32,8 @@ public class TowerProjectile : MonoBehaviour
 
     private string slowFamilyKey = string.Empty;
     private int slowSourceInstanceId = 0;
+    private GameObject sourceObject;
+    private bool sourceCanDetectCamo = false;
 
     private Collider ownCollider;
     private Rigidbody rb;
@@ -61,7 +63,9 @@ public class TowerProjectile : MonoBehaviour
         EffectMode mode,
         float lifetime,
         string sourceFamilyKey,
-        int sourceInstanceId)
+        int sourceInstanceId,
+        GameObject sourceObject,
+        bool sourceCanDetectCamo)
     {
         moveDirection = direction.sqrMagnitude <= 0.0001f ? Vector3.forward : direction.normalized;
         speed = Mathf.Max(0.01f, moveSpeed);
@@ -72,6 +76,8 @@ public class TowerProjectile : MonoBehaviour
 
         slowFamilyKey = sourceFamilyKey ?? string.Empty;
         slowSourceInstanceId = sourceInstanceId;
+        this.sourceObject = sourceObject;
+        this.sourceCanDetectCamo = sourceCanDetectCamo;
 
         lifetimeTimer = 0f;
         isSpent = false;
@@ -110,20 +116,14 @@ public class TowerProjectile : MonoBehaviour
 
     private void TryHit(Collider other)
     {
-        if (isSpent)
-            return;
-
-        if (other == null)
-            return;
-
-        if (other == ownCollider)
+        if (isSpent || other == null || other == ownCollider)
             return;
 
         EnemyHealth health = other.GetComponentInParent<EnemyHealth>();
-        if (health == null)
+        if (health == null || !health.IsAlive)
             return;
 
-        if (!health.IsAlive)
+        if (!health.CanBeAffectedByTower(sourceCanDetectCamo))
             return;
 
         if (alreadyHit.Contains(health))
@@ -139,7 +139,10 @@ public class TowerProjectile : MonoBehaviour
 
             case EffectMode.Damage:
             default:
-                health.TakeDamage(effectAmount);
+                health.TakeDamage(new EnemyDamageInfo(
+                    effectAmount,
+                    source: sourceObject,
+                    canAffectCamo: sourceCanDetectCamo));
                 break;
         }
 
@@ -159,7 +162,7 @@ public class TowerProjectile : MonoBehaviour
         if (spawnAcidPuddleOnHit && acidPuddlePrefab != null && effectMode == EffectMode.Damage)
         {
             AcidPuddleArea puddle = Instantiate(acidPuddlePrefab);
-            puddle.InitializeFromImpactPosition(health.transform.position);
+            puddle.InitializeFromImpactPosition(health.transform.position, sourceCanDetectCamo, sourceObject);
         }
 
         remainingPierce--;

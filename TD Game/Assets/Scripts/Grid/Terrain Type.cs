@@ -4,5 +4,9 @@ public enum TerrainType
     Swamp,
     Fire,
     Energy,
-    Blocked
+    Blocked,
+    Beam,
+    Brush,
+    ThickBrush,
+    Rubble
 }

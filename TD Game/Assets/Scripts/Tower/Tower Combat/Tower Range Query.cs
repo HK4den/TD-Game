@@ -61,6 +61,9 @@ public class TowerRangeQuery : MonoBehaviour
         if (enemy == null || combatStats == null || rangeProfile == null)
             return false;
 
+        if (!CanTargetEnemy(enemy))
+            return false;
+
         Vector3 enemyPos = enemy.transform.position;
         float effectiveRange = combatStats.Range;
         float baseRange = combatStats.BaseRange;
@@ -78,6 +81,23 @@ public class TowerRangeQuery : MonoBehaviour
         }
 
         return false;
+    }
+
+    private bool CanTargetEnemy(EnemyAgent enemy)
+    {
+        if (enemy == null)
+            return false;
+
+        if (!enemy.IsTargetable)
+            return false;
+
+        if (enemy.IsBeamProtected)
+            return false;
+
+        if (enemy.IsCamoHidden && !combatStats.CanDetectCamo)
+            return false;
+
+        return true;
     }
 
     private bool IsInsideSphere(Vector3 enemyPos, float radius)

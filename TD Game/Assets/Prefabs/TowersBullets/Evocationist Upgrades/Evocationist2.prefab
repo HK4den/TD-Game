@@ -142,6 +142,7 @@ MonoBehaviour:
   baseSecondsBetweenShots: 0.55
   basePierce: 2
   baseRange: 2.5
+  hasNaturalCamoDetection: 0
 --- !u!114 &8455232979921060398
 MonoBehaviour:
   m_ObjectHideFlags: 0

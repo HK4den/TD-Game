@@ -4,14 +4,6 @@ using UnityEngine.Rendering;
 
 public class TowerRangeVisualizer : MonoBehaviour
 {
-    private enum SourceKind
-    {
-        None = 0,
-        PlacementPreview = 1,
-        TargetingHover = 2,
-        InspectSelection = 3
-    }
-
     [Header("References")]
     [SerializeField] private InspectPanelUI inspectPanel;
 
@@ -28,7 +20,6 @@ public class TowerRangeVisualizer : MonoBehaviour
     private Quaternion previewRotation;
     private bool hasPlacementPreview;
 
-    private SourceKind currentSource = SourceKind.None;
     private readonly List<GameObject> visuals = new List<GameObject>();
 
     private GameObject lastRuntimeTower;
@@ -51,7 +42,6 @@ public class TowerRangeVisualizer : MonoBehaviour
         if (PauseState.IsPaused)
         {
             ClearVisuals();
-            currentSource = SourceKind.None;
             return;
         }
 
@@ -65,7 +55,6 @@ public class TowerRangeVisualizer : MonoBehaviour
             return;
 
         ClearVisuals();
-        currentSource = SourceKind.None;
     }
 
     public void SetHoveredTower(GameObject tower)
@@ -106,7 +95,6 @@ public class TowerRangeVisualizer : MonoBehaviour
         if (stats == null || profile == null)
         {
             ClearVisuals();
-            currentSource = SourceKind.None;
             return true;
         }
 
@@ -120,7 +108,6 @@ public class TowerRangeVisualizer : MonoBehaviour
             profile,
             true);
 
-        currentSource = SourceKind.PlacementPreview;
         return true;
     }
 
@@ -138,7 +125,6 @@ public class TowerRangeVisualizer : MonoBehaviour
         if (stats == null || profile == null)
         {
             ClearVisuals();
-            currentSource = SourceKind.None;
             return true;
         }
 
@@ -152,7 +138,6 @@ public class TowerRangeVisualizer : MonoBehaviour
             profile,
             false);
 
-        currentSource = SourceKind.TargetingHover;
         return true;
     }
 
@@ -180,7 +165,6 @@ public class TowerRangeVisualizer : MonoBehaviour
         if (stats == null || profile == null)
         {
             ClearVisuals();
-            currentSource = SourceKind.None;
             return true;
         }
 
@@ -194,7 +178,6 @@ public class TowerRangeVisualizer : MonoBehaviour
             profile,
             false);
 
-        currentSource = SourceKind.InspectSelection;
         return true;
     }
 

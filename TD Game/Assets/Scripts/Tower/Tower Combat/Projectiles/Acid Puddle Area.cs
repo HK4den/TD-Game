@@ -44,6 +44,9 @@ public class AcidPuddleArea : MonoBehaviour
     private bool isFading = false;
     private bool initialized = false;
 
+    private GameObject sourceObject;
+    private bool sourceCanDetectCamo = false;
+
     private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
     private static readonly int ColorId = Shader.PropertyToID("_Color");
 
@@ -61,7 +64,6 @@ public class AcidPuddleArea : MonoBehaviour
             targetRenderers = GetComponentsInChildren<Renderer>(true);
 
         propertyBlock = new MaterialPropertyBlock();
-
         gridManager = FindFirstObjectByType<GridManager>();
 
         CacheOriginalRendererAlphas();
@@ -70,8 +72,11 @@ public class AcidPuddleArea : MonoBehaviour
         UpdateColliderShape();
     }
 
-    public void InitializeFromImpactPosition(Vector3 impactPosition)
+    public void InitializeFromImpactPosition(Vector3 impactPosition, bool sourceCanDetectCamo, GameObject sourceObject)
     {
+        this.sourceCanDetectCamo = sourceCanDetectCamo;
+        this.sourceObject = sourceObject;
+
         float baseY = 0.002f;
         if (gridManager != null)
             baseY = gridManager.transform.position.y + baseHeightAboveGrid;
@@ -93,12 +98,14 @@ public class AcidPuddleArea : MonoBehaviour
         initialized = true;
     }
 
+    private bool CanAffect(EnemyHealth health)
+    {
+        return health != null && health.CanBeAffectedByTower(sourceCanDetectCamo);
+    }
+
     private void Update()
     {
-        if (PauseState.IsPaused)
-            return;
-
-        if (!initialized)
+        if (PauseState.IsPaused || !initialized)
             return;
 
         if (isGrowing)
@@ -114,9 +121,7 @@ public class AcidPuddleArea : MonoBehaviour
         }
 
         if (isFading)
-        {
             RunFade();
-        }
     }
 
     private void RunGrow()
@@ -173,10 +178,17 @@ public class AcidPuddleArea : MonoBehaviour
             if (health == null || !health.IsAlive)
                 continue;
 
-            health.TakeDamage(puddleDamage);
-            damageApplicationsUsed++;
-
             nextTickTimeByEnemy[health] = now + Mathf.Max(0.01f, tickInterval);
+
+            if (!CanAffect(health))
+                continue;
+
+            health.TakeDamage(new EnemyDamageInfo(
+                puddleDamage,
+                source: sourceObject,
+                canAffectCamo: sourceCanDetectCamo));
+
+            damageApplicationsUsed++;
         }
 
         ListPool<EnemyHealth>.Release(toDamage);
@@ -189,10 +201,7 @@ public class AcidPuddleArea : MonoBehaviour
     {
         stateTimer += Time.deltaTime;
 
-        float t = fadeDuration <= 0f
-            ? 1f
-            : Mathf.Clamp01(stateTimer / fadeDuration);
-
+        float t = fadeDuration <= 0f ? 1f : Mathf.Clamp01(stateTimer / fadeDuration);
         SetAllRendererAlphaNormalized(1f - t);
 
         if (t >= 1f)
@@ -230,9 +239,15 @@ public class AcidPuddleArea : MonoBehaviour
         if (damageApplicationsUsed >= maxDamageApplications)
             return;
 
-        health.TakeDamage(puddleDamage);
-        damageApplicationsUsed++;
+        if (!CanAffect(health))
+            return;
 
+        health.TakeDamage(new EnemyDamageInfo(
+            puddleDamage,
+            source: sourceObject,
+            canAffectCamo: sourceCanDetectCamo));
+
+        damageApplicationsUsed++;
         nextTickTimeByEnemy[health] = Time.time + Mathf.Max(0.01f, tickInterval);
 
         if (damageApplicationsUsed >= maxDamageApplications)

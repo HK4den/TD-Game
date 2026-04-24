@@ -140,8 +140,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TowerCombatStats
   basePower: 4
   baseSecondsBetweenShots: 0.45
-  basePierce: 5
+  basePierce: 4
   baseRange: 3
+  hasNaturalCamoDetection: 0
 --- !u!114 &8455232979921060398
 MonoBehaviour:
   m_ObjectHideFlags: 0

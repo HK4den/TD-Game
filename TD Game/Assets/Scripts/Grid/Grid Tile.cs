@@ -13,40 +13,41 @@ public class GridTile : MonoBehaviour
 
     [Header("Rules")]
     [SerializeField] private bool buildable = true;
-
     [SerializeField] private bool blocksEnemies = false;
 
     [Header("Occupancy (runtime)")]
     [SerializeField] private bool occupied;
     [SerializeField] private GameObject occupiedTower;
-    public bool BlocksEnemies => blocksEnemies;
-
-
-    // ... (your existing visuals fields)
 
     private Renderer rend;
-
-    public void SetBlocksEnemies(bool value) => blocksEnemies = value;
-    public void SetBuildable(bool value) => buildable = value;
 
     public int X => x;
     public int Z => z;
     public TerrainType Terrain => terrainType;
 
     public bool IsOccupied => occupied;
+    public bool BlocksEnemies => blocksEnemies;
     public bool IsBuildable => buildable;
+    public GameObject OccupiedTower => occupiedTower;
+
+    public bool IsBlockedTerrain => terrainType == TerrainType.Blocked;
+    public bool IsBeamTerrain => terrainType == TerrainType.Beam;
+    public bool IsBrushTerrain => terrainType == TerrainType.Brush;
+    public bool IsThickBrushTerrain => terrainType == TerrainType.ThickBrush;
+    public bool IsRubbleTerrain => terrainType == TerrainType.Rubble;
 
     public bool IsPassableForEnemies => terrainType != TerrainType.Blocked && !blocksEnemies;
-    public bool CanPlaceTower => buildable && !occupied;
+    public bool CanPlaceTower => IsBuildable && !occupied;
 
-    public GameObject OccupiedTower => occupiedTower;
+    public void SetBlocksEnemies(bool value) => blocksEnemies = value;
+    public void SetBuildable(bool value) => buildable = value;
 
     public void SetOccupied(bool value) => occupied = value;
 
     public void SetOccupiedTower(GameObject towerGO)
     {
         occupiedTower = towerGO;
-        occupied = (towerGO != null);
+        occupied = towerGO != null;
     }
 
     public void ClearOccupiedTower()
@@ -58,6 +59,7 @@ public class GridTile : MonoBehaviour
     private void Awake()
     {
         rend = GetComponent<Renderer>();
+        ApplyTerrainRules();
         ApplyVisuals();
     }
 
@@ -67,22 +69,54 @@ public class GridTile : MonoBehaviour
         z = newZ;
         gameObject.name = $"Tile ({x}, {z})";
 
-        if (rend == null) rend = GetComponent<Renderer>();
+        if (rend == null)
+            rend = GetComponent<Renderer>();
+
+        ApplyTerrainRules();
         ApplyVisuals();
     }
 
     public void SetTerrain(TerrainType type)
     {
         terrainType = type;
+        ApplyTerrainRules();
         ApplyVisuals();
+    }
+
+    private void ApplyTerrainRules()
+    {
+        switch (terrainType)
+        {
+            case TerrainType.Blocked:
+                buildable = false;
+                blocksEnemies = true;
+                break;
+
+            case TerrainType.Beam:
+            case TerrainType.ThickBrush:
+            case TerrainType.Rubble:
+                buildable = false;
+                blocksEnemies = false;
+                break;
+
+            case TerrainType.Brush:
+                buildable = true;
+                blocksEnemies = false;
+                break;
+
+            default:
+                buildable = true;
+                blocksEnemies = false;
+                break;
+        }
     }
 
     public void ApplyVisuals()
     {
-        if (rend == null) rend = GetComponent<Renderer>();
+        if (rend == null)
+            rend = GetComponent<Renderer>();
 
-        // (keep your existing visuals code exactly)
-        // ...
+        // Keep your existing visuals code exactly here.
     }
 
 #if UNITY_EDITOR
@@ -92,6 +126,7 @@ public class GridTile : MonoBehaviour
             return;
 
         rend = GetComponent<Renderer>();
+        ApplyTerrainRules();
         ApplyVisuals();
     }
 #endif

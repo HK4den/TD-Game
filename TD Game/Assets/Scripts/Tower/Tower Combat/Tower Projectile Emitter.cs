@@ -75,6 +75,7 @@ public class TowerProjectileEmitter : MonoBehaviour
         Vector3 pos = transform.position + soundOffset;
         Instantiate(shootSoundPrefab, pos, Quaternion.identity);
     }
+
     public bool TryBeginAttack(EnemyAgent attackTarget)
     {
         if (attackRoutine != null)
@@ -149,6 +150,8 @@ public class TowerProjectileEmitter : MonoBehaviour
 
         string familyKey = towerIdentity != null ? towerIdentity.TowerFamilyKey : string.Empty;
         int sourceInstanceId = transform.root.gameObject.GetInstanceID();
+        GameObject sourceObject = transform.root.gameObject;
+        bool sourceCanDetectCamo = combatStats.CanDetectCamo;
 
         TowerProjectile projectile = Instantiate(projectilePrefab, spawnPos, Quaternion.LookRotation(direction));
         projectile.Initialize(
@@ -159,7 +162,9 @@ public class TowerProjectileEmitter : MonoBehaviour
             effectMode,
             projectileLifetime,
             familyKey,
-            sourceInstanceId);
+            sourceInstanceId,
+            sourceObject,
+            sourceCanDetectCamo);
     }
 
     private Vector3 ResolveShotDirection(Transform firePoint, EnemyAgent lockedTarget)

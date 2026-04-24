@@ -34,7 +34,6 @@ public class TowerCombatStats : MonoBehaviour
 
         public void AddFlat(float amount) => flatModifiers.Add(amount);
         public void AddMultiplier(float amount) => multiplierModifiers.Add(amount);
-
         public void RemoveFlat(float amount) => flatModifiers.Remove(amount);
         public void RemoveMultiplier(float amount) => multiplierModifiers.Remove(amount);
 
@@ -50,6 +49,11 @@ public class TowerCombatStats : MonoBehaviour
     [SerializeField] private float baseSecondsBetweenShots = 1f;
     [SerializeField] private int basePierce = 1;
     [SerializeField] private float baseRange = 4f;
+
+    [Header("Camo Detection")]
+    [SerializeField] private bool hasNaturalCamoDetection = false;
+
+    private readonly HashSet<int> grantedCamoSourceIds = new HashSet<int>();
 
     private readonly FloatStat powerStat = new FloatStat();
     private readonly FloatStat shootIntervalStat = new FloatStat();
@@ -102,13 +106,25 @@ public class TowerCombatStats : MonoBehaviour
         }
     }
 
+    public bool HasNaturalCamoDetection
+    {
+        get => hasNaturalCamoDetection;
+        set
+        {
+            if (hasNaturalCamoDetection == value)
+                return;
+
+            hasNaturalCamoDetection = value;
+            RaiseStatsChanged();
+        }
+    }
+
+    public bool HasGrantedCamoDetection => grantedCamoSourceIds.Count > 0;
+    public bool CanDetectCamo => hasNaturalCamoDetection || HasGrantedCamoDetection;
+
     public float Power => powerStat.GetValue(0.001f);
-
-    // User-facing concept is Shoot Speed, but internally this is seconds between shots.
     public float SecondsBetweenShots => shootIntervalStat.GetValue(0.001f);
-
     public int Pierce => Mathf.Max(1, Mathf.RoundToInt(pierceStat.GetValue(1f)));
-
     public float Range => rangeStat.GetValue(0.01f);
 
     private void Awake()
@@ -136,101 +152,52 @@ public class TowerCombatStats : MonoBehaviour
         rangeStat.BaseValue = Mathf.Max(0.01f, baseRange);
     }
 
-    public void AddPowerFlat(float amount)
+    public void AddGrantedCamoSource(int sourceId)
     {
-        powerStat.AddFlat(amount);
+        if (sourceId == 0)
+            return;
+
+        if (grantedCamoSourceIds.Add(sourceId))
+            RaiseStatsChanged();
+    }
+
+    public void RemoveGrantedCamoSource(int sourceId)
+    {
+        if (sourceId == 0)
+            return;
+
+        if (grantedCamoSourceIds.Remove(sourceId))
+            RaiseStatsChanged();
+    }
+
+    public void ClearGrantedCamoSources()
+    {
+        if (grantedCamoSourceIds.Count == 0)
+            return;
+
+        grantedCamoSourceIds.Clear();
         RaiseStatsChanged();
     }
 
-    public void AddPowerMultiplier(float amount)
-    {
-        powerStat.AddMultiplier(amount);
-        RaiseStatsChanged();
-    }
+    public void AddPowerFlat(float amount) { powerStat.AddFlat(amount); RaiseStatsChanged(); }
+    public void AddPowerMultiplier(float amount) { powerStat.AddMultiplier(amount); RaiseStatsChanged(); }
+    public void RemovePowerFlat(float amount) { powerStat.RemoveFlat(amount); RaiseStatsChanged(); }
+    public void RemovePowerMultiplier(float amount) { powerStat.RemoveMultiplier(amount); RaiseStatsChanged(); }
 
-    public void RemovePowerFlat(float amount)
-    {
-        powerStat.RemoveFlat(amount);
-        RaiseStatsChanged();
-    }
+    public void AddShootSpeedFlat(float amount) { shootIntervalStat.AddFlat(amount); RaiseStatsChanged(); }
+    public void AddShootSpeedMultiplier(float amount) { shootIntervalStat.AddMultiplier(amount); RaiseStatsChanged(); }
+    public void RemoveShootSpeedFlat(float amount) { shootIntervalStat.RemoveFlat(amount); RaiseStatsChanged(); }
+    public void RemoveShootSpeedMultiplier(float amount) { shootIntervalStat.RemoveMultiplier(amount); RaiseStatsChanged(); }
 
-    public void RemovePowerMultiplier(float amount)
-    {
-        powerStat.RemoveMultiplier(amount);
-        RaiseStatsChanged();
-    }
+    public void AddPierceFlat(float amount) { pierceStat.AddFlat(amount); RaiseStatsChanged(); }
+    public void AddPierceMultiplier(float amount) { pierceStat.AddMultiplier(amount); RaiseStatsChanged(); }
+    public void RemovePierceFlat(float amount) { pierceStat.RemoveFlat(amount); RaiseStatsChanged(); }
+    public void RemovePierceMultiplier(float amount) { pierceStat.RemoveMultiplier(amount); RaiseStatsChanged(); }
 
-    public void AddShootSpeedFlat(float amount)
-    {
-        shootIntervalStat.AddFlat(amount);
-        RaiseStatsChanged();
-    }
-
-    public void AddShootSpeedMultiplier(float amount)
-    {
-        shootIntervalStat.AddMultiplier(amount);
-        RaiseStatsChanged();
-    }
-
-    public void RemoveShootSpeedFlat(float amount)
-    {
-        shootIntervalStat.RemoveFlat(amount);
-        RaiseStatsChanged();
-    }
-
-    public void RemoveShootSpeedMultiplier(float amount)
-    {
-        shootIntervalStat.RemoveMultiplier(amount);
-        RaiseStatsChanged();
-    }
-
-    public void AddPierceFlat(float amount)
-    {
-        pierceStat.AddFlat(amount);
-        RaiseStatsChanged();
-    }
-
-    public void AddPierceMultiplier(float amount)
-    {
-        pierceStat.AddMultiplier(amount);
-        RaiseStatsChanged();
-    }
-
-    public void RemovePierceFlat(float amount)
-    {
-        pierceStat.RemoveFlat(amount);
-        RaiseStatsChanged();
-    }
-
-    public void RemovePierceMultiplier(float amount)
-    {
-        pierceStat.RemoveMultiplier(amount);
-        RaiseStatsChanged();
-    }
-
-    public void AddRangeFlat(float amount)
-    {
-        rangeStat.AddFlat(amount);
-        RaiseStatsChanged();
-    }
-
-    public void AddRangeMultiplier(float amount)
-    {
-        rangeStat.AddMultiplier(amount);
-        RaiseStatsChanged();
-    }
-
-    public void RemoveRangeFlat(float amount)
-    {
-        rangeStat.RemoveFlat(amount);
-        RaiseStatsChanged();
-    }
-
-    public void RemoveRangeMultiplier(float amount)
-    {
-        rangeStat.RemoveMultiplier(amount);
-        RaiseStatsChanged();
-    }
+    public void AddRangeFlat(float amount) { rangeStat.AddFlat(amount); RaiseStatsChanged(); }
+    public void AddRangeMultiplier(float amount) { rangeStat.AddMultiplier(amount); RaiseStatsChanged(); }
+    public void RemoveRangeFlat(float amount) { rangeStat.RemoveFlat(amount); RaiseStatsChanged(); }
+    public void RemoveRangeMultiplier(float amount) { rangeStat.RemoveMultiplier(amount); RaiseStatsChanged(); }
 
     public void ClearAllModifiers()
     {
