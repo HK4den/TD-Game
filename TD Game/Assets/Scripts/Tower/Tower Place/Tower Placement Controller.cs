@@ -121,6 +121,9 @@ public class TowerPlacementController : MonoBehaviour
     public bool IsRadialOpen => radialOpen;
     public int SelectedTowerIndex => selectedTowerIndex;
 
+    public GridTile CurrentHoveredTile => hoveredTile;
+    public bool IsPlacementPreviewActive => HasTowerSelected && hoveredTile != null && !radialOpen && !PauseState.IsPaused;
+
     public PlaceableTowerEntry SelectedTowerEntry
     {
         get

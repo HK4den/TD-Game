@@ -32,184 +32,6 @@ Transform:
   - {fileID: 7255086200598831199}
   m_Father: {fileID: 4607724837775410472}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1093286404783710503
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2660184461183932244}
-  - component: {fileID: 6791343731518469491}
-  - component: {fileID: 5683179169420486940}
-  - component: {fileID: 4941924106724229146}
-  - component: {fileID: 1437726011874828955}
-  - component: {fileID: 5995808398355420564}
-  - component: {fileID: 1195776450805550954}
-  - component: {fileID: 4061192158899517758}
-  - component: {fileID: 5078816105776202478}
-  m_Layer: 6
-  m_Name: Cryomancer1
-  m_TagString: Tower
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!4 &2660184461183932244
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1093286404783710503}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 4607724837775410472}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &6791343731518469491
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1093286404783710503}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e4a19a91366db874c9bdb2c6a84843d4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TowerIdentity
-  displayName: 
-  icon: {fileID: 21300000, guid: 63547566a6a728b4f91d249aeb220873, type: 3}
-  towerFamilyKey: CryoProjectile
-  extraTags: []
---- !u!114 &5683179169420486940
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1093286404783710503}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7d581701fda38fc4c8e3b300b45b9d9c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TowerCombatStats
-  basePower: 1
-  baseSecondsBetweenShots: 2
-  basePierce: 1
-  baseRange: 1
---- !u!114 &4941924106724229146
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1093286404783710503}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 07871fc07221521458e810cd531370bf, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TowerRangeProfile
-  shape: 1
-  singleBoxLocalCenter: {x: 0, y: 0, z: 0}
-  singleBoxBaseSize: {x: 3, y: 1, z: 3}
-  multiBoxDefinitions:
-  - localCenter: {x: 0, y: 0, z: 0}
-    baseSize: {x: 0.01, y: 0.01, z: 0.01}
-    extensionAxis: {x: 0, y: 0, z: 1}
---- !u!114 &1437726011874828955
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1093286404783710503}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a60dc3537bbf82c4881528875c85bb9e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TowerRangeQuery
-  combatStats: {fileID: 5683179169420486940}
-  rangeProfile: {fileID: 4941924106724229146}
---- !u!114 &5995808398355420564
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1093286404783710503}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2a89e224cdfcdc044b43518684866970, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TowerTargetingController
-  useTargetingModes: 1
-  defaultTargetingMode: 1
-  rangeQuery: {fileID: 1437726011874828955}
---- !u!114 &1195776450805550954
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1093286404783710503}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: aeff611ed2258e1479563c2e8eddebdb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TowerProjectileEmitter
-  combatStats: {fileID: 5683179169420486940}
-  rotationController: {fileID: 0}
-  towerIdentity: {fileID: 6791343731518469491}
-  visualSquash: {fileID: 0}
-  projectilePrefab: {fileID: 7313397994648493523, guid: 8f2713eb34a2f204e944b010f049fc42, type: 3}
-  projectileSpeed: 10
-  projectileLifetime: 0.15
-  effectMode: 0
-  firePoints:
-  - {fileID: 3545736205725912389}
-  useAllFirePointsPerShot: 1
-  delayBeforeFirstShot: 0
-  burstCount: 1
-  delayBetweenBurstShots: 0
-  fireDirectionMode: 1
-  flattenAimedShotsToXZPlane: 0
-  flattenFixedForwardShotsToXZPlane: 0
-  shootSoundPrefab: {fileID: 7125198490331484351, guid: 5aa708711f22b7a49ab25091640a8a4c, type: 3}
-  soundOffset: {x: 0, y: 0, z: 0}
---- !u!114 &4061192158899517758
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1093286404783710503}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b230df570326cc143b29616b681fe6e6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TowerTargetingFeedback
-  worldSpacePopupPrefab: {fileID: 6565176689698462858, guid: f9c62a44afb42b647907b335e527ad68, type: 3}
-  worldOffset: {x: 0, y: 0.4, z: 0}
---- !u!114 &5078816105776202478
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1093286404783710503}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 406fc660767f27a4e9cbf3a67816bef6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TowerPlacementOrientation
-  facingRule: 1
-  cardinalOnly: 1
 --- !u!1 &1882143443704479512
 GameObject:
   m_ObjectHideFlags: 0
@@ -5100,7 +4922,6 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 2660184461183932244}
   - {fileID: 3545736205725912389}
   - {fileID: 7477394381190730186}
   - {fileID: 5712333010446305965}
@@ -5210,6 +5031,7 @@ MonoBehaviour:
   baseSecondsBetweenShots: 2
   basePierce: 1
   baseRange: 1
+  hasNaturalCamoDetection: 0
 --- !u!114 &8455232979921060398
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5269,7 +5091,7 @@ MonoBehaviour:
   delayBeforeFirstShot: 0
   burstCount: 1
   delayBetweenBurstShots: 0
-  fireDirectionMode: 2
+  fireDirectionMode: 1
   flattenAimedShotsToXZPlane: 0
   flattenFixedForwardShotsToXZPlane: 0
   shootSoundPrefab: {fileID: 7125198490331484351, guid: 5aa708711f22b7a49ab25091640a8a4c, type: 3}
@@ -5352,7 +5174,7 @@ MonoBehaviour:
   rangeQuery: {fileID: 6630877168591428445}
   towerIdentity: {fileID: -2177105339483779199}
   auraTickInterval: 0.1
-  applySlow: 1
+  applySlow: 0
   slowPercent: 0.45
   applyExtraDamageTaken: 0
   extraDamageTakenPercent: 5
@@ -5505,8 +5327,13 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3545736205725912389}
+  - component: {fileID: 485480275102708583}
+  - component: {fileID: 8247767536041478485}
+  - component: {fileID: 6269996066758818856}
+  - component: {fileID: 5024838574629298480}
+  - component: {fileID: 6718431477370531430}
   m_Layer: 6
-  m_Name: GameObject
+  m_Name: Aura
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5527,6 +5354,88 @@ Transform:
   m_Children: []
   m_Father: {fileID: 4607724837775410472}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &485480275102708583
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1984869419482278443}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4a19a91366db874c9bdb2c6a84843d4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TowerIdentity
+  displayName: Cryomancer
+  icon: {fileID: 0}
+  towerFamilyKey: CryoAura
+  extraTags: []
+--- !u!114 &8247767536041478485
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1984869419482278443}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1f49db40544d44446967474092471841, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TowerAuraDebuff
+  rangeQuery: {fileID: 6630877168591428445}
+  towerIdentity: {fileID: 485480275102708583}
+  auraTickInterval: 0.1
+  applySlow: 1
+  slowPercent: 0.4
+  applyExtraDamageTaken: 0
+  extraDamageTakenPercent: 5
+--- !u!114 &6269996066758818856
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1984869419482278443}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d581701fda38fc4c8e3b300b45b9d9c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TowerCombatStats
+  basePower: 1
+  baseSecondsBetweenShots: 1
+  basePierce: 1
+  baseRange: 0.01
+  hasNaturalCamoDetection: 0
+--- !u!114 &5024838574629298480
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1984869419482278443}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 07871fc07221521458e810cd531370bf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TowerRangeProfile
+  shape: 0
+  singleBoxLocalCenter: {x: 0, y: 0, z: 0}
+  singleBoxBaseSize: {x: 1, y: 1, z: 4}
+  multiBoxDefinitions: []
+--- !u!114 &6718431477370531430
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1984869419482278443}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a60dc3537bbf82c4881528875c85bb9e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TowerRangeQuery
+  combatStats: {fileID: 0}
+  rangeProfile: {fileID: 0}
 --- !u!1 &2759394893733142830
 GameObject:
   m_ObjectHideFlags: 0

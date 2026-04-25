@@ -12,7 +12,7 @@ public class GridPathfinder : MonoBehaviour
 
     [Header("Enemy Test")]
     [SerializeField] private EnemyMover enemyPrefab;
-    [SerializeField] private float pathY = 0.2f; // height offset above tiles
+    [SerializeField] private float pathY = 0.2f;
 
     [Header("Debug")]
     [SerializeField] private bool drawPathGizmos = true;
@@ -23,20 +23,24 @@ public class GridPathfinder : MonoBehaviour
 
     private void Awake()
     {
-        if (grid == null) grid = FindFirstObjectByType<GridManager>();
-        if (grid != null) grid.RebuildLookupFromChildren();
+        if (grid == null)
+            grid = FindFirstObjectByType<GridManager>();
+
+        if (grid != null)
+            grid.RebuildLookupFromChildren();
     }
 
     [ContextMenu("Recompute Path")]
     public void RecomputePath()
     {
-        if (grid == null) return;
+        if (grid == null)
+            return;
 
         GridTile s = grid.GetTile(start.x, start.y);
         GridTile g = grid.GetTile(goal.x, goal.y);
 
         lastTilePath = FindPathAStar(s, g);
-        lastWorldPath = (lastTilePath == null) ? null : ConvertToWorldPath(lastTilePath);
+        lastWorldPath = lastTilePath == null ? null : ConvertToWorldPath(lastTilePath);
 
         Debug.Log(lastTilePath == null ? "No path found." : $"Path length: {lastTilePath.Count}");
     }
@@ -73,13 +77,30 @@ public class GridPathfinder : MonoBehaviour
             p.y += pathY;
             pts.Add(p);
         }
+
         return pts;
     }
 
     public List<GridTile> FindPathAStar(GridTile startTile, GridTile goalTile)
     {
-        if (startTile == null || goalTile == null) return null;
-        if (!startTile.IsPassableForEnemies || !goalTile.IsPassableForEnemies) return null;
+        return FindPathAStarInternal(startTile, goalTile, false);
+    }
+
+    public List<GridTile> FindPathAStarAllowStartBlocked(GridTile startTile, GridTile goalTile)
+    {
+        return FindPathAStarInternal(startTile, goalTile, true);
+    }
+
+    private List<GridTile> FindPathAStarInternal(GridTile startTile, GridTile goalTile, bool allowBlockedStartTile)
+    {
+        if (startTile == null || goalTile == null)
+            return null;
+
+        if (!allowBlockedStartTile && !startTile.IsPassableForEnemies)
+            return null;
+
+        if (!goalTile.IsPassableForEnemies)
+            return null;
 
         var open = new List<GridTile>();
         var closed = new HashSet<GridTile>();
@@ -117,9 +138,18 @@ public class GridPathfinder : MonoBehaviour
             for (int i = 0; i < neighbors.Count; i++)
             {
                 GridTile n = neighbors[i];
-                if (n == null) continue;
-                if (!n.IsPassableForEnemies) continue;
-                if (closed.Contains(n)) continue;
+                if (n == null)
+                    continue;
+
+                if (closed.Contains(n))
+                    continue;
+
+                bool isStartTile = n == startTile;
+                if (!isStartTile || !allowBlockedStartTile)
+                {
+                    if (!n.IsPassableForEnemies)
+                        continue;
+                }
 
                 int tentativeG = GetScore(gScore, current) + 1;
 
@@ -152,23 +182,24 @@ public class GridPathfinder : MonoBehaviour
     private List<GridTile> ReconstructPath(Dictionary<GridTile, GridTile> cameFrom, GridTile current)
     {
         var path = new List<GridTile> { current };
+
         while (cameFrom.TryGetValue(current, out GridTile prev))
         {
             current = prev;
             path.Add(current);
         }
+
         path.Reverse();
         return path;
     }
 
     private void OnDrawGizmos()
     {
-        if (!drawPathGizmos || lastWorldPath == null || lastWorldPath.Count < 2) return;
+        if (!drawPathGizmos || lastWorldPath == null || lastWorldPath.Count < 2)
+            return;
 
         Gizmos.color = Color.cyan;
         for (int i = 0; i < lastWorldPath.Count - 1; i++)
-        {
             Gizmos.DrawLine(lastWorldPath[i], lastWorldPath[i + 1]);
-        }
     }
 }

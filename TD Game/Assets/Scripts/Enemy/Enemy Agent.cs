@@ -240,16 +240,50 @@ public class EnemyAgent : MonoBehaviour
         GridTile startTile = grid.GetTile(startCoord.x, startCoord.y);
         GridTile goalTile = grid.GetTile(goalCoord.x, goalCoord.y);
 
-        List<GridTile> newPath = pathfinder.FindPathAStar(startTile, goalTile);
+        List<GridTile> newPath = pathfinder.FindPathAStarAllowStartBlocked(startTile, goalTile);
 
         tilePath.Clear();
-        index = 0;
 
         if (newPath == null || newPath.Count == 0)
+        {
+            index = 0;
             return;
+        }
 
         tilePath.AddRange(newPath);
-        AdvanceIfClose();
+        index = FindBestPathIndexAfterRepath();
+    }
+
+    private int FindBestPathIndexAfterRepath()
+    {
+        if (tilePath == null || tilePath.Count == 0)
+            return 0;
+
+        Vector3 pos = transform.position;
+
+        int closestIndex = 0;
+        float closestSqrDist = float.MaxValue;
+
+        for (int i = 0; i < tilePath.Count; i++)
+        {
+            Vector3 tilePos = tilePath[i].transform.position;
+            tilePos.y = pos.y;
+
+            float sqrDist = (tilePos - pos).sqrMagnitude;
+            if (sqrDist < closestSqrDist)
+            {
+                closestSqrDist = sqrDist;
+                closestIndex = i;
+            }
+        }
+
+        if (tilePath.Count <= 1)
+            return 0;
+
+        if (closestIndex >= tilePath.Count - 1)
+            return closestIndex;
+
+        return closestIndex + 1;
     }
 
     private void UpdateCurrentTileAndTerrainState()
@@ -347,18 +381,6 @@ public class EnemyAgent : MonoBehaviour
 
         OnReachedGoal?.Invoke(this);
         Destroy(gameObject);
-    }
-
-    private void AdvanceIfClose()
-    {
-        if (tilePath == null || tilePath.Count == 0)
-            return;
-
-        Vector3 target = tilePath[0].transform.position;
-        Vector3 to = target - transform.position;
-
-        if (to.sqrMagnitude <= nodeArriveDist * nodeArriveDist)
-            index = 1;
     }
 
     private float CalculateRemainingPathDistance()
