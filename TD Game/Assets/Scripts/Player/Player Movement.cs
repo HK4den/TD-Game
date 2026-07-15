@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using System;
 
 [RequireComponent(typeof(CharacterController))]
 public class PlayerMovement : MonoBehaviour
@@ -75,6 +76,8 @@ public class PlayerMovement : MonoBehaviour
         (hasSpeedOverride && boostMaxDuration > 0f)
             ? Mathf.Clamp01(boostRemainingTime / boostMaxDuration)
             : 0f;
+
+    public event Action Jumped;
 
     private void Awake()
     {
@@ -193,6 +196,8 @@ public class PlayerMovement : MonoBehaviour
 
             jumpBufferTimer = 0f;
             coyoteTimer = 0f;
+
+            Jumped?.Invoke();
         }
 
         if (isGrounded && horizontalVelocity.magnitude < 0.01f && movementMode == MovementMode.Normal)

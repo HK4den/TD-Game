@@ -30,13 +30,23 @@ public class PlayerMovementAudio : MonoBehaviour
     [Tooltip("Landing one-shot prefab. This CAN use DestroyAfterAudio.")]
     [SerializeField] private GameObject landSfxPrefab;
 
+    [Tooltip("One-shot prefab that plays once after being airborne for the 1-second fall threshold.")]
+    [SerializeField] private GameObject fallOneSecondSfxPrefab;
+
+    [Tooltip("One-shot prefab that plays once after being airborne for the 3-second fall threshold.")]
+    [SerializeField] private GameObject fallThreeSecondSfxPrefab;
+
     [Header("Footstep Detection")]
     [SerializeField] private float movementThreshold = 0.15f;
     [SerializeField] private float footstepFadeDuration = 0.08f;
 
     [Header("Jump / Land Detection")]
-    [SerializeField] private float minJumpVerticalVelocity = 1f;
+    [SerializeField] private float minLandingAirborneTime = 0.08f;
     [SerializeField] private float minLandingVerticalVelocity = 2f;
+
+    [Header("Long Fall Detection")]
+    [SerializeField] private float fallOneSecondThreshold = 1f;
+    [SerializeField] private float fallThreeSecondThreshold = 3f;
 
     [Header("Loop Pitch Randomization")]
     [SerializeField] private bool randomizeLoopPitch = true;
@@ -59,6 +69,9 @@ public class PlayerMovementAudio : MonoBehaviour
 
     private bool wasGroundedLastFrame;
     private float lastVerticalVelocity;
+    private float airborneTime;
+    private bool playedFallOneSecondSfx;
+    private bool playedFallThreeSecondSfx;
 
     private void Awake()
     {
@@ -76,6 +89,7 @@ public class PlayerMovementAudio : MonoBehaviour
         {
             wasGroundedLastFrame = playerMovement.IsGrounded;
             lastVerticalVelocity = playerMovement.VerticalVelocity;
+            playerMovement.Jumped += OnPlayerJumped;
         }
     }
 
@@ -94,29 +108,65 @@ public class PlayerMovementAudio : MonoBehaviour
 
     private void OnDestroy()
     {
+        if (playerMovement != null)
+            playerMovement.Jumped -= OnPlayerJumped;
+
         DestroyLoopInstance(ref walkLoopInstance, ref walkSource);
         DestroyLoopInstance(ref sprintLoopInstance, ref sprintSource);
         DestroyLoopInstance(ref boostLoopInstance, ref boostSource);
     }
 
+    private void OnPlayerJumped()
+    {
+        SpawnOneShot(jumpSfxPrefab);
+    }
+
     private void HandleJumpAndLandOneShots()
     {
         bool isGrounded = playerMovement.IsGrounded;
-        float verticalVelocity = playerMovement.VerticalVelocity;
 
-        bool justLeftGround = wasGroundedLastFrame && !isGrounded;
         bool justLanded = !wasGroundedLastFrame && isGrounded;
+        bool justLeftGround = wasGroundedLastFrame && !isGrounded;
 
-        // Jump: only play if we actually launched upward enough.
-        if (justLeftGround && verticalVelocity > minJumpVerticalVelocity)
+        if (justLeftGround)
         {
-            SpawnOneShot(jumpSfxPrefab);
+            airborneTime = 0f;
+            playedFallOneSecondSfx = false;
+            playedFallThreeSecondSfx = false;
+        }
+
+        if (!isGrounded)
+        {
+            airborneTime += Time.deltaTime;
+            HandleLongFallOneShots();
         }
 
         // Land: only play if we were falling fast enough before touching down.
-        if (justLanded && lastVerticalVelocity < -minLandingVerticalVelocity)
+        if (justLanded && airborneTime >= minLandingAirborneTime && lastVerticalVelocity < -minLandingVerticalVelocity)
         {
             SpawnOneShot(landSfxPrefab);
+        }
+
+        if (isGrounded)
+        {
+            airborneTime = 0f;
+            playedFallOneSecondSfx = false;
+            playedFallThreeSecondSfx = false;
+        }
+    }
+
+    private void HandleLongFallOneShots()
+    {
+        if (!playedFallOneSecondSfx && airborneTime >= fallOneSecondThreshold)
+        {
+            playedFallOneSecondSfx = true;
+            SpawnOneShot(fallOneSecondSfxPrefab);
+        }
+
+        if (!playedFallThreeSecondSfx && airborneTime >= fallThreeSecondThreshold)
+        {
+            playedFallThreeSecondSfx = true;
+            SpawnOneShot(fallThreeSecondSfxPrefab);
         }
     }
 

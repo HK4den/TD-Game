@@ -9,6 +9,11 @@ public class BounceObject : MonoBehaviour
     [SerializeField] private float forwardForce = 6f;
     [SerializeField] private float bounceCooldown = 0.25f;
 
+    [Header("Audio")]
+    [Tooltip("Bounce one-shot prefab. This CAN use DestroyAfterAudio.")]
+    [SerializeField] private GameObject bounceSfxPrefab;
+    [SerializeField] private Transform bounceSfxSpawnPoint;
+
     [Header("Visual Squash")]
     [SerializeField] private Transform squashTarget;
     [SerializeField][Range(0.5f, 1f)] private float squashScaleMultiplier = 0.7f;
@@ -38,6 +43,7 @@ public class BounceObject : MonoBehaviour
 
         Vector3 launchVector = GetLaunchVelocity();
         player.ApplyLaunch(launchVector, replaceHorizontal: true, replaceVertical: true);
+        SpawnBounceSfx();
 
         if (squashTarget != null)
         {
@@ -57,6 +63,15 @@ public class BounceObject : MonoBehaviour
 
         Vector3 launch = (flattenedForward * forwardForce) + (Vector3.up * upwardForce);
         return launch;
+    }
+
+    private void SpawnBounceSfx()
+    {
+        if (bounceSfxPrefab == null)
+            return;
+
+        Vector3 spawnPosition = bounceSfxSpawnPoint != null ? bounceSfxSpawnPoint.position : transform.position;
+        Instantiate(bounceSfxPrefab, spawnPosition, Quaternion.identity);
     }
 
     private IEnumerator CooldownRoutine()

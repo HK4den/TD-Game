@@ -44,6 +44,10 @@ public class GridPathPreviewVisualizer : MonoBehaviour
     [SerializeField] private float growDuration = 0.15f;
     [SerializeField] private float shrinkDuration = 0.15f;
 
+    [Header("Rotation")]
+    [SerializeField] private bool rotateMarkersAlongPath = true;
+    [SerializeField] private float markerYawOffset = 0f;
+
     [Header("Bobbing")]
     [SerializeField] private bool enableBobbing = true;
     [SerializeField] private float bobHeight = 0.08f;
@@ -72,15 +76,13 @@ public class GridPathPreviewVisualizer : MonoBehaviour
 
         if (PauseState.IsPaused)
         {
-            HideAllMarkersAnimated();
-            lastTile = null;
             return;
         }
 
         GridTile hovered = GetHoveredTile();
         int currentVersion = PathChangeBroadcaster.Version;
 
-        bool needsRefresh = hovered != lastTile || currentVersion != lastPathVersion;
+        bool needsRefresh = hovered != lastTile || currentVersion != lastPathVersion || ShouldRetryMissingPathDisplay();
 
         if (!needsRefresh)
             return;
@@ -89,6 +91,11 @@ public class GridPathPreviewVisualizer : MonoBehaviour
         lastPathVersion = currentVersion;
 
         RebuildAndShow(hovered);
+    }
+
+    private bool ShouldRetryMissingPathDisplay()
+    {
+        return alwaysShowCurrentPath && activeMarkers.Count == 0;
     }
 
     private GridTile GetHoveredTile()
@@ -180,7 +187,7 @@ public class GridPathPreviewVisualizer : MonoBehaviour
                 continue;
 
             wantedTiles.Add(tile);
-            EnsureMarker(tile, currentPrefab, MarkerKind.Current);
+            EnsureMarker(tile, currentPrefab, MarkerKind.Current, GetMarkerRotationForPath(currentPath, i, currentPrefab));
         }
 
         RemoveUnwantedMarkers(wantedTiles);
@@ -201,7 +208,7 @@ public class GridPathPreviewVisualizer : MonoBehaviour
                 continue;
 
             wantedTiles.Add(tile);
-            EnsureMarker(tile, removedPrefab, MarkerKind.Removed);
+            EnsureMarker(tile, removedPrefab, MarkerKind.Removed, GetMarkerRotationForPath(currentPath, i, removedPrefab));
         }
 
         RemoveUnwantedMarkers(wantedTiles);
@@ -212,6 +219,7 @@ public class GridPathPreviewVisualizer : MonoBehaviour
         HashSet<GridTile> wantedTiles = new HashSet<GridTile>();
         HashSet<GridTile> currentSet = new HashSet<GridTile>(currentPath);
         HashSet<GridTile> previewSet = new HashSet<GridTile>(previewPath);
+        Dictionary<GridTile, int> previewIndices = BuildPathIndexLookup(previewPath);
 
         for (int i = 0; i < currentPath.Count; i++)
         {
@@ -226,9 +234,14 @@ public class GridPathPreviewVisualizer : MonoBehaviour
             wantedTiles.Add(tile);
 
             if (previewSet.Contains(tile))
-                EnsureMarker(tile, currentPrefab, MarkerKind.Current);
+            {
+                int previewIndex = previewIndices[tile];
+                EnsureMarker(tile, currentPrefab, MarkerKind.Current, GetMarkerRotationForPath(previewPath, previewIndex, currentPrefab));
+            }
             else
-                EnsureMarker(tile, removedPrefab, MarkerKind.Removed);
+            {
+                EnsureMarker(tile, removedPrefab, MarkerKind.Removed, GetMarkerRotationForPath(currentPath, i, removedPrefab));
+            }
         }
 
         for (int i = 0; i < previewPath.Count; i++)
@@ -245,7 +258,7 @@ public class GridPathPreviewVisualizer : MonoBehaviour
                 continue;
 
             wantedTiles.Add(tile);
-            EnsureMarker(tile, futurePrefab, MarkerKind.Future);
+            EnsureMarker(tile, futurePrefab, MarkerKind.Future, GetMarkerRotationForPath(previewPath, i, futurePrefab));
         }
 
         RemoveUnwantedMarkers(wantedTiles);
@@ -256,7 +269,54 @@ public class GridPathPreviewVisualizer : MonoBehaviour
         return index <= 0 || index >= path.Count - 1;
     }
 
-    private void EnsureMarker(GridTile tile, GameObject prefab, MarkerKind kind)
+    private Dictionary<GridTile, int> BuildPathIndexLookup(List<GridTile> path)
+    {
+        Dictionary<GridTile, int> lookup = new Dictionary<GridTile, int>();
+
+        if (path == null)
+            return lookup;
+
+        for (int i = 0; i < path.Count; i++)
+        {
+            GridTile tile = path[i];
+
+            if (tile != null && !lookup.ContainsKey(tile))
+                lookup.Add(tile, i);
+        }
+
+        return lookup;
+    }
+
+    private Quaternion GetMarkerRotationForPath(List<GridTile> path, int index, GameObject prefab)
+    {
+        Quaternion fallback = prefab != null ? prefab.transform.rotation : Quaternion.identity;
+
+        if (!rotateMarkersAlongPath || path == null || index < 0 || index >= path.Count)
+            return fallback;
+
+        GridTile current = path[index];
+        GridTile next = index + 1 < path.Count ? path[index + 1] : null;
+        GridTile previous = index - 1 >= 0 ? path[index - 1] : null;
+
+        Vector3 direction = Vector3.zero;
+
+        if (current != null && next != null)
+            direction = next.transform.position - current.transform.position;
+        else if (current != null && previous != null)
+            direction = current.transform.position - previous.transform.position;
+
+        direction.y = 0f;
+
+        if (direction.sqrMagnitude <= 0.0001f)
+            return fallback;
+
+        float yaw = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
+        Vector3 prefabEuler = fallback.eulerAngles;
+
+        return Quaternion.Euler(prefabEuler.x, yaw + markerYawOffset, prefabEuler.z);
+    }
+
+    private void EnsureMarker(GridTile tile, GameObject prefab, MarkerKind kind, Quaternion rotation)
     {
         if (tile == null || prefab == null)
             return;
@@ -268,13 +328,14 @@ public class GridPathPreviewVisualizer : MonoBehaviour
             if (existing.kind == kind && existing.obj != null)
             {
                 existing.basePosition = basePos;
+                existing.obj.transform.rotation = rotation;
                 return;
             }
 
             RemoveMarkerAnimated(tile);
         }
 
-        GameObject obj = Instantiate(prefab, basePos, prefab.transform.rotation, transform);
+        GameObject obj = Instantiate(prefab, basePos, rotation, transform);
 
         Marker marker = new Marker
         {
