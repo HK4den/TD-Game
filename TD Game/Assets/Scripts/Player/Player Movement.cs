@@ -101,6 +101,9 @@ public class PlayerMovement : MonoBehaviour
 
     private void Update()
     {
+        if (PauseState.IsPaused)
+            return;
+
         UpdateGrounded();
         UpdateBoostTimer();
         UpdateTimersAndJump();
@@ -350,6 +353,9 @@ public class PlayerMovement : MonoBehaviour
 
     private void OnJumpPerformed(InputAction.CallbackContext ctx)
     {
+        if (PauseState.IsPaused)
+            return;
+
         if (movementMode != MovementMode.Normal)
             return;
 
@@ -358,6 +364,9 @@ public class PlayerMovement : MonoBehaviour
 
     private void OnSprintPerformed(InputAction.CallbackContext ctx)
     {
+        if (PauseState.IsPaused)
+            return;
+
         if (hasSpeedOverride)
             return;
 

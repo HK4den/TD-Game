@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
+using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 
 public class PauseMenuController : MonoBehaviour
@@ -24,10 +25,15 @@ public class PauseMenuController : MonoBehaviour
     [Header("Cursor")]
     [SerializeField] private bool lockCursorOnResume = true;
 
+    [Header("Controller Navigation")]
+    [SerializeField] private bool selectFirstButtonForController = true;
+
     private float originalFixedDeltaTime;
+    private PlayerControls controls;
 
     private void Awake()
     {
+        controls = new PlayerControls();
         originalFixedDeltaTime = Time.fixedDeltaTime;
 
         if (resumeButton != null) resumeButton.onClick.AddListener(Resume);
@@ -41,12 +47,24 @@ public class PauseMenuController : MonoBehaviour
         HandlePauseChanged(false);
     }
 
+    private void OnEnable()
+    {
+        controls.Enable();
+        controls.Player.Escape.performed += OnEscapePerformed;
+    }
+
+    private void OnDisable()
+    {
+        controls.Player.Escape.performed -= OnEscapePerformed;
+        controls.Disable();
+    }
+
     private void OnDestroy()
     {
         PauseState.OnPauseChanged -= HandlePauseChanged;
     }
 
-    private void Update()
+    private void OnEscapePerformed(InputAction.CallbackContext ctx)
     {
         if (GameEndController.IsGameEnded)
         {
@@ -59,18 +77,13 @@ public class PauseMenuController : MonoBehaviour
             return;
         }
 
-        if (Keyboard.current == null) return;
-
-        if (Keyboard.current.escapeKey.wasPressedThisFrame)
+        if (settingsPanelRoot != null && settingsPanelRoot.activeSelf)
         {
-            if (settingsPanelRoot != null && settingsPanelRoot.activeSelf)
-            {
-                CloseSettings();
-                return;
-            }
-
-            PauseState.Toggle();
+            CloseSettings();
+            return;
         }
+
+        PauseState.Toggle();
     }
 
     private void HandlePauseChanged(bool paused)
@@ -98,6 +111,8 @@ public class PauseMenuController : MonoBehaviour
 
             Cursor.visible = true;
             Cursor.lockState = CursorLockMode.None;
+
+            SelectButton(resumeButton);
         }
         else
         {
@@ -130,6 +145,8 @@ public class PauseMenuController : MonoBehaviour
 
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.None;
+
+        SelectButton(backButton);
     }
 
     public void CloseSettings()
@@ -151,6 +168,7 @@ public class PauseMenuController : MonoBehaviour
 
             Cursor.visible = true;
             Cursor.lockState = CursorLockMode.None;
+            SelectButton(resumeButton);
         }
         else if (lockCursorOnResume)
         {
@@ -178,5 +196,16 @@ public class PauseMenuController : MonoBehaviour
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
 #endif
+    }
+
+    private void SelectButton(Button button)
+    {
+        if (!selectFirstButtonForController || button == null || EventSystem.current == null)
+            return;
+
+        if (!button.gameObject.activeInHierarchy || !button.interactable)
+            return;
+
+        EventSystem.current.SetSelectedGameObject(button.gameObject);
     }
 }

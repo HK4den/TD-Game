@@ -128,15 +128,15 @@ public class ToolHotbar : MonoBehaviour
     {
         controls.Enable();
 
-        controls.Player.Slot1.performed += _ => EquipOwnedSlot(0);
-        controls.Player.Slot2.performed += _ => EquipOwnedSlot(1);
-        controls.Player.Slot3.performed += _ => EquipOwnedSlot(2);
-        controls.Player.Slot4.performed += _ => EquipOwnedSlot(3);
-        controls.Player.Slot5.performed += _ => EquipOwnedSlot(4);
-        controls.Player.Slot6.performed += _ => EquipOwnedSlot(5);
-        controls.Player.Slot7.performed += _ => EquipOwnedSlot(6);
-        controls.Player.Slot8.performed += _ => EquipOwnedSlot(7);
-        controls.Player.Slot9.performed += _ => EquipOwnedSlot(8);
+        controls.Player.Slot1.performed += OnSlot1Performed;
+        controls.Player.Slot2.performed += OnSlot2Performed;
+        controls.Player.Slot3.performed += OnSlot3Performed;
+        controls.Player.Slot4.performed += OnSlot4Performed;
+        controls.Player.Slot5.performed += OnSlot5Performed;
+        controls.Player.Slot6.performed += OnSlot6Performed;
+        controls.Player.Slot7.performed += OnSlot7Performed;
+        controls.Player.Slot8.performed += OnSlot8Performed;
+        controls.Player.Slot9.performed += OnSlot9Performed;
 
         controls.Player.NextSlot.performed += OnNextPerformed;
         controls.Player.PrevSlot.performed += OnPrevPerformed;
@@ -144,11 +144,30 @@ public class ToolHotbar : MonoBehaviour
 
     private void OnDisable()
     {
+        controls.Player.Slot1.performed -= OnSlot1Performed;
+        controls.Player.Slot2.performed -= OnSlot2Performed;
+        controls.Player.Slot3.performed -= OnSlot3Performed;
+        controls.Player.Slot4.performed -= OnSlot4Performed;
+        controls.Player.Slot5.performed -= OnSlot5Performed;
+        controls.Player.Slot6.performed -= OnSlot6Performed;
+        controls.Player.Slot7.performed -= OnSlot7Performed;
+        controls.Player.Slot8.performed -= OnSlot8Performed;
+        controls.Player.Slot9.performed -= OnSlot9Performed;
         controls.Player.NextSlot.performed -= OnNextPerformed;
         controls.Player.PrevSlot.performed -= OnPrevPerformed;
 
         controls.Disable();
     }
+
+    private void OnSlot1Performed(InputAction.CallbackContext ctx) => EquipOwnedSlot(0);
+    private void OnSlot2Performed(InputAction.CallbackContext ctx) => EquipOwnedSlot(1);
+    private void OnSlot3Performed(InputAction.CallbackContext ctx) => EquipOwnedSlot(2);
+    private void OnSlot4Performed(InputAction.CallbackContext ctx) => EquipOwnedSlot(3);
+    private void OnSlot5Performed(InputAction.CallbackContext ctx) => EquipOwnedSlot(4);
+    private void OnSlot6Performed(InputAction.CallbackContext ctx) => EquipOwnedSlot(5);
+    private void OnSlot7Performed(InputAction.CallbackContext ctx) => EquipOwnedSlot(6);
+    private void OnSlot8Performed(InputAction.CallbackContext ctx) => EquipOwnedSlot(7);
+    private void OnSlot9Performed(InputAction.CallbackContext ctx) => EquipOwnedSlot(8);
 
     private void OnNextPerformed(InputAction.CallbackContext ctx)
     {
@@ -162,6 +181,9 @@ public class ToolHotbar : MonoBehaviour
 
     private void EquipNextOwnedSlot(int direction)
     {
+        if (PauseState.IsPaused)
+            return;
+
         if (OwnedSlotCount <= 0)
             return;
 
@@ -184,6 +206,9 @@ public class ToolHotbar : MonoBehaviour
 
     public void EquipOwnedSlot(int ownedIndex)
     {
+        if (PauseState.IsPaused)
+            return;
+
         if (OwnedSlotCount <= 0)
             return;
 
@@ -208,6 +233,9 @@ public class ToolHotbar : MonoBehaviour
 
     public void EquipRealSlot(int realIndex)
     {
+        if (PauseState.IsPaused)
+            return;
+
         if (slots == null || slots.Length == 0)
             return;
 

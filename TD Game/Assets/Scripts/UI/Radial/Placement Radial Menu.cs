@@ -138,7 +138,6 @@ public class PlacementRadialMenu : MonoBehaviour
     {
         if (direction.sqrMagnitude < 0.01f)
         {
-            SetHighlighted(0);
             return;
         }
 

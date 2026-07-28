@@ -1,8 +1,18 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class MainMenu : MonoBehaviour
 {
+    [Header("Controller Navigation")]
+    [SerializeField] private Selectable firstSelected;
+
+    private void Start()
+    {
+        SelectInitialButton();
+    }
+
     private void ResetTime()
     {
         Time.timeScale = 1f;
@@ -34,5 +44,18 @@ public class MainMenu : MonoBehaviour
     {
         ResetTime();
         SceneManager.LoadScene("MainMenu");
+    }
+
+    private void SelectInitialButton()
+    {
+        if (EventSystem.current == null)
+            return;
+
+        Selectable target = firstSelected != null ? firstSelected : FindFirstObjectByType<Selectable>();
+
+        if (target == null || !target.gameObject.activeInHierarchy || !target.interactable)
+            return;
+
+        EventSystem.current.SetSelectedGameObject(target.gameObject);
     }
 }

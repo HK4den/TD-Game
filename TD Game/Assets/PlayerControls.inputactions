@@ -61,6 +61,15 @@
                     "initialStateCheck": false
                 },
                 {
+                    "name": "StartWave",
+                    "type": "Button",
+                    "id": "77e32a16-f518-4e90-8f05-2de08aa1b3d9",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
                     "name": "PrimaryClick",
                     "type": "Button",
                     "id": "318d3e3c-74e5-4dfc-ab24-7e5d90c94f18",
@@ -263,6 +272,17 @@
                 },
                 {
                     "name": "",
+                    "id": "c852703a-2cf9-4dc8-ae17-bd5c4097d858",
+                    "path": "<Gamepad>/leftStick",
+                    "interactions": "",
+                    "processors": "StickDeadzone(min=0.15,max=0.95)",
+                    "groups": "",
+                    "action": "Move",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "635e046e-5dc4-492e-8060-57cad1e634cc",
                     "path": "<Mouse>/delta",
                     "interactions": "",
@@ -357,6 +377,28 @@
                     "processors": "",
                     "groups": "",
                     "action": "Escape",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "1b1ade9b-c4b6-433d-b680-a12ea8af78ad",
+                    "path": "<Keyboard>/enter",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "StartWave",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "1f2a8ec6-334d-449d-9c89-8abdb00cbeed",
+                    "path": "<Gamepad>/buttonNorth",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "StartWave",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },

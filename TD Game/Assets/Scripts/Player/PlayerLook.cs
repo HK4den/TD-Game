@@ -15,6 +15,13 @@ public class PlayerLook : MonoBehaviour
     [SerializeField] private float maxSensitivity = 1f;
     [SerializeField] private Slider sensitivitySlider; // optional
 
+    [Header("Controller Look")]
+    [SerializeField] private float controllerLookSensitivity = 180f;
+    [SerializeField] private float minControllerLookSensitivity = 60f;
+    [SerializeField] private float maxControllerLookSensitivity = 300f;
+    [SerializeField] private float controllerLookDeadzone = 0.15f;
+    [SerializeField] private Slider controllerSensitivitySlider; // optional
+
     [Header("Look Clamp")]
     [SerializeField] private float minPitch = -80f;
     [SerializeField] private float maxPitch = 80f;
@@ -41,6 +48,7 @@ public class PlayerLook : MonoBehaviour
     [SerializeField] private bool cursorUnlockedBySystem;
 
     private const string SensitivityKey = "MouseSensitivity";
+    private const string ControllerSensitivityKey = "ControllerLookSensitivity";
 
     private PlayerControls controls;
     private float pitch;
@@ -48,6 +56,7 @@ public class PlayerLook : MonoBehaviour
     private Vector3 pivotStartLocalPos;
     private float currentTilt;
     private float mouseSensitivity;
+    private float lookSuppressedUntilTime;
 
     // Legacy/manual override support
     private Coroutine fovOverrideRoutine;
@@ -70,12 +79,22 @@ public class PlayerLook : MonoBehaviour
 
     private void OnEnable()
     {
+        LoadSensitivity();
         controls.Enable();
     }
 
     private void OnDisable()
     {
         controls.Disable();
+    }
+
+    private void OnDestroy()
+    {
+        if (sensitivitySlider != null)
+            sensitivitySlider.onValueChanged.RemoveListener(SetSensitivity);
+
+        if (controllerSensitivitySlider != null)
+            controllerSensitivitySlider.onValueChanged.RemoveListener(SetControllerLookSensitivity);
     }
 
     private void Start()
@@ -89,14 +108,14 @@ public class PlayerLook : MonoBehaviour
         if (PauseState.IsPaused)
             return;
 
-        if (!lookBlocked)
+        if (!lookBlocked && !IsLookSuppressed())
         {
             Vector2 look = controls.Player.Look.ReadValue<Vector2>();
 
-            transform.Rotate(Vector3.up * look.x * mouseSensitivity);
-
-            pitch -= look.y * mouseSensitivity;
-            pitch = Mathf.Clamp(pitch, minPitch, maxPitch);
+            if (IsLookFromGamepad())
+                ApplyControllerLook(look);
+            else
+                ApplyMouseLook(look);
         }
 
         HandleCameraBob();
@@ -109,6 +128,15 @@ public class PlayerLook : MonoBehaviour
     {
         mouseSensitivity = PlayerPrefs.GetFloat(SensitivityKey, defaultSensitivity);
         mouseSensitivity = Mathf.Clamp(mouseSensitivity, minSensitivity, maxSensitivity);
+
+        float savedControllerSensitivity = PlayerPrefs.GetFloat(ControllerSensitivityKey, GetDefaultControllerLookSensitivity());
+        bool savedControllerSensitivityValid =
+            savedControllerSensitivity >= minControllerLookSensitivity &&
+            savedControllerSensitivity <= maxControllerLookSensitivity;
+
+        controllerLookSensitivity = savedControllerSensitivityValid
+            ? savedControllerSensitivity
+            : GetDefaultControllerLookSensitivity();
     }
 
     private void SaveSensitivity()
@@ -120,25 +148,111 @@ public class PlayerLook : MonoBehaviour
     private void SetupSlider()
     {
         if (sensitivitySlider == null)
+        {
+            SetupControllerSlider();
             return;
+        }
 
         sensitivitySlider.minValue = minSensitivity;
         sensitivitySlider.maxValue = maxSensitivity;
-        sensitivitySlider.value = mouseSensitivity;
+        sensitivitySlider.SetValueWithoutNotify(mouseSensitivity);
 
         sensitivitySlider.onValueChanged.RemoveListener(SetSensitivity);
         sensitivitySlider.onValueChanged.AddListener(SetSensitivity);
+
+        SetupControllerSlider();
+    }
+
+    private void SetupControllerSlider()
+    {
+        if (controllerSensitivitySlider == null)
+            return;
+
+        controllerSensitivitySlider.minValue = minControllerLookSensitivity;
+        controllerSensitivitySlider.maxValue = maxControllerLookSensitivity;
+        controllerSensitivitySlider.SetValueWithoutNotify(controllerLookSensitivity);
+
+        controllerSensitivitySlider.onValueChanged.RemoveListener(SetControllerLookSensitivity);
+        controllerSensitivitySlider.onValueChanged.AddListener(SetControllerLookSensitivity);
     }
 
     public void SetSensitivity(float newSensitivity)
     {
         mouseSensitivity = Mathf.Clamp(newSensitivity, minSensitivity, maxSensitivity);
         SaveSensitivity();
+
+        if (sensitivitySlider != null && !Mathf.Approximately(sensitivitySlider.value, mouseSensitivity))
+            sensitivitySlider.SetValueWithoutNotify(mouseSensitivity);
+    }
+
+    public void SetControllerLookSensitivity(float newSensitivity)
+    {
+        controllerLookSensitivity = Mathf.Clamp(newSensitivity, minControllerLookSensitivity, maxControllerLookSensitivity);
+        PlayerPrefs.SetFloat(ControllerSensitivityKey, controllerLookSensitivity);
+        PlayerPrefs.Save();
+
+        if (controllerSensitivitySlider != null && !Mathf.Approximately(controllerSensitivitySlider.value, controllerLookSensitivity))
+            controllerSensitivitySlider.SetValueWithoutNotify(controllerLookSensitivity);
     }
 
     public float GetSensitivity()
     {
         return mouseSensitivity;
+    }
+
+    public float GetControllerLookSensitivity()
+    {
+        return controllerLookSensitivity;
+    }
+
+    private bool IsLookFromGamepad()
+    {
+        return controls.Player.Look.activeControl != null &&
+               controls.Player.Look.activeControl.device is Gamepad;
+    }
+
+    public void SuppressLookForDuration(float duration)
+    {
+        if (duration <= 0f)
+            return;
+
+        lookSuppressedUntilTime = Mathf.Max(lookSuppressedUntilTime, Time.unscaledTime + duration);
+    }
+
+    private bool IsLookSuppressed()
+    {
+        return Time.unscaledTime < lookSuppressedUntilTime;
+    }
+
+    private float GetDefaultControllerLookSensitivity()
+    {
+        return (minControllerLookSensitivity + maxControllerLookSensitivity) * 0.5f;
+    }
+
+    private void ApplyMouseLook(Vector2 look)
+    {
+        transform.Rotate(Vector3.up * look.x * mouseSensitivity);
+
+        pitch -= look.y * mouseSensitivity;
+        pitch = Mathf.Clamp(pitch, minPitch, maxPitch);
+    }
+
+    private void ApplyControllerLook(Vector2 look)
+    {
+        float safeDeadzone = Mathf.Clamp01(controllerLookDeadzone);
+        float magnitude = look.magnitude;
+
+        if (magnitude <= safeDeadzone)
+            return;
+
+        float scaledMagnitude = Mathf.InverseLerp(safeDeadzone, 1f, magnitude);
+        Vector2 scaledLook = look.normalized * scaledMagnitude;
+        float degreesPerSecond = Mathf.Max(0f, controllerLookSensitivity);
+
+        transform.Rotate(Vector3.up * scaledLook.x * degreesPerSecond * Time.deltaTime);
+
+        pitch -= scaledLook.y * degreesPerSecond * Time.deltaTime;
+        pitch = Mathf.Clamp(pitch, minPitch, maxPitch);
     }
 
     public void SetLookBlocked(bool blocked)

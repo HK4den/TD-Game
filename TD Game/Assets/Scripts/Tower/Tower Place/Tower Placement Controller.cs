@@ -99,6 +99,7 @@ public class TowerPlacementController : MonoBehaviour
     [SerializeField] private bool radialOpen;
     [SerializeField] private float radialOpenHoldTime = 0.2f;
     [SerializeField] private float radialStickDeadzone = 0.35f;
+    [SerializeField] private float controllerAimLockAfterRadialSelect = 0.1f;
 
     private GameObject ghost;
     private GridTile hoveredTile;
@@ -116,6 +117,8 @@ public class TowerPlacementController : MonoBehaviour
     private bool secondaryHeld;
     private bool holdTriggeredRadialOpen;
     private float secondaryHeldTime;
+    private bool radialSelectionUsedController;
+    private bool hadTowerSelectedWhenSecondaryStarted;
 
     public bool HasTowerSelected => selectedTowerIndex >= 0 && selectedTowerIndex < placeableTowers.Count;
     public bool IsRadialOpen => radialOpen;
@@ -171,6 +174,8 @@ public class TowerPlacementController : MonoBehaviour
         secondaryHeld = false;
         holdTriggeredRadialOpen = false;
         secondaryHeldTime = 0f;
+        radialSelectionUsedController = false;
+        hadTowerSelectedWhenSecondaryStarted = false;
 
         radialOpen = false;
         SetLookBlocked(false);
@@ -241,18 +246,11 @@ public class TowerPlacementController : MonoBehaviour
         if (PauseState.IsPaused)
             return;
 
-        if (HasTowerSelected)
-        {
-            ClearSelectedTower();
-            secondaryHeld = false;
-            holdTriggeredRadialOpen = false;
-            secondaryHeldTime = 0f;
-            return;
-        }
-
         secondaryHeld = true;
         holdTriggeredRadialOpen = false;
         secondaryHeldTime = 0f;
+        radialSelectionUsedController = IsInputFromGamepad(ctx);
+        hadTowerSelectedWhenSecondaryStarted = HasTowerSelected;
     }
 
     private void OnSecondaryCanceled(InputAction.CallbackContext ctx)
@@ -261,14 +259,23 @@ public class TowerPlacementController : MonoBehaviour
             return;
 
         bool radialWasOpen = radialOpen;
+        bool startedWithTowerSelected = hadTowerSelectedWhenSecondaryStarted;
 
         secondaryHeld = false;
         secondaryHeldTime = 0f;
+        hadTowerSelectedWhenSecondaryStarted = false;
 
         if (radialWasOpen)
         {
             holdTriggeredRadialOpen = false;
             ConfirmRadialSelection();
+            return;
+        }
+
+        if (!holdTriggeredRadialOpen && startedWithTowerSelected)
+        {
+            ClearSelectedTower();
+            holdTriggeredRadialOpen = false;
             return;
         }
 
@@ -280,9 +287,6 @@ public class TowerPlacementController : MonoBehaviour
         if (!secondaryHeld)
             return;
 
-        if (HasTowerSelected)
-            return;
-
         if (radialOpen)
             return;
 
@@ -291,6 +295,9 @@ public class TowerPlacementController : MonoBehaviour
         if (!holdTriggeredRadialOpen && secondaryHeldTime >= radialOpenHoldTime)
         {
             holdTriggeredRadialOpen = true;
+            if (HasTowerSelected)
+                ClearSelectedTower();
+
             OpenRadialInternal();
         }
     }
@@ -303,6 +310,7 @@ public class TowerPlacementController : MonoBehaviour
         secondaryHeld = false;
         holdTriggeredRadialOpen = false;
         secondaryHeldTime = 0f;
+        hadTowerSelectedWhenSecondaryStarted = false;
 
         CloseRadialInternal(false);
         hoveredTile = null;
@@ -377,6 +385,8 @@ public class TowerPlacementController : MonoBehaviour
             return;
 
         radialOpen = true;
+        radialSelectionUsedController = controls.Player.SecondaryClick.activeControl != null &&
+                                        controls.Player.SecondaryClick.activeControl.device is Gamepad;
 
         if (inspectPanel != null)
             inspectPanel.ClearSelection();
@@ -420,7 +430,13 @@ public class TowerPlacementController : MonoBehaviour
         Vector2 stickLook = controls.Player.RadialSelection.ReadValue<Vector2>();
 
         if (stickLook.sqrMagnitude >= radialStickDeadzone * radialStickDeadzone)
+        {
+            radialSelectionUsedController = true;
             return stickLook.normalized;
+        }
+
+        if (radialSelectionUsedController)
+            return Vector2.zero;
 
         if (Mouse.current != null)
         {
@@ -455,6 +471,14 @@ public class TowerPlacementController : MonoBehaviour
 
         int towerIndex = highlighted - 1;
         SelectTowerByIndex(towerIndex);
+
+        if (radialSelectionUsedController && playerLook != null)
+            playerLook.SuppressLookForDuration(controllerAimLockAfterRadialSelect);
+    }
+
+    private bool IsInputFromGamepad(InputAction.CallbackContext ctx)
+    {
+        return ctx.control != null && ctx.control.device is Gamepad;
     }
 
     private void UpdateHoverTileCenterRay()

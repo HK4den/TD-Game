@@ -18,9 +18,12 @@ public class GameHUDController : MonoBehaviour
     private int totalWaves;
     private int currentWaveInProgress = 0;
     private int nextWaveToStart = 1;
+    private PlayerControls controls;
 
     private void Awake()
     {
+        controls = new PlayerControls();
+
         if (economy == null) economy = FindFirstObjectByType<EconomyManager>();
         if (baseHealth == null) baseHealth = FindFirstObjectByType<BaseHealth>();
         if (waveSpawner == null) waveSpawner = FindFirstObjectByType<WaveSpawner>();
@@ -34,6 +37,12 @@ public class GameHUDController : MonoBehaviour
 
     private void OnEnable()
     {
+        GameplayInputPromptModeTracker.EnsureInitialized();
+        GameplayInputPromptModeTracker.OnModeChanged += HandlePromptModeChanged;
+
+        controls.Enable();
+        controls.Player.StartWave.performed += OnStartWavePerformed;
+
         if (economy != null)
             economy.OnMoneyChanged += OnMoneyChanged;
 
@@ -49,6 +58,11 @@ public class GameHUDController : MonoBehaviour
 
     private void OnDisable()
     {
+        GameplayInputPromptModeTracker.OnModeChanged -= HandlePromptModeChanged;
+
+        controls.Player.StartWave.performed -= OnStartWavePerformed;
+        controls.Disable();
+
         if (economy != null)
             economy.OnMoneyChanged -= OnMoneyChanged;
 
@@ -62,18 +76,19 @@ public class GameHUDController : MonoBehaviour
         }
     }
 
-    private void Update()
+    private void OnStartWavePerformed(InputAction.CallbackContext ctx)
     {
         if (PauseState.IsPaused) return;
 
-        var kb = Keyboard.current;
-        if (kb != null && kb.enterKey.wasPressedThisFrame)
+        if (waveSpawner != null && currentWaveInProgress == 0 && nextWaveToStart <= totalWaves)
         {
-            if (waveSpawner != null && currentWaveInProgress == 0 && nextWaveToStart <= totalWaves)
-            {
-                waveSpawner.StartNextWave();
-            }
+            waveSpawner.StartNextWave();
         }
+    }
+
+    private void HandlePromptModeChanged(GameplayInputPromptMode mode)
+    {
+        RefreshWaveAndStatus();
     }
 
     private void OnMoneyChanged(int newMoney)
@@ -129,8 +144,13 @@ public class GameHUDController : MonoBehaviour
         {
             statusText.text = (currentWaveInProgress != 0)
                 ? "Wave in Progress"
-                : "Start Wave (Press Enter)";
+                : $"Start Wave ({GetStartWavePrompt()})";
         }
+    }
+
+    private string GetStartWavePrompt()
+    {
+        return GameplayInputPromptModeTracker.IsController ? "Y" : "Enter";
     }
 
     private string FormatMoney(int amount)

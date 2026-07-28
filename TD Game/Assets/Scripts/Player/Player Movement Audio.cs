@@ -98,6 +98,14 @@ public class PlayerMovementAudio : MonoBehaviour
         if (playerMovement == null)
             return;
 
+        if (PauseState.IsPaused)
+        {
+            StopLoopingMovementAudio();
+            wasGroundedLastFrame = playerMovement.IsGrounded;
+            lastVerticalVelocity = playerMovement.VerticalVelocity;
+            return;
+        }
+
         HandleJumpAndLandOneShots();
         UpdateFootstepState();
         UpdateLoopVolumes();
@@ -226,6 +234,25 @@ public class PlayerMovementAudio : MonoBehaviour
             boostSource,
             currentState == FootstepState.Boost ? boostBaseVolume : 0f,
             fadeSpeed);
+    }
+
+    private void StopLoopingMovementAudio()
+    {
+        currentState = FootstepState.None;
+        StopSource(walkSource);
+        StopSource(sprintSource);
+        StopSource(boostSource);
+    }
+
+    private void StopSource(AudioSource source)
+    {
+        if (source == null)
+            return;
+
+        source.volume = 0f;
+
+        if (source.isPlaying)
+            source.Stop();
     }
 
     private void UpdateSourceVolume(AudioSource source, float targetVolume, float fadeSpeed)

@@ -94,6 +94,7 @@ MonoBehaviour:
   radialOpen: 0
   radialOpenHoldTime: 0.15
   radialStickDeadzone: 0.5
+  controllerAimLockAfterRadialSelect: 0.1
 --- !u!114 &3751579155576691655
 MonoBehaviour:
   m_ObjectHideFlags: 0

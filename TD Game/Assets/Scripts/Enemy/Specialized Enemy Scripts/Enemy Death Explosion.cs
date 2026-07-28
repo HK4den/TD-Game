@@ -19,6 +19,12 @@ public class EnemyDeathExplosion : EnemyDeathBehavior
     [SerializeField] private bool ignoreDamageTakenModifiers = false;
     [SerializeField] private bool showDamageNumbers = true;
 
+    [Header("Visual + Audio")]
+    [SerializeField] private GameObject explosionVisualPrefab;
+    [SerializeField] private GameObject explosionSfxPrefab;
+    [SerializeField] private Vector3 visualAndSfxOffset = Vector3.zero;
+    [SerializeField] private float explosionVisualSize = 1f;
+
     [Header("Radius Visual")]
     [SerializeField] private EnemyRadiusVisualizer radiusVisualizer;
     [SerializeField] private bool showRadiusOnExplosion = true;
@@ -62,6 +68,10 @@ public class EnemyDeathExplosion : EnemyDeathBehavior
             radiusVisualizer.SetRadius(explosionRadius);
             radiusVisualizer.ShowForDuration(radiusVisibleDuration);
         }
+
+        Vector3 explosionPosition = ownerHealth.transform.position + visualAndSfxOffset;
+        SpawnExplosionVisual(explosionPosition);
+        SpawnExplosionSfx(explosionPosition);
 
         uniqueTargets.Clear();
 
@@ -108,6 +118,32 @@ public class EnemyDeathExplosion : EnemyDeathBehavior
 
             target.TakeDamage(damageInfo);
         }
+    }
+
+    private void SpawnExplosionVisual(Vector3 position)
+    {
+        if (explosionVisualPrefab == null)
+            return;
+
+        GameObject visualInstance = Instantiate(explosionVisualPrefab, position, Quaternion.identity);
+        float safeSize = Mathf.Max(0f, explosionVisualSize);
+
+        EnemyExplosionSpriteAnimation animation = visualInstance.GetComponent<EnemyExplosionSpriteAnimation>();
+        if (animation == null)
+            animation = visualInstance.GetComponentInChildren<EnemyExplosionSpriteAnimation>();
+
+        if (animation != null)
+            animation.SetScaleMultiplier(safeSize);
+        else
+            visualInstance.transform.localScale *= safeSize;
+    }
+
+    private void SpawnExplosionSfx(Vector3 position)
+    {
+        if (explosionSfxPrefab == null)
+            return;
+
+        Instantiate(explosionSfxPrefab, position, Quaternion.identity);
     }
 
     private void OnDrawGizmosSelected()

@@ -147,6 +147,15 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": false
                 },
                 {
+                    ""name"": ""StartWave"",
+                    ""type"": ""Button"",
+                    ""id"": ""77e32a16-f518-4e90-8f05-2de08aa1b3d9"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
                     ""name"": ""PrimaryClick"",
                     ""type"": ""Button"",
                     ""id"": ""318d3e3c-74e5-4dfc-ab24-7e5d90c94f18"",
@@ -349,6 +358,17 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
+                    ""id"": ""c852703a-2cf9-4dc8-ae17-bd5c4097d858"",
+                    ""path"": ""<Gamepad>/leftStick"",
+                    ""interactions"": """",
+                    ""processors"": ""StickDeadzone(min=0.15,max=0.95)"",
+                    ""groups"": """",
+                    ""action"": ""Move"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
                     ""id"": ""635e046e-5dc4-492e-8060-57cad1e634cc"",
                     ""path"": ""<Mouse>/delta"",
                     ""interactions"": """",
@@ -443,6 +463,28 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""Escape"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""1b1ade9b-c4b6-433d-b680-a12ea8af78ad"",
+                    ""path"": ""<Keyboard>/enter"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""StartWave"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""1f2a8ec6-334d-449d-9c89-8abdb00cbeed"",
+                    ""path"": ""<Gamepad>/buttonNorth"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""StartWave"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -723,6 +765,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         m_Player_Jump = m_Player.FindAction("Jump", throwIfNotFound: true);
         m_Player_Sprint = m_Player.FindAction("Sprint", throwIfNotFound: true);
         m_Player_Escape = m_Player.FindAction("Escape", throwIfNotFound: true);
+        m_Player_StartWave = m_Player.FindAction("StartWave", throwIfNotFound: true);
         m_Player_PrimaryClick = m_Player.FindAction("PrimaryClick", throwIfNotFound: true);
         m_Player_SecondaryClick = m_Player.FindAction("SecondaryClick", throwIfNotFound: true);
         m_Player_Upgrade = m_Player.FindAction("Upgrade", throwIfNotFound: true);
@@ -825,6 +868,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_Jump;
     private readonly InputAction m_Player_Sprint;
     private readonly InputAction m_Player_Escape;
+    private readonly InputAction m_Player_StartWave;
     private readonly InputAction m_Player_PrimaryClick;
     private readonly InputAction m_Player_SecondaryClick;
     private readonly InputAction m_Player_Upgrade;
@@ -876,6 +920,10 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Player/Escape".
         /// </summary>
         public InputAction @Escape => m_Wrapper.m_Player_Escape;
+        /// <summary>
+        /// Provides access to the underlying input action "Player/StartWave".
+        /// </summary>
+        public InputAction @StartWave => m_Wrapper.m_Player_StartWave;
         /// <summary>
         /// Provides access to the underlying input action "Player/PrimaryClick".
         /// </summary>
@@ -984,6 +1032,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @Escape.started += instance.OnEscape;
             @Escape.performed += instance.OnEscape;
             @Escape.canceled += instance.OnEscape;
+            @StartWave.started += instance.OnStartWave;
+            @StartWave.performed += instance.OnStartWave;
+            @StartWave.canceled += instance.OnStartWave;
             @PrimaryClick.started += instance.OnPrimaryClick;
             @PrimaryClick.performed += instance.OnPrimaryClick;
             @PrimaryClick.canceled += instance.OnPrimaryClick;
@@ -1061,6 +1112,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @Escape.started -= instance.OnEscape;
             @Escape.performed -= instance.OnEscape;
             @Escape.canceled -= instance.OnEscape;
+            @StartWave.started -= instance.OnStartWave;
+            @StartWave.performed -= instance.OnStartWave;
+            @StartWave.canceled -= instance.OnStartWave;
             @PrimaryClick.started -= instance.OnPrimaryClick;
             @PrimaryClick.performed -= instance.OnPrimaryClick;
             @PrimaryClick.canceled -= instance.OnPrimaryClick;
@@ -1191,6 +1245,13 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnEscape(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "StartWave" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnStartWave(InputAction.CallbackContext context);
         /// <summary>
         /// Method invoked when associated input action "PrimaryClick" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
         /// </summary>

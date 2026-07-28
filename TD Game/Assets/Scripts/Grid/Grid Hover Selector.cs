@@ -68,11 +68,20 @@ public class GridHoverSelector : MonoBehaviour
 
     private void OnPrimaryClick(InputAction.CallbackContext ctx)
     {
+        if (PauseState.IsPaused)
+            return;
+
         suppressUntilUnscaledTime = Time.unscaledTime + clickBlinkDuration;
     }
 
     private void UpdateHover()
     {
+        if (PauseState.IsPaused)
+        {
+            SetHighlightActive(false);
+            return;
+        }
+
         if (Time.unscaledTime < suppressUntilUnscaledTime)
         {
             SetHighlightActive(false);

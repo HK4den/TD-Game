@@ -60,7 +60,7 @@ public class InspectPanelUI : MonoBehaviour
 
     [Header("Sell UI")]
     [SerializeField] private GameObject sellRoot;   // optional container
-    [SerializeField] private Text sellPriceText;    // e.g. "Sell: $123 (Q)"
+    [SerializeField] private Text sellPriceText;    // e.g. "Sell: $123 (Q)" or "Sell: $123 (Down)"
     [SerializeField] private float sellRefundRate = 0.75f;
     [SerializeField] private RectTransform sellFillRect; // your "copied sell button" rect
     [SerializeField] private float sellFillFullWidth = 384.02f; // full width when filled
@@ -94,6 +94,23 @@ public class InspectPanelUI : MonoBehaviour
         ApplyTerrain(null);
         ApplyTower(null, null);
         ApplyUpgradeLabels();
+    }
+
+    private void OnEnable()
+    {
+        GameplayInputPromptModeTracker.EnsureInitialized();
+        GameplayInputPromptModeTracker.OnModeChanged += HandlePromptModeChanged;
+        RefreshControlPromptTexts();
+    }
+
+    private void OnDisable()
+    {
+        GameplayInputPromptModeTracker.OnModeChanged -= HandlePromptModeChanged;
+    }
+
+    private void HandlePromptModeChanged(GameplayInputPromptMode mode)
+    {
+        RefreshControlPromptTexts();
     }
 
     private void Update()
@@ -307,7 +324,7 @@ public class InspectPanelUI : MonoBehaviour
             if (canSell)
             {
                 int refund = ledger.GetRefund(sellRefundRate);
-                sellBaseText = $"Sell: ${refund} (Q)";
+                sellBaseText = BuildSellText(refund);
                 sellPriceText.text = sellBaseText;
                 ClearSellHoldFill();
             }
@@ -360,10 +377,55 @@ public class InspectPanelUI : MonoBehaviour
     private void ApplyUpgradeLabels()
     {
         if (upgradeAIndicatorText != null)
-            upgradeAIndicatorText.text = "(E) Upgrade 1";
+            upgradeAIndicatorText.text = $"({GetUpgradeAPrompt()}) Upgrade 1";
 
         if (upgradeBIndicatorText != null)
-            upgradeBIndicatorText.text = "(R) Upgrade 2";
+            upgradeBIndicatorText.text = $"({GetUpgradeBPrompt()}) Upgrade 2";
+    }
+
+    private void RefreshControlPromptTexts()
+    {
+        ApplyUpgradeLabels();
+        RefreshSellPromptText();
+    }
+
+    private void RefreshSellPromptText()
+    {
+        if (sellPriceText == null)
+            return;
+
+        if (selectedTower == null)
+            return;
+
+        TowerValueLedger ledger = selectedTower.GetComponentInParent<TowerValueLedger>();
+        if (ledger == null) ledger = selectedTower.GetComponentInChildren<TowerValueLedger>();
+
+        if (ledger == null || !ledger.CanSell)
+            return;
+
+        int refund = ledger.GetRefund(sellRefundRate);
+        sellBaseText = BuildSellText(refund);
+        sellPriceText.text = sellBaseText;
+    }
+
+    private string BuildSellText(int refund)
+    {
+        return $"Sell: ${refund} ({GetSellPrompt()})";
+    }
+
+    private string GetUpgradeAPrompt()
+    {
+        return GameplayInputPromptModeTracker.IsController ? "Up" : "E";
+    }
+
+    private string GetUpgradeBPrompt()
+    {
+        return GameplayInputPromptModeTracker.IsController ? "Right" : "R";
+    }
+
+    private string GetSellPrompt()
+    {
+        return GameplayInputPromptModeTracker.IsController ? "Down" : "Q";
     }
 
     private void ShowInsufficientFundsPopupAtAnchor(RectTransform anchor)

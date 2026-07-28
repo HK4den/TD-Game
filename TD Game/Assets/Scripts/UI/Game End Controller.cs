@@ -1,4 +1,6 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 public class GameEndController : MonoBehaviour
 {
@@ -12,6 +14,10 @@ public class GameEndController : MonoBehaviour
     [Header("Panels")]
     [SerializeField] private GameObject winPanelRoot;
     [SerializeField] private GameObject losePanelRoot;
+
+    [Header("Controller Navigation")]
+    [SerializeField] private Selectable winFirstSelected;
+    [SerializeField] private Selectable loseFirstSelected;
 
     [Header("Cursor")]
     [SerializeField] private bool showCursorOnEnd = true;
@@ -104,7 +110,26 @@ public class GameEndController : MonoBehaviour
             Cursor.lockState = CursorLockMode.None;
         }
 
+        SelectEndMenuButton(won);
+
         Debug.Log(won ? "YOU WIN" : "YOU LOSE");
+    }
+
+    private void SelectEndMenuButton(bool won)
+    {
+        if (EventSystem.current == null)
+            return;
+
+        Selectable target = won ? winFirstSelected : loseFirstSelected;
+        GameObject panelRoot = won ? winPanelRoot : losePanelRoot;
+
+        if (target == null && panelRoot != null)
+            target = panelRoot.GetComponentInChildren<Selectable>(true);
+
+        if (target == null || !target.gameObject.activeInHierarchy || !target.interactable)
+            return;
+
+        EventSystem.current.SetSelectedGameObject(target.gameObject);
     }
 
     private void OnDestroy()
