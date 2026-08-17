@@ -14,6 +14,8 @@ public class AcidPuddleArea : MonoBehaviour
     [Header("Lifetime")]
     [SerializeField] private float activeLifetime = 4f;
     [SerializeField] private float growDuration = 0.15f;
+    [Range(0f, 1f)]
+    [SerializeField] private float damageStartGrowthPercent = 0.75f;
     [SerializeField] private float fadeDuration = 0.20f;
 
     [Header("Placement")]
@@ -27,22 +29,26 @@ public class AcidPuddleArea : MonoBehaviour
     [Header("Collider")]
     [SerializeField] private Collider triggerCollider;
     [SerializeField] private float colliderHeight = 2f;
+    [SerializeField] private LayerMask overlapMask = ~0;
 
     [Header("Visual")]
     [SerializeField] private Renderer[] targetRenderers;
 
     private readonly HashSet<EnemyHealth> enemiesInside = new HashSet<EnemyHealth>();
     private readonly Dictionary<EnemyHealth, float> nextTickTimeByEnemy = new Dictionary<EnemyHealth, float>();
+    private readonly Collider[] overlapResults = new Collider[64];
 
     private GridManager gridManager;
     private MaterialPropertyBlock propertyBlock;
 
     private int damageApplicationsUsed = 0;
     private float stateTimer = 0f;
+    private float activeTimer = 0f;
     private bool isGrowing = true;
     private bool isActive = false;
     private bool isFading = false;
     private bool initialized = false;
+    private bool scannedInitialOverlaps = false;
 
     private GameObject sourceObject;
     private bool sourceCanDetectCamo = false;
@@ -132,23 +138,39 @@ public class AcidPuddleArea : MonoBehaviour
         transform.localScale = Vector3.LerpUnclamped(Vector3.zero, finalScale, t);
         UpdateColliderShape();
 
+        if (!isActive && t >= Mathf.Clamp01(damageStartGrowthPercent))
+            BeginActiveDamage();
+
+        if (isActive)
+            RunActive();
+
         if (t >= 1f)
         {
             isGrowing = false;
-            isActive = true;
-            stateTimer = 0f;
             transform.localScale = finalScale;
             UpdateColliderShape();
         }
     }
 
+    private void BeginActiveDamage()
+    {
+        isActive = true;
+        activeTimer = 0f;
+
+        if (!scannedInitialOverlaps)
+        {
+            scannedInitialOverlaps = true;
+            RefreshCurrentOverlaps();
+        }
+    }
+
     private void RunActive()
     {
-        stateTimer += Time.deltaTime;
+        activeTimer += Time.deltaTime;
 
         CleanupDeadEnemies();
 
-        if (stateTimer >= activeLifetime || damageApplicationsUsed >= maxDamageApplications)
+        if (activeTimer >= activeLifetime || damageApplicationsUsed >= maxDamageApplications)
         {
             BeginFade();
             return;
@@ -227,14 +249,25 @@ public class AcidPuddleArea : MonoBehaviour
         if (!initialized || !isActive)
             return;
 
+        AddEnemyInside(other, true);
+    }
+
+    private void AddEnemyInside(Collider other, bool damageImmediately)
+    {
+        if (other == null)
+            return;
+
         EnemyHealth health = other.GetComponentInParent<EnemyHealth>();
         if (health == null || !health.IsAlive)
             return;
 
-        enemiesInside.Add(health);
+        bool newlyAdded = enemiesInside.Add(health);
 
         if (!nextTickTimeByEnemy.ContainsKey(health))
             nextTickTimeByEnemy.Add(health, Time.time);
+
+        if (!damageImmediately || !newlyAdded)
+            return;
 
         if (damageApplicationsUsed >= maxDamageApplications)
             return;
@@ -262,6 +295,51 @@ public class AcidPuddleArea : MonoBehaviour
 
         enemiesInside.Remove(health);
         nextTickTimeByEnemy.Remove(health);
+    }
+
+    private void RefreshCurrentOverlaps()
+    {
+        if (triggerCollider == null)
+            return;
+
+        int count = GetCurrentOverlapNonAlloc();
+        for (int i = 0; i < count; i++)
+        {
+            Collider hit = overlapResults[i];
+            if (hit == null || hit == triggerCollider)
+                continue;
+
+            AddEnemyInside(hit, true);
+
+            if (damageApplicationsUsed >= maxDamageApplications)
+                break;
+        }
+    }
+
+    private int GetCurrentOverlapNonAlloc()
+    {
+        if (triggerCollider is BoxCollider box)
+        {
+            Vector3 center = box.transform.TransformPoint(box.center);
+            Vector3 halfExtents = Vector3.Scale(box.size, box.transform.lossyScale) * 0.5f;
+
+            return Physics.OverlapBoxNonAlloc(
+                center,
+                halfExtents,
+                overlapResults,
+                box.transform.rotation,
+                overlapMask,
+                QueryTriggerInteraction.Collide);
+        }
+
+        Bounds bounds = triggerCollider.bounds;
+        return Physics.OverlapBoxNonAlloc(
+            bounds.center,
+            bounds.extents,
+            overlapResults,
+            Quaternion.identity,
+            overlapMask,
+            QueryTriggerInteraction.Collide);
     }
 
     private void CleanupDeadEnemies()

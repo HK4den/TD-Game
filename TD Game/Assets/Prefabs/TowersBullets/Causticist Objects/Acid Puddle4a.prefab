@@ -90,6 +90,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!65 &-2552144541487948713
 BoxCollider:
@@ -136,5 +137,8 @@ MonoBehaviour:
   finalScale: {x: 1, y: 1, z: 1}
   triggerCollider: {fileID: -2552144541487948713}
   colliderHeight: 1
+  overlapMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
   targetRenderers:
   - {fileID: 6018798475078345273}
