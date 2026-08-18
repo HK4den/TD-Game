@@ -1,0 +1,1024 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d2df0c65a580e5e43a66e34c6c3d1c34, type: 3}
+  m_Name: WaveSpawner Wave Set
+  m_EditorClassIdentifier: Assembly-CSharp::WaveSet
+  enemyCatalog: {fileID: 11400000, guid: 04534e9c8f77626439eb669b3eaeffa3, type: 2}
+  defaultCompletionReward: 50
+  defaultSpawnInterval: 0.6
+  waves:
+  - editorLabel: Wave 0.75
+    notes: 
+    completionReward: 50
+    steps:
+    - label: gneep xsmall
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: enemy
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 3
+      repeatCount: 1
+      spawnInterval: 1
+      delayBeforeStep: 0
+      delayAfterStep: 0.25
+      delayDuration: 1
+    - label: gneep xsmall
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 3
+      repeatCount: 1
+      spawnInterval: 0.55
+      delayBeforeStep: 0
+      delayAfterStep: 0.25
+      delayDuration: 1
+    - label: gneep xsmall
+      editorCollapsed: 0
+      type: 1
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 5
+      repeatCount: 1
+      spawnInterval: 0.6
+      delayBeforeStep: 0
+      delayAfterStep: 0.25
+      delayDuration: 1
+  - editorLabel: Wave 1
+    notes: 
+    completionReward: 50
+    steps:
+    - label: gneep xsmall
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 5
+      repeatCount: 1
+      spawnInterval: 0.75
+      delayBeforeStep: 0
+      delayAfterStep: 0.25
+      delayDuration: 1
+    - label: gneep xsmall
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 3
+      repeatCount: 1
+      spawnInterval: 0.55
+      delayBeforeStep: 0
+      delayAfterStep: 0.25
+      delayDuration: 1
+    - label: gneep xsmall
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 5
+      repeatCount: 1
+      spawnInterval: 0.6
+      delayBeforeStep: 0
+      delayAfterStep: 0.25
+      delayDuration: 1
+  - editorLabel: Wave 1.05
+    notes: 
+    completionReward: 50
+    steps:
+    - label: gneep xsmall
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 6
+      repeatCount: 1
+      spawnInterval: 0.6
+      delayBeforeStep: 0
+      delayAfterStep: 0.25
+      delayDuration: 1
+    - label: gneep xsmall
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 6
+      repeatCount: 1
+      spawnInterval: 0.55
+      delayBeforeStep: 0
+      delayAfterStep: 0.25
+      delayDuration: 1
+    - label: gneep xsmall
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 10
+      repeatCount: 1
+      spawnInterval: 0.6
+      delayBeforeStep: 0
+      delayAfterStep: 0.25
+      delayDuration: 1
+    - label: gneep xsmall
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 4
+      repeatCount: 1
+      spawnInterval: 0.4
+      delayBeforeStep: 0
+      delayAfterStep: 0.25
+      delayDuration: 1
+  - editorLabel: Wave 1.2
+    notes: 
+    completionReward: 75
+    steps:
+    - label: gneep xsmall
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 5
+      repeatCount: 1
+      spawnInterval: 0.75
+      delayBeforeStep: 0
+      delayAfterStep: 0.5
+      delayDuration: 1
+    - label: gneep xsmall
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 3
+      repeatCount: 1
+      spawnInterval: 0.35
+      delayBeforeStep: 0
+      delayAfterStep: 0.35
+      delayDuration: 1
+    - label: gneep xsmall
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 10
+      repeatCount: 1
+      spawnInterval: 0.6
+      delayBeforeStep: 0
+      delayAfterStep: 0.25
+      delayDuration: 1
+  - editorLabel: Wave 1.5
+    notes: 
+    completionReward: 75
+    steps:
+    - label: gneep xsmall
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 5
+      repeatCount: 1
+      spawnInterval: 0.4
+      delayBeforeStep: 0
+      delayAfterStep: 0.4
+      delayDuration: 1
+    - label: Gneep Small
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 5
+      repeatCount: 1
+      spawnInterval: 1.2
+      delayBeforeStep: 0
+      delayAfterStep: 0.8
+      delayDuration: 1
+    - label: Gneep Small
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 4
+      repeatCount: 1
+      spawnInterval: 1
+      delayBeforeStep: 0
+      delayAfterStep: 0.35
+      delayDuration: 1
+    - label: gneep xsmall
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 8
+      repeatCount: 1
+      spawnInterval: 0.6
+      delayBeforeStep: 0
+      delayAfterStep: 0.6
+      delayDuration: 1
+    - label: gneep xsmall
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 8
+      repeatCount: 1
+      spawnInterval: 0.52
+      delayBeforeStep: 0
+      delayAfterStep: 0.25
+      delayDuration: 1
+  - editorLabel: Wave 1.6
+    notes: 
+    completionReward: 75
+    steps:
+    - label: Splitz1 mini
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 2
+      repeatCount: 1
+      spawnInterval: 1.3
+      delayBeforeStep: 0
+      delayAfterStep: 1
+      delayDuration: 1
+    - label: Gneep Small
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 5
+      repeatCount: 1
+      spawnInterval: 0.4
+      delayBeforeStep: 0
+      delayAfterStep: 0.4
+      delayDuration: 1
+    - label: Gneep Small
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 3
+      repeatCount: 1
+      spawnInterval: 1
+      delayBeforeStep: 0
+      delayAfterStep: 0.8
+      delayDuration: 1
+    - label: Gneep Small
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 3
+      repeatCount: 1
+      spawnInterval: 0.8
+      delayBeforeStep: 0
+      delayAfterStep: 0.35
+      delayDuration: 1
+    - label: gneep xsmall
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 12
+      repeatCount: 1
+      spawnInterval: 0.6
+      delayBeforeStep: 0
+      delayAfterStep: 0.3
+      delayDuration: 1
+    - label: gneep xsmall
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 12
+      repeatCount: 1
+      spawnInterval: 0.45
+      delayBeforeStep: 0
+      delayAfterStep: 0.25
+      delayDuration: 1
+  - editorLabel: Wave 2
+    notes: 
+    completionReward: 75
+    steps:
+    - label: gneep xsmall
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 5
+      repeatCount: 1
+      spawnInterval: 0.65
+      delayBeforeStep: 0
+      delayAfterStep: 0.75
+      delayDuration: 1
+    - label: Gneep Small
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 3
+      repeatCount: 1
+      spawnInterval: 1.5
+      delayBeforeStep: 0
+      delayAfterStep: 0.75
+      delayDuration: 1
+    - label: gneep xsmall
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 5
+      repeatCount: 1
+      spawnInterval: 0.3
+      delayBeforeStep: 0
+      delayAfterStep: 0.25
+      delayDuration: 1
+    - label: Gneep Small
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 5
+      repeatCount: 1
+      spawnInterval: 1
+      delayBeforeStep: 0
+      delayAfterStep: 0.25
+      delayDuration: 1
+    - label: Splitz1 mini
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 3
+      repeatCount: 1
+      spawnInterval: 1
+      delayBeforeStep: 0
+      delayAfterStep: 0
+      delayDuration: 1
+  - editorLabel: Wave 2.5
+    notes: 
+    completionReward: 75
+    steps:
+    - label: gneep xsmall
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 10
+      repeatCount: 1
+      spawnInterval: 0.2
+      delayBeforeStep: 0
+      delayAfterStep: 0.2
+      delayDuration: 1
+    - label: Gneep Small
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 3
+      repeatCount: 1
+      spawnInterval: 0.5
+      delayBeforeStep: 0
+      delayAfterStep: 0.2
+      delayDuration: 1
+    - label: gneep xsmall
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 5
+      repeatCount: 1
+      spawnInterval: 0.15
+      delayBeforeStep: 0
+      delayAfterStep: 0.25
+      delayDuration: 1
+    - label: Gneep Small
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 5
+      repeatCount: 1
+      spawnInterval: 0.1
+      delayBeforeStep: 0
+      delayAfterStep: 0.25
+      delayDuration: 1
+  - editorLabel: Wave 3
+    notes: 
+    completionReward: 75
+    steps:
+    - label: gneep xsmall
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 5
+      repeatCount: 1
+      spawnInterval: 0.65
+      delayBeforeStep: 0
+      delayAfterStep: 1
+      delayDuration: 1
+    - label: Glorp
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 2
+      repeatCount: 1
+      spawnInterval: 2
+      delayBeforeStep: 0
+      delayAfterStep: 1
+      delayDuration: 1
+    - label: Splitz1 mini
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 4
+      repeatCount: 1
+      spawnInterval: 1
+      delayBeforeStep: 0
+      delayAfterStep: 1
+      delayDuration: 1
+    - label: Glorp
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 3
+      repeatCount: 1
+      spawnInterval: 1.4
+      delayBeforeStep: 0
+      delayAfterStep: 1
+      delayDuration: 1
+    - label: gneep xsmall
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 15
+      repeatCount: 1
+      spawnInterval: 0.25
+      delayBeforeStep: 0
+      delayAfterStep: 1
+      delayDuration: 1
+  - editorLabel: Wave 4
+    notes: 
+    completionReward: 100
+    steps:
+    - label: Glorp
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 5
+      repeatCount: 1
+      spawnInterval: 0.8
+      delayBeforeStep: 0
+      delayAfterStep: 0.6
+      delayDuration: 1
+    - label: Gneep Small
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 12
+      repeatCount: 1
+      spawnInterval: 0.6
+      delayBeforeStep: 0
+      delayAfterStep: 1
+      delayDuration: 1
+    - label: Fast Glorp1
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 5
+      repeatCount: 1
+      spawnInterval: 1
+      delayBeforeStep: 0
+      delayAfterStep: 0.5
+      delayDuration: 1
+    - label: Splitz1 mini
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 5
+      repeatCount: 1
+      spawnInterval: 0.5
+      delayBeforeStep: 0
+      delayAfterStep: 1
+      delayDuration: 1
+    - label: Glorp
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 10
+      repeatCount: 1
+      spawnInterval: 0.75
+      delayBeforeStep: 0
+      delayAfterStep: 1
+      delayDuration: 1
+  - editorLabel: Wave 4.5
+    notes: 
+    completionReward: 100
+    steps:
+    - label: Glorp
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 5
+      repeatCount: 1
+      spawnInterval: 0.6
+      delayBeforeStep: 0
+      delayAfterStep: 0.4
+      delayDuration: 1
+    - label: Fast Glorp1
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 6
+      repeatCount: 1
+      spawnInterval: 0.5
+      delayBeforeStep: 0
+      delayAfterStep: 1
+      delayDuration: 1
+    - label: Med Gneep
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 5
+      repeatCount: 1
+      spawnInterval: 0.75
+      delayBeforeStep: 0
+      delayAfterStep: 1
+      delayDuration: 1
+  - editorLabel: Wave 5
+    notes: 
+    completionReward: 100
+    steps:
+    - label: Big Gneep
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 3
+      repeatCount: 1
+      spawnInterval: 1.5
+      delayBeforeStep: 0
+      delayAfterStep: 1
+      delayDuration: 1
+    - label: Splitz1
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 3
+      repeatCount: 1
+      spawnInterval: 1
+      delayBeforeStep: 0
+      delayAfterStep: 1
+      delayDuration: 1
+    - label: Gneep Small
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 15
+      repeatCount: 1
+      spawnInterval: 0.25
+      delayBeforeStep: 0
+      delayAfterStep: 1
+      delayDuration: 1
+    - label: Big Gneep
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 10
+      repeatCount: 1
+      spawnInterval: 1
+      delayBeforeStep: 0
+      delayAfterStep: 1
+      delayDuration: 1
+  - editorLabel: Wave 6
+    notes: 
+    completionReward: 150
+    steps:
+    - label: Big Gneep
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 8
+      repeatCount: 1
+      spawnInterval: 0.85
+      delayBeforeStep: 0
+      delayAfterStep: 0.5
+      delayDuration: 1
+    - label: Fast Glorp2
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 5
+      repeatCount: 1
+      spawnInterval: 0.6
+      delayBeforeStep: 0
+      delayAfterStep: 0.25
+      delayDuration: 1
+    - label: Fast Glorp1
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 12
+      repeatCount: 1
+      spawnInterval: 0.5
+      delayBeforeStep: 0
+      delayAfterStep: 1
+      delayDuration: 1
+  - editorLabel: Wave 7
+    notes: 
+    completionReward: 150
+    steps:
+    - label: Armored1
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 3
+      repeatCount: 1
+      spawnInterval: 1.5
+      delayBeforeStep: 0
+      delayAfterStep: 3
+      delayDuration: 1
+    - label: Armored1
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 5
+      repeatCount: 1
+      spawnInterval: 1
+      delayBeforeStep: 0
+      delayAfterStep: 1
+      delayDuration: 1
+    - label: Splitz2
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 1
+      repeatCount: 1
+      spawnInterval: 0.5
+      delayBeforeStep: 0
+      delayAfterStep: 1
+      delayDuration: 1
+  - editorLabel: Wave 8
+    notes: 
+    completionReward: 225
+    steps:
+    - label: Fast Glorp3
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 3
+      repeatCount: 1
+      spawnInterval: 1.5
+      delayBeforeStep: 0
+      delayAfterStep: 1
+      delayDuration: 1
+    - label: Fast Glorp2
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 5
+      repeatCount: 1
+      spawnInterval: 0.5
+      delayBeforeStep: 0
+      delayAfterStep: 3
+      delayDuration: 1
+    - label: Splitz2
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 1
+      repeatCount: 1
+      spawnInterval: 0.5
+      delayBeforeStep: 0
+      delayAfterStep: 3
+      delayDuration: 1
+  - editorLabel: Wave 9
+    notes: 
+    completionReward: 225
+    steps:
+    - label: Splitz2
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 3
+      repeatCount: 1
+      spawnInterval: 1.5
+      delayBeforeStep: 0
+      delayAfterStep: 1
+      delayDuration: 1
+    - label: Fast Glorp2
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 5
+      repeatCount: 1
+      spawnInterval: 0.5
+      delayBeforeStep: 0
+      delayAfterStep: 3
+      delayDuration: 1
+    - label: Splitz2
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 0}
+      enemies: []
+      randomPool: []
+      count: 1
+      repeatCount: 1
+      spawnInterval: 0.5
+      delayBeforeStep: 0
+      delayAfterStep: 3
+      delayDuration: 1
+  - editorLabel: Wave 10
+    notes: 
+    completionReward: 150
+    steps:
+    - label: Armored1 2
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 483553121193507500, guid: 687fe8151d6bf9042b15567f21a60c0b, type: 3}
+      enemies: []
+      randomPool: []
+      count: 3
+      repeatCount: 1
+      spawnInterval: 1.5
+      delayBeforeStep: 0
+      delayAfterStep: 1
+      delayDuration: 1
+    - label: Fast Glorp4
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 483553121193507500, guid: c819cfc49ebd2f146881000d89c447c5, type: 3}
+      enemies: []
+      randomPool: []
+      count: 3
+      repeatCount: 1
+      spawnInterval: 1.25
+      delayBeforeStep: 0
+      delayAfterStep: 0.5
+      delayDuration: 1
+    - label: Splitz2
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 483553121193507500, guid: b8d095670f3ecba4490041c539e01296, type: 3}
+      enemies: []
+      randomPool: []
+      count: 5
+      repeatCount: 1
+      spawnInterval: 0.5
+      delayBeforeStep: 0
+      delayAfterStep: 1
+      delayDuration: 1
+    - label: Fast Glorp3
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 483553121193507500, guid: 75fee39a03286c441ae0e907cad4a548, type: 3}
+      enemies: []
+      randomPool: []
+      count: 10
+      repeatCount: 1
+      spawnInterval: 0.5
+      delayBeforeStep: 0
+      delayAfterStep: 1.5
+      delayDuration: 1
+    - label: Armored1 2
+      editorCollapsed: 0
+      type: 0
+      enemy:
+        enemyId: 
+        prefab: {fileID: 483553121193507500, guid: 687fe8151d6bf9042b15567f21a60c0b, type: 3}
+      enemies: []
+      randomPool: []
+      count: 10
+      repeatCount: 1
+      spawnInterval: 1
+      delayBeforeStep: 0
+      delayAfterStep: 0.5
+      delayDuration: 1

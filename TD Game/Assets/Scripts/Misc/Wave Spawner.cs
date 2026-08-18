@@ -40,6 +40,7 @@ public class WaveSpawner : MonoBehaviour
     [SerializeField] private float spawnYOffset = 0f;
 
     [Header("Waves")]
+    [SerializeField] private WaveSet waveSet;
     [SerializeField] private Wave[] waves;
 
     [Header("Wave SFX")]
@@ -61,7 +62,7 @@ public class WaveSpawner : MonoBehaviour
     public event Action<int> OnWaveStarted;
     public event Action<int, int> OnWaveCompleted;
 
-    public int TotalWaves => waves != null ? waves.Length : 0;
+    public int TotalWaves => HasWaveSet ? waveSet.WaveCount : (waves != null ? waves.Length : 0);
     public int NextWaveNumber => Mathf.Clamp(waveIndex + 1, 1, Mathf.Max(1, TotalWaves));
     public bool IsSpawning => running != null;
     public int AliveEnemiesThisWave => aliveThisWave;
@@ -91,6 +92,8 @@ public class WaveSpawner : MonoBehaviour
     private float waveEndOriginalVolume = 1f;
 
     private const float EndWaveSfxInterruptFadeDuration = 0.1f;
+
+    private bool HasWaveSet => waveSet != null && waveSet.WaveCount > 0;
 
     private void Awake()
     {
@@ -148,10 +151,10 @@ public class WaveSpawner : MonoBehaviour
         if (IsWaveInProgress)
             return;
 
-        if (waves == null || waves.Length == 0)
+        if (TotalWaves <= 0)
             return;
 
-        if (waveIndex >= waves.Length)
+        if (waveIndex >= TotalWaves)
             return;
 
         FadeOutWaveEndSfxIfPlaying();
@@ -167,7 +170,7 @@ public class WaveSpawner : MonoBehaviour
         PlayWaveStartSound();
         RefreshWaveMusicState();
 
-        running = StartCoroutine(SpawnWave(waves[waveIndex], startedWaveNumber));
+        running = StartCoroutine(SpawnWaveByIndex(waveIndex, startedWaveNumber));
         waveIndex++;
     }
 
@@ -241,13 +244,22 @@ public class WaveSpawner : MonoBehaviour
         enemy.OnReachedGoal += HandleEnemyReachedGoal;
     }
 
+    private IEnumerator SpawnWaveByIndex(int zeroBasedWaveIndex, int waveNumber)
+    {
+        if (HasWaveSet)
+            return SpawnWave(waveSet.GetWave(zeroBasedWaveIndex), waveNumber);
+
+        if (waves == null || zeroBasedWaveIndex < 0 || zeroBasedWaveIndex >= waves.Length)
+            return SpawnEmptyWave(waveNumber);
+
+        return SpawnWave(waves[zeroBasedWaveIndex], waveNumber);
+    }
+
     private IEnumerator SpawnWave(Wave wave, int waveNumber)
     {
         if (wave == null || wave.groups == null || wave.groups.Length == 0)
         {
-            spawningFinished = true;
-            running = null;
-            TryCompleteWaveIfDone(waveNumber);
+            yield return SpawnEmptyWave(waveNumber);
             yield break;
         }
 
@@ -275,6 +287,189 @@ public class WaveSpawner : MonoBehaviour
         running = null;
 
         TryCompleteWaveIfDone(waveNumber);
+    }
+
+    private IEnumerator SpawnWave(WaveSet.WaveDefinition wave, int waveNumber)
+    {
+        if (wave == null || wave.steps == null || wave.steps.Count == 0)
+        {
+            yield return SpawnEmptyWave(waveNumber);
+            yield break;
+        }
+
+        for (int i = 0; i < wave.steps.Count; i++)
+        {
+            WaveSet.WaveStep step = wave.steps[i];
+            if (step == null)
+                continue;
+
+            yield return SpawnWaveStep(step);
+
+            if (step.delayAfterStep > 0f)
+                yield return new WaitForSeconds(step.delayAfterStep);
+        }
+
+        spawningFinished = true;
+        running = null;
+
+        TryCompleteWaveIfDone(waveNumber);
+    }
+
+    private IEnumerator SpawnEmptyWave(int waveNumber)
+    {
+        spawningFinished = true;
+        running = null;
+        TryCompleteWaveIfDone(waveNumber);
+        yield break;
+    }
+
+    private IEnumerator SpawnWaveStep(WaveSet.WaveStep step)
+    {
+        switch (step.type)
+        {
+            case WaveSet.WaveStepType.Delay:
+                if (step.delayDuration > 0f)
+                    yield return new WaitForSeconds(step.delayDuration);
+                yield break;
+
+            case WaveSet.WaveStepType.Sequence:
+                yield return SpawnSequenceStep(step);
+                yield break;
+
+            case WaveSet.WaveStepType.Alternating:
+                yield return SpawnAlternatingStep(step);
+                yield break;
+
+            case WaveSet.WaveStepType.RandomPool:
+                yield return SpawnRandomPoolStep(step);
+                yield break;
+
+            case WaveSet.WaveStepType.Burst:
+            case WaveSet.WaveStepType.SingleGroup:
+            default:
+                yield return SpawnSingleEnemyStep(step);
+                yield break;
+        }
+    }
+
+    private IEnumerator SpawnSingleEnemyStep(WaveSet.WaveStep step)
+    {
+        EnemyAgent prefab = ResolveEnemy(step.enemy);
+        if (prefab == null)
+            yield break;
+
+        int count = Mathf.Max(0, step.count);
+        for (int i = 0; i < count; i++)
+        {
+            SpawnOne(prefab);
+
+            if (i < count - 1)
+                yield return WaitBetweenWaveSetSpawns(step);
+        }
+    }
+
+    private IEnumerator SpawnAlternatingStep(WaveSet.WaveStep step)
+    {
+        if (step.enemies == null || step.enemies.Count == 0)
+            yield break;
+
+        int count = Mathf.Max(0, step.count);
+        for (int i = 0; i < count; i++)
+        {
+            WaveSet.EnemyRef enemyRef = step.enemies[i % step.enemies.Count];
+            EnemyAgent prefab = ResolveEnemy(enemyRef);
+            if (prefab != null)
+                SpawnOne(prefab);
+
+            if (i < count - 1)
+                yield return WaitBetweenWaveSetSpawns(step);
+        }
+    }
+
+    private IEnumerator SpawnSequenceStep(WaveSet.WaveStep step)
+    {
+        if (step.enemies == null || step.enemies.Count == 0)
+            yield break;
+
+        int repeats = Mathf.Max(0, step.repeatCount);
+        int totalSpawns = repeats * step.enemies.Count;
+        int spawned = 0;
+
+        for (int repeat = 0; repeat < repeats; repeat++)
+        {
+            for (int i = 0; i < step.enemies.Count; i++)
+            {
+                EnemyAgent prefab = ResolveEnemy(step.enemies[i]);
+                if (prefab != null)
+                    SpawnOne(prefab);
+
+                spawned++;
+
+                if (spawned < totalSpawns)
+                    yield return WaitBetweenWaveSetSpawns(step);
+            }
+        }
+    }
+
+    private IEnumerator SpawnRandomPoolStep(WaveSet.WaveStep step)
+    {
+        if (step.randomPool == null || step.randomPool.Count == 0)
+            yield break;
+
+        int count = Mathf.Max(0, step.count);
+        for (int i = 0; i < count; i++)
+        {
+            EnemyAgent prefab = ResolveEnemy(ChooseRandomEnemy(step));
+            if (prefab != null)
+                SpawnOne(prefab);
+
+            if (i < count - 1)
+                yield return WaitBetweenWaveSetSpawns(step);
+        }
+    }
+
+    private IEnumerator WaitBetweenWaveSetSpawns(WaveSet.WaveStep step)
+    {
+        if (step.spawnInterval > 0f)
+            yield return new WaitForSeconds(step.spawnInterval);
+        else
+            yield return null;
+    }
+
+    private WaveSet.EnemyRef ChooseRandomEnemy(WaveSet.WaveStep step)
+    {
+        int totalWeight = 0;
+        for (int i = 0; i < step.randomPool.Count; i++)
+        {
+            WaveSet.WeightedEnemyRef option = step.randomPool[i];
+            if (option != null && option.enemy != null && ResolveEnemy(option.enemy) != null)
+                totalWeight += Mathf.Max(1, option.weight);
+        }
+
+        if (totalWeight <= 0)
+            return null;
+
+        int roll = UnityEngine.Random.Range(0, totalWeight);
+        for (int i = 0; i < step.randomPool.Count; i++)
+        {
+            WaveSet.WeightedEnemyRef option = step.randomPool[i];
+            if (option == null || option.enemy == null || ResolveEnemy(option.enemy) == null)
+                continue;
+
+            roll -= Mathf.Max(1, option.weight);
+            if (roll < 0)
+                return option.enemy;
+        }
+
+        return null;
+    }
+
+    private EnemyAgent ResolveEnemy(WaveSet.EnemyRef enemyRef)
+    {
+        if (enemyRef == null)
+            return null;
+
+        return enemyRef.Resolve(waveSet != null ? waveSet.EnemyCatalog : null);
     }
 
     private void SpawnOne(EnemyAgent prefab)
@@ -366,7 +561,9 @@ public class WaveSpawner : MonoBehaviour
         int idx = waveNumber - 1;
         int reward = 50;
 
-        if (waves != null && idx >= 0 && idx < waves.Length)
+        if (HasWaveSet)
+            reward = waveSet.GetCompletionReward(idx);
+        else if (waves != null && idx >= 0 && idx < waves.Length)
             reward = waves[idx].completionReward;
 
         if (economy != null && reward > 0)
