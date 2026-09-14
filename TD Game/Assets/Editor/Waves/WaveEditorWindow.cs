@@ -12,6 +12,8 @@ public class WaveEditorWindow : EditorWindow
     private const string UncategorizedCategory = "Uncategorized";
     private const string CollapsedStepPrefix = "▶";
     private const string ExpandedStepPrefix = "▼";
+    private const string LastWaveSetGuidKey = "Wizliens.WaveEditor.LastWaveSetGuid";
+    private const string LastEnemyCatalogGuidKey = "Wizliens.WaveEditor.LastEnemyCatalogGuid";
 
     private static readonly WaveSet.WaveStepType[] EditableStepTypes =
     {
@@ -82,6 +84,11 @@ public class WaveEditorWindow : EditorWindow
         GetWindow<WaveEditorWindow>("Wave Editor");
     }
 
+    private void OnEnable()
+    {
+        RestoreLastSelectedAssets();
+    }
+
     public void SelectWave(int index)
     {
         if (waveSet == null)
@@ -102,8 +109,7 @@ public class WaveEditorWindow : EditorWindow
 
         if (Selection.activeObject is EnemyCatalog selectedCatalog)
         {
-            enemyCatalog = selectedCatalog;
-            catalogObject = new SerializedObject(enemyCatalog);
+            SetEnemyCatalog(selectedCatalog, true);
             Repaint();
         }
     }
@@ -151,8 +157,7 @@ public class WaveEditorWindow : EditorWindow
         EnemyCatalog newCatalog = (EnemyCatalog)EditorGUILayout.ObjectField(enemyCatalog, typeof(EnemyCatalog), false, GUILayout.Width(260f));
         if (EditorGUI.EndChangeCheck())
         {
-            enemyCatalog = newCatalog;
-            catalogObject = enemyCatalog != null ? new SerializedObject(enemyCatalog) : null;
+            SetEnemyCatalog(newCatalog, true);
             AssignCatalogToWaveSetIfNeeded();
         }
 
@@ -890,12 +895,62 @@ public class WaveEditorWindow : EditorWindow
         waveSet = newWaveSet;
         waveSetObject = waveSet != null ? new SerializedObject(waveSet) : null;
         selectedWaveIndex = 0;
+        SaveLastAsset(LastWaveSetGuidKey, waveSet);
 
         if (waveSet != null && waveSet.EnemyCatalog != null)
+            SetEnemyCatalog(waveSet.EnemyCatalog, true);
+    }
+
+    private void SetEnemyCatalog(EnemyCatalog newCatalog, bool remember)
+    {
+        enemyCatalog = newCatalog;
+        catalogObject = enemyCatalog != null ? new SerializedObject(enemyCatalog) : null;
+
+        if (remember)
+            SaveLastAsset(LastEnemyCatalogGuidKey, enemyCatalog);
+    }
+
+    private void RestoreLastSelectedAssets()
+    {
+        if (waveSet == null)
+            SetWaveSet(LoadLastAsset<WaveSet>(LastWaveSetGuidKey));
+
+        if (enemyCatalog == null)
+            SetEnemyCatalog(LoadLastAsset<EnemyCatalog>(LastEnemyCatalogGuidKey), false);
+    }
+
+    private void SaveLastAsset(string key, UnityEngine.Object asset)
+    {
+        if (asset == null)
         {
-            enemyCatalog = waveSet.EnemyCatalog;
-            catalogObject = new SerializedObject(enemyCatalog);
+            EditorPrefs.DeleteKey(GetProjectScopedKey(key));
+            return;
         }
+
+        string path = AssetDatabase.GetAssetPath(asset);
+        string guid = string.IsNullOrWhiteSpace(path) ? "" : AssetDatabase.AssetPathToGUID(path);
+        if (string.IsNullOrWhiteSpace(guid))
+            EditorPrefs.DeleteKey(GetProjectScopedKey(key));
+        else
+            EditorPrefs.SetString(GetProjectScopedKey(key), guid);
+    }
+
+    private T LoadLastAsset<T>(string key) where T : UnityEngine.Object
+    {
+        string guid = EditorPrefs.GetString(GetProjectScopedKey(key), "");
+        if (string.IsNullOrWhiteSpace(guid))
+            return null;
+
+        string path = AssetDatabase.GUIDToAssetPath(guid);
+        if (string.IsNullOrWhiteSpace(path))
+            return null;
+
+        return AssetDatabase.LoadAssetAtPath<T>(path);
+    }
+
+    private string GetProjectScopedKey(string key)
+    {
+        return $"{Application.dataPath}:{key}";
     }
 
     private void EnsureSerializedObjects()
@@ -1081,8 +1136,7 @@ public class WaveEditorWindow : EditorWindow
         EnemyCatalog asset = CreateInstance<EnemyCatalog>();
         AssetDatabase.CreateAsset(asset, path);
         AssetDatabase.SaveAssets();
-        enemyCatalog = asset;
-        catalogObject = new SerializedObject(enemyCatalog);
+        SetEnemyCatalog(asset, true);
         AssignCatalogToWaveSetIfNeeded();
         Selection.activeObject = asset;
     }
