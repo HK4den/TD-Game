@@ -1,0 +1,90 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8cc3d3fae6184d54bb713eed36514207, type: 3}
+  m_Name: WaveSpawner Enemy Catalog
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyCatalog
+  entries:
+  - id: armored1
+    displayName: Armored1
+    prefab: {fileID: 483553121193507500, guid: eda493337f8c1b54782c3fc22dc246fd, type: 3}
+    category: armor
+    threatValue: 1
+  - id: armored1_2
+    displayName: Armored1 2
+    prefab: {fileID: 483553121193507500, guid: 687fe8151d6bf9042b15567f21a60c0b, type: 3}
+    category: armor
+    threatValue: 1
+  - id: fast_glorp4
+    displayName: Fast Glorp4
+    prefab: {fileID: 483553121193507500, guid: c819cfc49ebd2f146881000d89c447c5, type: 3}
+    category: armor
+    threatValue: 1
+  - id: big_gneep
+    displayName: Big Gneep
+    prefab: {fileID: 483553121193507500, guid: 7598663ac31d4b543a01948434d7559c, type: 3}
+    category: basic
+    threatValue: 1
+  - id: glorp
+    displayName: Glorp
+    prefab: {fileID: 483553121193507500, guid: 4aa9a2cd2a15e154aae0a15935a37b32, type: 3}
+    category: basic
+    threatValue: 1
+  - id: gneep_small
+    displayName: Gneep Small
+    prefab: {fileID: 483553121193507500, guid: 0c80271f8dd298040ae45a4df7cc1bce, type: 3}
+    category: basic
+    threatValue: 1
+  - id: gneep_xsmall
+    displayName: gneep xsmall
+    prefab: {fileID: 483553121193507500, guid: 6846748b898642d408864d575a5cb333, type: 3}
+    category: basic
+    threatValue: 1
+  - id: med_gneep
+    displayName: Med Gneep
+    prefab: {fileID: 483553121193507500, guid: c6ff7a424e99f0746a5fccc26dfddd3c, type: 3}
+    category: basic
+    threatValue: 1
+  - id: explorp
+    displayName: Explorp
+    prefab: {fileID: 483553121193507500, guid: 1c8ec1adae44c7c4997eb4c305c3f61d, type: 3}
+    category: explode
+    threatValue: 1
+  - id: fast_glorp1
+    displayName: Fast Glorp1
+    prefab: {fileID: 483553121193507500, guid: c948cfc697a24d34eb8456a1ce7b76a4, type: 3}
+    category: fast
+    threatValue: 1
+  - id: fast_glorp2
+    displayName: Fast Glorp2
+    prefab: {fileID: 483553121193507500, guid: 1e507e8e584cd1d43bdac68dac0ab73e, type: 3}
+    category: fast
+    threatValue: 1
+  - id: fast_glorp3
+    displayName: Fast Glorp3
+    prefab: {fileID: 483553121193507500, guid: 75fee39a03286c441ae0e907cad4a548, type: 3}
+    category: fast
+    threatValue: 1
+  - id: splitz1
+    displayName: Splitz1
+    prefab: {fileID: 483553121193507500, guid: 38a3c07827a6d0f4aaa050c8ee7a012e, type: 3}
+    category: split
+    threatValue: 1
+  - id: splitz1_mini
+    displayName: Splitz1 mini
+    prefab: {fileID: 483553121193507500, guid: 86d6c9afce88e314dba21310045767e7, type: 3}
+    category: split
+    threatValue: 1
+  - id: splitz2
+    displayName: Splitz2
+    prefab: {fileID: 483553121193507500, guid: b8d095670f3ecba4490041c539e01296, type: 3}
+    category: split
+    threatValue: 1

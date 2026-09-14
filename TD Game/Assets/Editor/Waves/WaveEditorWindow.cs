@@ -47,7 +47,14 @@ public class WaveEditorWindow : EditorWindow
     private bool compactWaveList;
 
     private readonly Dictionary<string, string> enemyPickerCategories = new Dictionary<string, string>();
+    private readonly Dictionary<string, bool> collapsedCatalogCategories = new Dictionary<string, bool>();
     private static bool saveQueued;
+    private static WaveSet.WaveDefinition copiedWave;
+    private static string copiedWaveSourceName;
+    private int draggingWaveIndex = -1;
+    private int waveDropIndex = -1;
+    private int draggingStepIndex = -1;
+    private int stepDropIndex = -1;
 
     public WaveSet CurrentWaveSet => waveSet;
     public EnemyCatalog CurrentEnemyCatalog => enemyCatalog;
@@ -211,6 +218,8 @@ public class WaveEditorWindow : EditorWindow
 
         for (int i = 0; i < waves.arraySize; i++)
         {
+            DrawWaveDropMarker(i);
+
             SerializedProperty wave = waves.GetArrayElementAtIndex(i);
             string label = wave.FindPropertyRelative("editorLabel").stringValue;
             int enemyCount = waveSet.CountEstimatedEnemies(i);
@@ -223,6 +232,7 @@ public class WaveEditorWindow : EditorWindow
             GUIStyle style = CreateWaveRowStyle(selectedWaveIndex == i);
             float rowHeight = compactWaveList ? CompactWaveRowHeight : WaveRowHeight;
             Rect rowRect = GUILayoutUtility.GetRect(LeftPanelWidth - 16f, rowHeight, GUILayout.ExpandWidth(true));
+            HandleWaveDrag(waves, i, rowRect);
             if (GUI.Button(rowRect, GUIContent.none, style))
             {
                 selectedWaveIndex = i;
@@ -243,6 +253,9 @@ public class WaveEditorWindow : EditorWindow
             }
         }
 
+        DrawWaveDropMarker(waves.arraySize);
+        CompleteWaveDragIfNeeded(waves);
+
         EditorGUILayout.EndScrollView();
 
         EditorGUILayout.BeginHorizontal();
@@ -256,6 +269,20 @@ public class WaveEditorWindow : EditorWindow
 
             if (GUILayout.Button("Delete"))
                 DeleteWave(waves);
+        }
+        EditorGUILayout.EndHorizontal();
+
+        EditorGUILayout.BeginHorizontal();
+        using (new EditorGUI.DisabledScope(waves.arraySize == 0 || selectedWaveIndex < 0 || selectedWaveIndex >= waves.arraySize))
+        {
+            if (GUILayout.Button("Copy Wave"))
+                CopySelectedWave();
+        }
+
+        using (new EditorGUI.DisabledScope(copiedWave == null))
+        {
+            if (GUILayout.Button(GetPasteWaveButtonText()))
+                PasteCopiedWave(waves);
         }
         EditorGUILayout.EndHorizontal();
 
@@ -309,8 +336,12 @@ public class WaveEditorWindow : EditorWindow
 
         for (int i = 0; i < steps.arraySize; i++)
         {
+            DrawStepDropMarker(i);
             DrawStep(steps, i);
         }
+
+        DrawStepDropMarker(steps.arraySize);
+        CompleteStepDragIfNeeded(steps);
 
         EditorGUILayout.EndScrollView();
 
@@ -347,7 +378,12 @@ public class WaveEditorWindow : EditorWindow
         if (GUILayout.Button(collapsed.boolValue ? CollapsedStepPrefix : ExpandedStepPrefix, EditorStyles.miniButton, GUILayout.Width(24f)))
             collapsed.boolValue = !collapsed.boolValue;
 
-        EditorGUILayout.LabelField(GetStepSummary(step, index), EditorStyles.boldLabel);
+        bool missingEnemy = type.enumValueIndex != (int)WaveSet.WaveStepType.Delay && !StepHasUsableEnemy(step);
+        GUIStyle summaryStyle = missingEnemy ? CreateMissingStepSummaryStyle() : EditorStyles.boldLabel;
+        string stepSummary = missingEnemy ? "MISSING ENEMY - " + GetStepSummary(step, index) : GetStepSummary(step, index);
+        Rect summaryRect = GUILayoutUtility.GetRect(new GUIContent(stepSummary), summaryStyle, GUILayout.ExpandWidth(true), GUILayout.Height(18f));
+        HandleStepDrag(steps, index, summaryRect);
+        GUI.Label(summaryRect, stepSummary, summaryStyle);
         GUILayout.FlexibleSpace();
 
         if (GUILayout.Button("Duplicate", GUILayout.Width(72f)))
@@ -400,6 +436,7 @@ public class WaveEditorWindow : EditorWindow
         EditorGUILayout.PropertyField(step.FindPropertyRelative("label"));
         DrawStepTypePopup(type, stepType);
         stepType = (WaveSet.WaveStepType)type.enumValueIndex;
+        DrawMissingEnemyWarning(step, stepType);
         EditorGUILayout.HelpBox(GetStepTypeHelp(stepType), MessageType.None);
 
         if (stepType == WaveSet.WaveStepType.Delay)
@@ -436,6 +473,155 @@ public class WaveEditorWindow : EditorWindow
         style.padding = new RectOffset(0, 0, 0, 0);
         style.margin = new RectOffset(3, 3, 3, 5);
         return style;
+    }
+
+    private GUIStyle CreateMissingStepSummaryStyle()
+    {
+        GUIStyle style = new GUIStyle(EditorStyles.boldLabel);
+        style.normal.textColor = new Color(1f, 0.35f, 0.2f, 1f);
+        style.hover.textColor = style.normal.textColor;
+        style.active.textColor = style.normal.textColor;
+        return style;
+    }
+
+    private void DrawWaveDropMarker(int index)
+    {
+        if (draggingWaveIndex < 0 || waveDropIndex != index)
+            return;
+
+        Rect markerRect = GUILayoutUtility.GetRect(LeftPanelWidth - 16f, 4f, GUILayout.ExpandWidth(true));
+        EditorGUI.DrawRect(markerRect, new Color(0.2f, 0.65f, 1f, 1f));
+    }
+
+    private void HandleWaveDrag(SerializedProperty waves, int index, Rect rowRect)
+    {
+        Event evt = Event.current;
+        if (evt == null)
+            return;
+
+        if (evt.type == EventType.MouseDown && evt.button == 0 && rowRect.Contains(evt.mousePosition))
+        {
+            draggingWaveIndex = index;
+            waveDropIndex = index;
+            selectedWaveIndex = index;
+            GUI.FocusControl(null);
+            evt.Use();
+            Repaint();
+            return;
+        }
+
+        if (draggingWaveIndex < 0)
+            return;
+
+        if ((evt.type == EventType.MouseDrag || evt.type == EventType.MouseMove) && rowRect.Contains(evt.mousePosition))
+        {
+            waveDropIndex = evt.mousePosition.y > rowRect.center.y ? index + 1 : index;
+            evt.Use();
+            Repaint();
+        }
+    }
+
+    private void CompleteWaveDragIfNeeded(SerializedProperty waves)
+    {
+        Event evt = Event.current;
+        if (evt == null || draggingWaveIndex < 0 || evt.type != EventType.MouseUp)
+            return;
+
+        int targetIndex = Mathf.Clamp(waveDropIndex, 0, waves.arraySize);
+        if (targetIndex > draggingWaveIndex)
+            targetIndex--;
+
+        targetIndex = Mathf.Clamp(targetIndex, 0, waves.arraySize - 1);
+        if (targetIndex != draggingWaveIndex)
+        {
+            Undo.RecordObject(waveSet, "Drag Reorder Wave");
+            waves.MoveArrayElement(draggingWaveIndex, targetIndex);
+            selectedWaveIndex = targetIndex;
+        }
+
+        draggingWaveIndex = -1;
+        waveDropIndex = -1;
+        evt.Use();
+        Repaint();
+    }
+
+    private void DrawStepDropMarker(int index)
+    {
+        if (draggingStepIndex < 0 || stepDropIndex != index)
+            return;
+
+        Rect markerRect = GUILayoutUtility.GetRect(1f, 4f, GUILayout.ExpandWidth(true));
+        EditorGUI.DrawRect(markerRect, new Color(0.2f, 0.65f, 1f, 1f));
+    }
+
+    private void HandleStepDrag(SerializedProperty steps, int index, Rect stepRect)
+    {
+        Event evt = Event.current;
+        if (evt == null)
+            return;
+
+        if (evt.type == EventType.MouseDown && evt.button == 0 && stepRect.Contains(evt.mousePosition))
+        {
+            draggingStepIndex = index;
+            stepDropIndex = index;
+            GUI.FocusControl(null);
+            evt.Use();
+            Repaint();
+            return;
+        }
+
+        if (draggingStepIndex < 0)
+            return;
+
+        if ((evt.type == EventType.MouseDrag || evt.type == EventType.MouseMove) && stepRect.Contains(evt.mousePosition))
+        {
+            stepDropIndex = evt.mousePosition.y > stepRect.center.y ? index + 1 : index;
+            evt.Use();
+            Repaint();
+        }
+    }
+
+    private void CompleteStepDragIfNeeded(SerializedProperty steps)
+    {
+        Event evt = Event.current;
+        if (evt == null || draggingStepIndex < 0 || evt.type != EventType.MouseUp)
+            return;
+
+        int targetIndex = Mathf.Clamp(stepDropIndex, 0, steps.arraySize);
+        if (targetIndex > draggingStepIndex)
+            targetIndex--;
+
+        targetIndex = Mathf.Clamp(targetIndex, 0, steps.arraySize - 1);
+        if (targetIndex != draggingStepIndex)
+        {
+            Undo.RecordObject(waveSet, "Drag Reorder Wave Step");
+            steps.MoveArrayElement(draggingStepIndex, targetIndex);
+        }
+
+        draggingStepIndex = -1;
+        stepDropIndex = -1;
+        evt.Use();
+        Repaint();
+    }
+
+    private void DrawMissingEnemyWarning(SerializedProperty step, WaveSet.WaveStepType stepType)
+    {
+        if (stepType == WaveSet.WaveStepType.Delay || StepHasUsableEnemy(step))
+            return;
+
+        GUIStyle warningStyle = new GUIStyle(EditorStyles.helpBox)
+        {
+            fontStyle = FontStyle.Bold,
+            fontSize = 13,
+            alignment = TextAnchor.MiddleLeft,
+            wordWrap = true,
+            padding = new RectOffset(10, 10, 8, 8)
+        };
+
+        Color previousColor = GUI.backgroundColor;
+        GUI.backgroundColor = new Color(1f, 0.45f, 0.25f, 1f);
+        EditorGUILayout.LabelField("MISSING ENEMY - this step will not spawn anything until an enemy is assigned.", warningStyle, GUILayout.MinHeight(34f));
+        GUI.backgroundColor = previousColor;
     }
 
     private void DrawStepTypePopup(SerializedProperty type, WaveSet.WaveStepType currentType)
@@ -772,19 +958,47 @@ public class WaveEditorWindow : EditorWindow
         if (GUILayout.Button("Scan Enemy Folder"))
             AddEnemiesFromProjectFolder(entries);
 
+        using (new EditorGUI.DisabledScope(waveSet == null))
+        {
+            if (GUILayout.Button("Add From Wave Set"))
+                AddEnemiesFromCurrentWaveSet(entries);
+        }
+
         EditorGUILayout.EndHorizontal();
+
+        if (GUILayout.Button("Sort Entries By Category / Threat / Name"))
+            SortCatalogEntries(entries, true);
 
         catalogScroll = EditorGUILayout.BeginScrollView(catalogScroll);
 
-        for (int i = 0; i < entries.arraySize; i++)
+        List<int> sortedEntryIndices = BuildSortedCatalogEntryIndices(entries);
+        string lastCategory = null;
+        for (int sortedIndex = 0; sortedIndex < sortedEntryIndices.Count; sortedIndex++)
         {
-            SerializedProperty entry = entries.GetArrayElementAtIndex(i);
+            int entryIndex = sortedEntryIndices[sortedIndex];
+            SerializedProperty entry = entries.GetArrayElementAtIndex(entryIndex);
+            string category = NormalizeCategory(entry.FindPropertyRelative("category").stringValue);
+            if (!string.Equals(lastCategory, category, StringComparison.Ordinal))
+            {
+                EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
+                bool collapsed = IsCatalogCategoryCollapsed(category);
+                if (GUILayout.Button(collapsed ? CollapsedStepPrefix : ExpandedStepPrefix, EditorStyles.miniButton, GUILayout.Width(24f)))
+                    collapsedCatalogCategories[category] = !collapsed;
+
+                EditorGUILayout.LabelField(category, EditorStyles.boldLabel);
+                EditorGUILayout.EndHorizontal();
+                lastCategory = category;
+            }
+
+            if (IsCatalogCategoryCollapsed(category))
+                continue;
+
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
             EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField($"Entry {i + 1}", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField($"Entry {sortedIndex + 1}", EditorStyles.boldLabel);
             if (GUILayout.Button("X", GUILayout.Width(28f)))
             {
-                entries.DeleteArrayElementAtIndex(i);
+                entries.DeleteArrayElementAtIndex(entryIndex);
                 EditorGUILayout.EndHorizontal();
                 EditorGUILayout.EndVertical();
                 break;
@@ -843,6 +1057,40 @@ public class WaveEditorWindow : EditorWindow
         selectedWaveIndex++;
     }
 
+    private void CopySelectedWave()
+    {
+        WaveSet.WaveDefinition wave = waveSet.GetWave(selectedWaveIndex);
+        if (wave == null)
+            return;
+
+        copiedWave = CloneWave(wave);
+        copiedWaveSourceName = waveSet.GetWaveDisplayName(selectedWaveIndex);
+    }
+
+    private string GetPasteWaveButtonText()
+    {
+        if (copiedWave == null || string.IsNullOrWhiteSpace(copiedWaveSourceName))
+            return "Paste Wave";
+
+        return "Paste Wave";
+    }
+
+    private void PasteCopiedWave(SerializedProperty waves)
+    {
+        if (copiedWave == null)
+            return;
+
+        Undo.RecordObject(waveSet, "Paste Wave");
+        int pasteIndex = selectedWaveIndex >= 0 && selectedWaveIndex < waves.arraySize
+            ? selectedWaveIndex + 1
+            : waves.arraySize;
+
+        pasteIndex = Mathf.Clamp(pasteIndex, 0, waves.arraySize);
+        waves.InsertArrayElementAtIndex(pasteIndex);
+        WriteWaveToProperty(waves.GetArrayElementAtIndex(pasteIndex), CloneWave(copiedWave));
+        selectedWaveIndex = pasteIndex;
+    }
+
     private void DeleteWave(SerializedProperty waves)
     {
         if (!EditorUtility.DisplayDialog("Delete Wave", "Delete the selected wave?", "Delete", "Cancel"))
@@ -859,6 +1107,149 @@ public class WaveEditorWindow : EditorWindow
         Undo.RecordObject(waveSet, "Move Wave");
         waves.MoveArrayElement(selectedWaveIndex, newIndex);
         selectedWaveIndex = newIndex;
+    }
+
+    private WaveSet.WaveDefinition CloneWave(WaveSet.WaveDefinition source)
+    {
+        WaveSet.WaveDefinition clone = new WaveSet.WaveDefinition
+        {
+            editorLabel = source.editorLabel,
+            notes = source.notes,
+            completionReward = source.completionReward,
+            steps = new List<WaveSet.WaveStep>()
+        };
+
+        if (source.steps != null)
+        {
+            for (int i = 0; i < source.steps.Count; i++)
+                clone.steps.Add(CloneStep(source.steps[i]));
+        }
+
+        return clone;
+    }
+
+    private WaveSet.WaveStep CloneStep(WaveSet.WaveStep source)
+    {
+        if (source == null)
+            return new WaveSet.WaveStep();
+
+        WaveSet.WaveStep clone = new WaveSet.WaveStep
+        {
+            label = source.label,
+            editorCollapsed = source.editorCollapsed,
+            type = source.type,
+            enemy = CloneEnemyRef(source.enemy),
+            enemies = new List<WaveSet.EnemyRef>(),
+            randomPool = new List<WaveSet.WeightedEnemyRef>(),
+            count = source.count,
+            repeatCount = source.repeatCount,
+            spawnInterval = source.spawnInterval,
+            delayBeforeStep = 0f,
+            delayAfterStep = source.delayAfterStep,
+            delayDuration = source.delayDuration
+        };
+
+        if (source.enemies != null)
+        {
+            for (int i = 0; i < source.enemies.Count; i++)
+                clone.enemies.Add(CloneEnemyRef(source.enemies[i]));
+        }
+
+        if (source.randomPool != null)
+        {
+            for (int i = 0; i < source.randomPool.Count; i++)
+                clone.randomPool.Add(CloneWeightedEnemyRef(source.randomPool[i]));
+        }
+
+        return clone;
+    }
+
+    private WaveSet.EnemyRef CloneEnemyRef(WaveSet.EnemyRef source)
+    {
+        if (source == null)
+            return new WaveSet.EnemyRef();
+
+        return new WaveSet.EnemyRef
+        {
+            enemyId = source.enemyId,
+            prefab = source.prefab
+        };
+    }
+
+    private WaveSet.WeightedEnemyRef CloneWeightedEnemyRef(WaveSet.WeightedEnemyRef source)
+    {
+        if (source == null)
+            return new WaveSet.WeightedEnemyRef();
+
+        return new WaveSet.WeightedEnemyRef
+        {
+            enemy = CloneEnemyRef(source.enemy),
+            weight = source.weight
+        };
+    }
+
+    private void WriteWaveToProperty(SerializedProperty target, WaveSet.WaveDefinition source)
+    {
+        target.FindPropertyRelative("editorLabel").stringValue = source.editorLabel;
+        target.FindPropertyRelative("notes").stringValue = source.notes;
+        target.FindPropertyRelative("completionReward").intValue = source.completionReward;
+
+        SerializedProperty steps = target.FindPropertyRelative("steps");
+        steps.ClearArray();
+
+        if (source.steps == null)
+            return;
+
+        for (int i = 0; i < source.steps.Count; i++)
+        {
+            steps.InsertArrayElementAtIndex(steps.arraySize);
+            WriteStepToProperty(steps.GetArrayElementAtIndex(steps.arraySize - 1), source.steps[i]);
+        }
+    }
+
+    private void WriteStepToProperty(SerializedProperty target, WaveSet.WaveStep source)
+    {
+        target.FindPropertyRelative("label").stringValue = source.label;
+        target.FindPropertyRelative("editorCollapsed").boolValue = source.editorCollapsed;
+        target.FindPropertyRelative("type").enumValueIndex = (int)source.type;
+        WriteEnemyRefToProperty(target.FindPropertyRelative("enemy"), source.enemy);
+
+        SerializedProperty enemies = target.FindPropertyRelative("enemies");
+        enemies.ClearArray();
+        if (source.enemies != null)
+        {
+            for (int i = 0; i < source.enemies.Count; i++)
+            {
+                enemies.InsertArrayElementAtIndex(enemies.arraySize);
+                WriteEnemyRefToProperty(enemies.GetArrayElementAtIndex(enemies.arraySize - 1), source.enemies[i]);
+            }
+        }
+
+        SerializedProperty randomPool = target.FindPropertyRelative("randomPool");
+        randomPool.ClearArray();
+        if (source.randomPool != null)
+        {
+            for (int i = 0; i < source.randomPool.Count; i++)
+            {
+                randomPool.InsertArrayElementAtIndex(randomPool.arraySize);
+                SerializedProperty option = randomPool.GetArrayElementAtIndex(randomPool.arraySize - 1);
+                WriteEnemyRefToProperty(option.FindPropertyRelative("enemy"), source.randomPool[i].enemy);
+                option.FindPropertyRelative("weight").intValue = source.randomPool[i].weight;
+            }
+        }
+
+        target.FindPropertyRelative("count").intValue = source.count;
+        target.FindPropertyRelative("repeatCount").intValue = source.repeatCount;
+        target.FindPropertyRelative("spawnInterval").floatValue = source.spawnInterval;
+        target.FindPropertyRelative("delayBeforeStep").floatValue = 0f;
+        target.FindPropertyRelative("delayAfterStep").floatValue = source.delayAfterStep;
+        target.FindPropertyRelative("delayDuration").floatValue = source.delayDuration;
+    }
+
+    private void WriteEnemyRefToProperty(SerializedProperty target, WaveSet.EnemyRef source)
+    {
+        target.FindPropertyRelative("enemyId").stringValue = source != null ? source.enemyId : "";
+        target.FindPropertyRelative("prefab").objectReferenceValue = source != null ? source.prefab : null;
     }
 
     private void DuplicateStep(SerializedProperty steps, int index)
@@ -985,6 +1376,80 @@ public class WaveEditorWindow : EditorWindow
         waveSetObject.FindProperty("enemyCatalog").objectReferenceValue = enemyCatalog;
         waveSetObject.ApplyModifiedProperties();
         EditorUtility.SetDirty(waveSet);
+    }
+
+    private void PopulateWaveSetEnemyIdsFromCatalog()
+    {
+        if (waveSet == null || enemyCatalog == null)
+            return;
+
+        EnsureSerializedObjects();
+        waveSetObject.Update();
+        SerializedProperty waves = waveSetObject.FindProperty("waves");
+        bool changed = false;
+
+        for (int w = 0; w < waves.arraySize; w++)
+        {
+            SerializedProperty wave = waves.GetArrayElementAtIndex(w);
+            SerializedProperty steps = wave.FindPropertyRelative("steps");
+
+            for (int s = 0; s < steps.arraySize; s++)
+                changed |= PopulateStepEnemyIdsFromCatalog(steps.GetArrayElementAtIndex(s));
+        }
+
+        if (!changed)
+            return;
+
+        waveSetObject.ApplyModifiedProperties();
+        EditorUtility.SetDirty(waveSet);
+
+        if (autoSaveAssets)
+            QueueAssetSave();
+    }
+
+    private bool PopulateStepEnemyIdsFromCatalog(SerializedProperty step)
+    {
+        WaveSet.WaveStepType type = (WaveSet.WaveStepType)step.FindPropertyRelative("type").enumValueIndex;
+        if (type == WaveSet.WaveStepType.Delay)
+            return false;
+
+        bool changed = false;
+        if (type == WaveSet.WaveStepType.SingleGroup || type == WaveSet.WaveStepType.Burst)
+        {
+            changed |= PopulateEnemyRefIdFromCatalog(step.FindPropertyRelative("enemy"));
+        }
+        else if (type == WaveSet.WaveStepType.Alternating || type == WaveSet.WaveStepType.Sequence)
+        {
+            SerializedProperty enemies = step.FindPropertyRelative("enemies");
+            for (int i = 0; i < enemies.arraySize; i++)
+                changed |= PopulateEnemyRefIdFromCatalog(enemies.GetArrayElementAtIndex(i));
+        }
+        else if (type == WaveSet.WaveStepType.RandomPool)
+        {
+            SerializedProperty randomPool = step.FindPropertyRelative("randomPool");
+            for (int i = 0; i < randomPool.arraySize; i++)
+                changed |= PopulateEnemyRefIdFromCatalog(randomPool.GetArrayElementAtIndex(i).FindPropertyRelative("enemy"));
+        }
+
+        return changed;
+    }
+
+    private bool PopulateEnemyRefIdFromCatalog(SerializedProperty enemyRef)
+    {
+        EnemyAgent prefab = enemyRef.FindPropertyRelative("prefab").objectReferenceValue as EnemyAgent;
+        if (prefab == null)
+            return false;
+
+        EnemyCatalog.Entry entry = enemyCatalog.FindByPrefab(prefab);
+        if (entry == null || string.IsNullOrWhiteSpace(entry.id))
+            return false;
+
+        SerializedProperty enemyId = enemyRef.FindPropertyRelative("enemyId");
+        if (enemyId.stringValue == entry.id)
+            return false;
+
+        enemyId.stringValue = entry.id;
+        return true;
     }
 
     private List<string> BuildCategoryList()
@@ -1135,9 +1600,22 @@ public class WaveEditorWindow : EditorWindow
 
         EnemyCatalog asset = CreateInstance<EnemyCatalog>();
         AssetDatabase.CreateAsset(asset, path);
-        AssetDatabase.SaveAssets();
         SetEnemyCatalog(asset, true);
+
+        if (waveSet != null)
+        {
+            EnsureSerializedObjects();
+            catalogObject.Update();
+            SerializedProperty entries = catalogObject.FindProperty("entries");
+            AddEnemiesFromWaveSet(entries);
+            SortCatalogEntries(entries, false);
+            catalogObject.ApplyModifiedProperties();
+            EditorUtility.SetDirty(asset);
+        }
+
         AssignCatalogToWaveSetIfNeeded();
+        PopulateWaveSetEnemyIdsFromCatalog();
+        AssetDatabase.SaveAssets();
         Selection.activeObject = asset;
     }
 
@@ -1175,30 +1653,234 @@ public class WaveEditorWindow : EditorWindow
             if (enemy != null)
                 AddEnemyPrefabToCatalog(entries, enemy);
         }
+
+        SortCatalogEntries(entries, false);
     }
 
-    private void AddEnemyPrefabToCatalog(SerializedProperty entries, EnemyAgent enemy)
+    private void AddEnemiesFromCurrentWaveSet(SerializedProperty entries)
     {
-        if (enemy == null || CatalogAlreadyContains(enemy))
-            return;
+        int added = AddEnemiesFromWaveSet(entries);
+        SortCatalogEntries(entries, false);
+        catalogObject.ApplyModifiedProperties();
+        EditorUtility.SetDirty(enemyCatalog);
+        PopulateWaveSetEnemyIdsFromCatalog();
+
+        string message = added == 1
+            ? "Added 1 enemy from the current WaveSet."
+            : $"Added {added} enemies from the current WaveSet.";
+
+        Debug.Log("[Wave Editor] " + message, enemyCatalog);
+    }
+
+    private int AddEnemiesFromWaveSet(SerializedProperty entries)
+    {
+        if (waveSet == null)
+            return 0;
+
+        int added = 0;
+        for (int w = 0; w < waveSet.WaveCount; w++)
+        {
+            WaveSet.WaveDefinition wave = waveSet.GetWave(w);
+            if (wave == null || wave.steps == null)
+                continue;
+
+            for (int s = 0; s < wave.steps.Count; s++)
+                added += AddEnemiesFromStep(entries, wave.steps[s]);
+        }
+
+        return added;
+    }
+
+    private int AddEnemiesFromStep(SerializedProperty entries, WaveSet.WaveStep step)
+    {
+        if (step == null || step.type == WaveSet.WaveStepType.Delay)
+            return 0;
+
+        int added = 0;
+        if (step.type == WaveSet.WaveStepType.SingleGroup || step.type == WaveSet.WaveStepType.Burst)
+        {
+            added += AddEnemyPrefabToCatalog(entries, step.enemy != null ? step.enemy.prefab : null) ? 1 : 0;
+        }
+        else if (step.type == WaveSet.WaveStepType.Alternating || step.type == WaveSet.WaveStepType.Sequence)
+        {
+            if (step.enemies != null)
+            {
+                for (int i = 0; i < step.enemies.Count; i++)
+                    added += AddEnemyPrefabToCatalog(entries, step.enemies[i] != null ? step.enemies[i].prefab : null) ? 1 : 0;
+            }
+        }
+        else if (step.type == WaveSet.WaveStepType.RandomPool)
+        {
+            if (step.randomPool != null)
+            {
+                for (int i = 0; i < step.randomPool.Count; i++)
+                {
+                    WaveSet.WeightedEnemyRef option = step.randomPool[i];
+                    added += AddEnemyPrefabToCatalog(entries, option != null && option.enemy != null ? option.enemy.prefab : null) ? 1 : 0;
+                }
+            }
+        }
+
+        return added;
+    }
+
+    private bool AddEnemyPrefabToCatalog(SerializedProperty entries, EnemyAgent enemy)
+    {
+        if (enemy == null || CatalogAlreadyContains(entries, enemy))
+            return false;
 
         Undo.RecordObject(enemyCatalog, "Add Enemy To Catalog");
         entries.InsertArrayElementAtIndex(entries.arraySize);
 
         SerializedProperty entry = entries.GetArrayElementAtIndex(entries.arraySize - 1);
-        entry.FindPropertyRelative("id").stringValue = CreateId(enemy.name);
+        entry.FindPropertyRelative("id").stringValue = CreateUniqueCatalogId(entries, enemy.name, entries.arraySize - 1);
         entry.FindPropertyRelative("displayName").stringValue = enemy.name;
         entry.FindPropertyRelative("prefab").objectReferenceValue = enemy;
         entry.FindPropertyRelative("category").stringValue = UncategorizedCategory;
         entry.FindPropertyRelative("threatValue").floatValue = 1f;
+        return true;
     }
 
-    private bool CatalogAlreadyContains(EnemyAgent enemy)
+    private bool CatalogAlreadyContains(SerializedProperty entries, EnemyAgent enemy)
     {
-        if (enemyCatalog == null)
+        if (entries == null || enemy == null)
             return false;
 
-        return enemyCatalog.FindByPrefab(enemy) != null;
+        for (int i = 0; i < entries.arraySize; i++)
+        {
+            SerializedProperty entry = entries.GetArrayElementAtIndex(i);
+            if (entry.FindPropertyRelative("prefab").objectReferenceValue == enemy)
+                return true;
+        }
+
+        return false;
+    }
+
+    private bool IsCatalogCategoryCollapsed(string category)
+    {
+        return collapsedCatalogCategories.TryGetValue(NormalizeCategory(category), out bool collapsed) && collapsed;
+    }
+
+    private List<int> BuildSortedCatalogEntryIndices(SerializedProperty entries)
+    {
+        List<int> indices = new List<int>();
+        for (int i = 0; i < entries.arraySize; i++)
+            indices.Add(i);
+
+        indices.Sort((leftIndex, rightIndex) =>
+        {
+            SerializedProperty left = entries.GetArrayElementAtIndex(leftIndex);
+            SerializedProperty right = entries.GetArrayElementAtIndex(rightIndex);
+            return CompareCatalogEntryProperties(left, right);
+        });
+
+        return indices;
+    }
+
+    private int CompareCatalogEntryProperties(SerializedProperty left, SerializedProperty right)
+    {
+        string leftCategory = NormalizeCategory(left.FindPropertyRelative("category").stringValue);
+        string rightCategory = NormalizeCategory(right.FindPropertyRelative("category").stringValue);
+
+        int categoryComparison = string.Compare(leftCategory, rightCategory, StringComparison.OrdinalIgnoreCase);
+        if (categoryComparison != 0)
+            return categoryComparison;
+
+        float leftThreat = left.FindPropertyRelative("threatValue").floatValue;
+        float rightThreat = right.FindPropertyRelative("threatValue").floatValue;
+        int threatComparison = leftThreat.CompareTo(rightThreat);
+        if (threatComparison != 0)
+            return threatComparison;
+
+        return string.Compare(GetCatalogEntryDisplayName(left), GetCatalogEntryDisplayName(right), StringComparison.OrdinalIgnoreCase);
+    }
+
+    private string GetCatalogEntryDisplayName(SerializedProperty entry)
+    {
+        string displayName = entry.FindPropertyRelative("displayName").stringValue;
+        if (!string.IsNullOrWhiteSpace(displayName))
+            return displayName;
+
+        EnemyAgent prefab = entry.FindPropertyRelative("prefab").objectReferenceValue as EnemyAgent;
+        if (prefab != null)
+            return prefab.name;
+
+        string id = entry.FindPropertyRelative("id").stringValue;
+        if (!string.IsNullOrWhiteSpace(id))
+            return id;
+
+        return "Enemy";
+    }
+
+    private void SortCatalogEntries(SerializedProperty entries, bool recordUndo)
+    {
+        if (entries == null || entries.arraySize <= 1)
+            return;
+
+        List<int> targetOrder = BuildSortedCatalogEntryIndices(entries);
+        bool alreadySorted = true;
+        for (int i = 0; i < targetOrder.Count; i++)
+        {
+            if (targetOrder[i] != i)
+            {
+                alreadySorted = false;
+                break;
+            }
+        }
+
+        if (alreadySorted)
+            return;
+
+        if (recordUndo)
+            Undo.RecordObject(enemyCatalog, "Sort Enemy Catalog");
+
+        List<int> currentOrder = new List<int>();
+        for (int i = 0; i < entries.arraySize; i++)
+            currentOrder.Add(i);
+
+        for (int targetIndex = 0; targetIndex < targetOrder.Count; targetIndex++)
+        {
+            int originalIndex = targetOrder[targetIndex];
+            int currentIndex = currentOrder.IndexOf(originalIndex);
+            if (currentIndex < 0 || currentIndex == targetIndex)
+                continue;
+
+            entries.MoveArrayElement(currentIndex, targetIndex);
+            currentOrder.RemoveAt(currentIndex);
+            currentOrder.Insert(targetIndex, originalIndex);
+        }
+
+        EditorUtility.SetDirty(enemyCatalog);
+    }
+
+    private string CreateUniqueCatalogId(SerializedProperty entries, string source, int ignoreIndex)
+    {
+        string baseId = CreateId(source);
+        string id = baseId;
+        int suffix = 2;
+
+        while (CatalogIdExists(entries, id, ignoreIndex))
+        {
+            id = $"{baseId}_{suffix}";
+            suffix++;
+        }
+
+        return id;
+    }
+
+    private bool CatalogIdExists(SerializedProperty entries, string id, int ignoreIndex)
+    {
+        for (int i = 0; i < entries.arraySize; i++)
+        {
+            if (i == ignoreIndex)
+                continue;
+
+            string existingId = entries.GetArrayElementAtIndex(i).FindPropertyRelative("id").stringValue;
+            if (string.Equals(existingId, id, StringComparison.Ordinal))
+                return true;
+        }
+
+        return false;
     }
 
     private string CreateId(string source)
@@ -1215,6 +1897,42 @@ public class WaveEditorWindow : EditorWindow
         }
 
         return new string(chars);
+    }
+
+    private EnemyCatalog EnsureCatalogForSpawnerConversion(string waveSetPath, WaveSpawner spawner)
+    {
+        EnemyCatalog targetCatalog = enemyCatalog;
+        if (targetCatalog == null)
+        {
+            string directory = System.IO.Path.GetDirectoryName(waveSetPath)?.Replace("\\", "/");
+            string catalogPath = AssetDatabase.GenerateUniqueAssetPath($"{directory}/{spawner.name} Enemy Catalog.asset");
+            targetCatalog = CreateInstance<EnemyCatalog>();
+            AssetDatabase.CreateAsset(targetCatalog, catalogPath);
+            SetEnemyCatalog(targetCatalog, true);
+        }
+
+        SerializedObject catalogSerializedObject = new SerializedObject(targetCatalog);
+        SerializedProperty entries = catalogSerializedObject.FindProperty("entries");
+        SerializedObject source = new SerializedObject(spawner);
+        SerializedProperty waves = source.FindProperty("waves");
+
+        for (int w = 0; w < waves.arraySize; w++)
+        {
+            SerializedProperty wave = waves.GetArrayElementAtIndex(w);
+            SerializedProperty groups = wave.FindPropertyRelative("groups");
+
+            for (int g = 0; g < groups.arraySize; g++)
+            {
+                EnemyAgent enemy = groups.GetArrayElementAtIndex(g).FindPropertyRelative("enemyPrefab").objectReferenceValue as EnemyAgent;
+                AddEnemyPrefabToCatalog(entries, enemy);
+            }
+        }
+
+        SortCatalogEntries(entries, false);
+        catalogSerializedObject.ApplyModifiedProperties();
+        EditorUtility.SetDirty(targetCatalog);
+        AssetDatabase.SaveAssets();
+        return targetCatalog;
     }
 
     private void ConvertSelectedSpawner()
@@ -1235,6 +1953,7 @@ public class WaveEditorWindow : EditorWindow
 
         WaveSet created = CreateInstance<WaveSet>();
         AssetDatabase.CreateAsset(created, path);
+        EnemyCatalog conversionCatalog = EnsureCatalogForSpawnerConversion(path, spawner);
 
         SerializedObject source = new SerializedObject(spawner);
         SerializedObject target = new SerializedObject(created);
@@ -1275,22 +1994,24 @@ public class WaveEditorWindow : EditorWindow
 
                 SerializedProperty enemyRef = newStep.FindPropertyRelative("enemy");
                 enemyRef.FindPropertyRelative("prefab").objectReferenceValue = enemy;
-                if (enemyCatalog != null)
+                if (conversionCatalog != null)
                 {
-                    EnemyCatalog.Entry entry = enemyCatalog.FindByPrefab(enemy);
+                    EnemyCatalog.Entry entry = conversionCatalog.FindByPrefab(enemy);
                     enemyRef.FindPropertyRelative("enemyId").stringValue = entry != null ? entry.id : "";
                 }
             }
         }
 
-        if (enemyCatalog != null)
-            target.FindProperty("enemyCatalog").objectReferenceValue = enemyCatalog;
+        if (conversionCatalog != null)
+            target.FindProperty("enemyCatalog").objectReferenceValue = conversionCatalog;
 
         target.ApplyModifiedProperties();
         EditorUtility.SetDirty(created);
         AssetDatabase.SaveAssets();
 
         SetWaveSet(created);
+        if (conversionCatalog != null)
+            SetEnemyCatalog(conversionCatalog, true);
         Selection.activeObject = created;
     }
 
@@ -1448,6 +2169,57 @@ public class WaveEditorWindow : EditorWindow
             default:
                 return true;
         }
+    }
+
+    private bool StepHasUsableEnemy(SerializedProperty step)
+    {
+        WaveSet.WaveStepType type = (WaveSet.WaveStepType)step.FindPropertyRelative("type").enumValueIndex;
+
+        switch (type)
+        {
+            case WaveSet.WaveStepType.SingleGroup:
+            case WaveSet.WaveStepType.Burst:
+                return EnemyRefResolves(step.FindPropertyRelative("enemy"));
+
+            case WaveSet.WaveStepType.Alternating:
+            case WaveSet.WaveStepType.Sequence:
+            {
+                SerializedProperty enemies = step.FindPropertyRelative("enemies");
+                for (int i = 0; i < enemies.arraySize; i++)
+                {
+                    if (EnemyRefResolves(enemies.GetArrayElementAtIndex(i)))
+                        return true;
+                }
+
+                return false;
+            }
+
+            case WaveSet.WaveStepType.RandomPool:
+            {
+                SerializedProperty randomPool = step.FindPropertyRelative("randomPool");
+                for (int i = 0; i < randomPool.arraySize; i++)
+                {
+                    SerializedProperty option = randomPool.GetArrayElementAtIndex(i);
+                    if (option.FindPropertyRelative("weight").intValue > 0 && EnemyRefResolves(option.FindPropertyRelative("enemy")))
+                        return true;
+                }
+
+                return false;
+            }
+
+            default:
+                return true;
+        }
+    }
+
+    private bool EnemyRefResolves(SerializedProperty enemyRef)
+    {
+        if (enemyRef == null)
+            return false;
+
+        string enemyId = enemyRef.FindPropertyRelative("enemyId").stringValue;
+        EnemyAgent prefab = enemyRef.FindPropertyRelative("prefab").objectReferenceValue as EnemyAgent;
+        return FindCatalogEntry(enemyId, prefab) != null || prefab != null;
     }
 
     private bool EnemyRefResolves(WaveSet.EnemyRef enemyRef, EnemyCatalog catalog)
