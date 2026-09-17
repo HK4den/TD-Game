@@ -76,7 +76,7 @@ public class PlayerMovement : MonoBehaviour
     public float VerticalVelocity => velocity.y;
     public Vector3 HorizontalVelocity => movementMode == MovementMode.ForcedMovement
         ? Vector3.ProjectOnPlane(forcedWorldVelocity, Vector3.up)
-        : horizontalVelocity + externalHorizontalVelocity;
+        : GetCombinedHorizontalVelocity();
     public bool IsMovementLocked => movementMode == MovementMode.ForcedMovement;
     public bool HasSpeedOverride => hasSpeedOverride;
     public bool IsSprinting => isSprinting;
@@ -263,6 +263,22 @@ public class PlayerMovement : MonoBehaviour
 
     }
 
+    private Vector3 GetCombinedHorizontalVelocity()
+    {
+        float externalSpeed = externalHorizontalVelocity.magnitude;
+        if (externalSpeed <= 0f)
+            return horizontalVelocity;
+
+        Vector3 externalDirection = externalHorizontalVelocity / externalSpeed;
+        float forwardSpeed = Vector3.Dot(horizontalVelocity, externalDirection);
+        Vector3 steeringVelocity = horizontalVelocity;
+        if (forwardSpeed > 0f)
+            steeringVelocity -= externalDirection * Mathf.Min(forwardSpeed, externalSpeed);
+
+        float speedLimit = Mathf.Max(externalSpeed, horizontalVelocity.magnitude);
+        return Vector3.ClampMagnitude(externalHorizontalVelocity + steeringVelocity, speedLimit);
+    }
+
     private void ApplyGravityAndMove()
     {
         float drag = isGrounded ? externalGroundFriction : externalAirDrag;
@@ -271,7 +287,7 @@ public class PlayerMovement : MonoBehaviour
 
         Vector3 movementVelocity = movementMode == MovementMode.ForcedMovement
             ? forcedWorldVelocity
-            : horizontalVelocity + externalHorizontalVelocity;
+            : GetCombinedHorizontalVelocity();
         controller.Move(movementVelocity * Time.deltaTime);
 
         velocity.y += gravity * Time.deltaTime;

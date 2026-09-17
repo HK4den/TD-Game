@@ -19,8 +19,12 @@ On the player's Player Movement component:
   landing, then ground friction slows the remainder. Player-controlled movement is
   retained, so holding a direction still moves you normally after landing.
 - Air Acceleration and Air Deceleration still control the player's own steering.
-  Player steering speed is added to external momentum, so holding forward can extend
-  a launch and holding backward can counteract it.
+  Forward steering only supplies speed the external momentum is not already providing.
+  Opposing input counteracts momentum and sideways input redirects travel. Combined
+  horizontal speed is capped at the greater of current external speed and current
+  player-controlled speed, so diagonal steering cannot add extra launch speed either.
+  Normal movement smoothly takes over as the launch fades. Vertical launch speed and
+  gravity are unaffected by this horizontal cap.
 
 Existing mushrooms work automatically through ApplyLaunch. Their configured launch
 replaces existing horizontal and vertical movement, then steering builds again.
