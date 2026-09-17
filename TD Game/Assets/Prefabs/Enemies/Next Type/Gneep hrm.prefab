@@ -89,6 +89,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!64 &2868931897301357312
 MeshCollider:
@@ -198,6 +199,7 @@ MonoBehaviour:
   pathfinder: {fileID: 7387158980045677629, guid: be0b0b5192c67cc42a594bd8f372d6c1, type: 3}
   slowController: {fileID: 8133276463507527364}
   enemyHealth: {fileID: -4781632782304773973}
+  enemyAbilities: {fileID: 0}
   goalCoord: {x: 14, y: 13}
   baseDamage: 1
   baseHealth: {fileID: 0}
@@ -237,6 +239,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 752662b6d207b554799a8f0c525528e7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAbilities
+  alwaysCamo: 0
+  camoLevel: 1
   slowImmune: 0
   slowResistancePercent: 0
   extraDamageTakenImmune: 0
@@ -303,7 +307,7 @@ MonoBehaviour:
   selfHealth: {fileID: -4781632782304773973}
   selfAgent: {fileID: 483553121193507500}
   radiusVisualizer: {fileID: -499451787450544180}
-  siphonRadius: 3
+  siphonRadius: 1
   siphonPercent: 1
   alwaysShowRadius: 1
 --- !u!114 &-499451787450544180
@@ -321,8 +325,15 @@ MonoBehaviour:
   visualObject: {fileID: 6291301072303412329}
   targetRenderer: {fileID: 5127906325253399432}
   radiusMaterial: {fileID: 2100000, guid: fd7c9c8b705b86b4db12d9f53a7b52bc, type: 2}
-  radius: 3
+  radius: 2
   yOffset: 0.00000001
+  groundThickness: 0.01
+  spin: 0
+  spinDirection: 0
+  randomizeSpinSpeed: 0
+  spinSpeed: 6
+  minimumSpinSpeed: 5
+  maximumSpinSpeed: 8
   alwaysVisible: 1
   disableShadows: 1
 --- !u!1 &6291301072303412329
@@ -352,8 +363,8 @@ Transform:
   m_GameObject: {fileID: 6291301072303412329}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.00000023842, y: 0.169, z: 0.00000023842}
-  m_LocalScale: {x: 2.529, y: 0.00000001, z: 2.529}
+  m_LocalPosition: {x: -0.00000023842, y: 0.01, z: 0.00000023842}
+  m_LocalScale: {x: 1, y: 0.00000001, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5707304213637626203}
@@ -413,6 +424,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1001 &5848356105274855360
 PrefabInstance:

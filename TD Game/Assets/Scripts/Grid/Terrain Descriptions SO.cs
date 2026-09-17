@@ -10,7 +10,7 @@ public class TerrainDescriptionsSO : ScriptableObject
     [TextArea(2, 6)] public string blockedDescription = "Towers can't be placed here and enemies can't move through it.";
     [TextArea(2, 6)] public string beamDescription = "Enemies come from here!";
     [TextArea(2, 6)] public string brushDescription = "Enemies are hidden through here and move slower, but towers can still be placed on this tile.";
-    [TextArea(2, 6)] public string thickBrushDescription = "Enemies are hidden through here and move much slower. Towers cannot be placed here.";
+    [TextArea(2, 6)] public string thickBrushDescription = "Enemies are heavily hidden through here and move much slower. Towers cannot be placed here.";
     [TextArea(2, 6)] public string rubbleDescription = "Enemies can move through this tile, but towers cannot be placed here.";
 
     public string GetDescription(TerrainType type)

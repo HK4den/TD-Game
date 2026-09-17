@@ -151,7 +151,7 @@ public class TowerProjectileEmitter : MonoBehaviour
         string familyKey = towerIdentity != null ? towerIdentity.TowerFamilyKey : string.Empty;
         int sourceInstanceId = transform.root.gameObject.GetInstanceID();
         GameObject sourceObject = transform.root.gameObject;
-        bool sourceCanDetectCamo = combatStats.CanDetectCamo;
+        int sourceCamoDetectionLevel = combatStats.CamoDetectionLevel;
 
         TowerProjectile projectile = Instantiate(projectilePrefab, spawnPos, Quaternion.LookRotation(direction));
         projectile.Initialize(
@@ -164,7 +164,7 @@ public class TowerProjectileEmitter : MonoBehaviour
             familyKey,
             sourceInstanceId,
             sourceObject,
-            sourceCanDetectCamo);
+            sourceCamoDetectionLevel);
     }
 
     private Vector3 ResolveShotDirection(Transform firePoint, EnemyAgent lockedTarget)

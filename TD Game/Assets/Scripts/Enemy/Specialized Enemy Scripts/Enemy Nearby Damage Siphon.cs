@@ -111,7 +111,8 @@ public class EnemyNearbyDamageSiphon : MonoBehaviour
             damageInfo.ignoreDamageTakenModifiers,
             true,
             damageInfo.showDamageNumber,
-            damageInfo.source != null ? damageInfo.source : originalTarget.gameObject);
+            damageInfo.source != null ? damageInfo.source : originalTarget.gameObject,
+            camoDetectionLevel: damageInfo.CamoDetectionLevel);
 
         siphonerHealth.TakeDamage(redirectedInfo);
     }

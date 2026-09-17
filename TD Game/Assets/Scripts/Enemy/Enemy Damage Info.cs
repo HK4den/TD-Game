@@ -9,6 +9,8 @@ public struct EnemyDamageInfo
     public bool showDamageNumber;
     public GameObject source;
     public bool canAffectCamo;
+    public int camoDetectionLevel;
+    public int CamoDetectionLevel => Mathf.Max(camoDetectionLevel, canAffectCamo ? 1 : 0);
 
     public EnemyDamageInfo(
         float damage,
@@ -16,7 +18,8 @@ public struct EnemyDamageInfo
         bool isRedirectedDamage = false,
         bool showDamageNumber = true,
         GameObject source = null,
-        bool canAffectCamo = false)
+        bool canAffectCamo = false,
+        int camoDetectionLevel = 0)
     {
         this.damage = damage;
         this.ignoreDamageTakenModifiers = ignoreDamageTakenModifiers;
@@ -24,6 +27,7 @@ public struct EnemyDamageInfo
         this.showDamageNumber = showDamageNumber;
         this.source = source;
         this.canAffectCamo = canAffectCamo;
+        this.camoDetectionLevel = Mathf.Max(0, camoDetectionLevel);
     }
 }
 

@@ -89,6 +89,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1 &2509369039561855588
 GameObject:
@@ -174,6 +175,7 @@ MonoBehaviour:
   pathfinder: {fileID: 7387158980045677629, guid: be0b0b5192c67cc42a594bd8f372d6c1, type: 3}
   slowController: {fileID: 8133276463507527364}
   enemyHealth: {fileID: -4781632782304773973}
+  enemyAbilities: {fileID: 0}
   goalCoord: {x: 14, y: 13}
   baseDamage: 1
   baseHealth: {fileID: 0}
@@ -213,6 +215,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 752662b6d207b554799a8f0c525528e7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAbilities
+  alwaysCamo: 0
+  camoLevel: 1
   slowImmune: 0
   slowResistancePercent: 0
   extraDamageTakenImmune: 0
@@ -352,6 +356,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1001 &5848356105274855360
 PrefabInstance:

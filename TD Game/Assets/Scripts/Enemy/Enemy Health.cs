@@ -67,6 +67,11 @@ public class EnemyHealth : MonoBehaviour
 
     public bool CanBeAffectedByTower(bool sourceCanDetectCamo)
     {
+        return CanBeAffectedByTower(sourceCanDetectCamo ? 1 : 0);
+    }
+
+    public bool CanBeAffectedByTower(int detectionLevel)
+    {
         if (died)
             return false;
 
@@ -76,7 +81,7 @@ public class EnemyHealth : MonoBehaviour
         if (enemyAgent.IsBeamProtected)
             return false;
 
-        if (enemyAgent.IsCamoHidden && !sourceCanDetectCamo)
+        if (enemyAgent.CamoLevel > Mathf.Max(0, detectionLevel))
             return false;
 
         return true;
@@ -101,7 +106,7 @@ public class EnemyHealth : MonoBehaviour
             if (enemyAgent.IsBeamProtected)
                 return 0f;
 
-            if (damageInfo.source != null && enemyAgent.IsCamoHidden && !damageInfo.canAffectCamo)
+            if (damageInfo.source != null && enemyAgent.CamoLevel > damageInfo.CamoDetectionLevel)
                 return 0f;
         }
 

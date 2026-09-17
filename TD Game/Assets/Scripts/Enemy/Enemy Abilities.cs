@@ -4,6 +4,7 @@ public class EnemyAbilities : MonoBehaviour
 {
     [Header("Stealth")]
     [SerializeField] private bool alwaysCamo = false;
+    [Range(1, 3)] [SerializeField] private int camoLevel = 1;
 
     [Header("Slow Resistance")]
     [SerializeField] private bool slowImmune = false;
@@ -20,6 +21,7 @@ public class EnemyAbilities : MonoBehaviour
     [SerializeField] private float extraDamageTakenResistancePercent = 0f;
 
     public bool AlwaysCamo => alwaysCamo;
+    public int BaseCamoLevel => alwaysCamo ? Mathf.Clamp(camoLevel, 1, 3) : 0;
     public bool SlowImmune => slowImmune;
     public float SlowResistancePercent => Mathf.Clamp01(slowResistancePercent);
     public bool ExtraDamageTakenImmune => extraDamageTakenImmune;

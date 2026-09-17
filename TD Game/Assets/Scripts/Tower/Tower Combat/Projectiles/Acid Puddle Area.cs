@@ -52,7 +52,7 @@ public class AcidPuddleArea : MonoBehaviour
     private bool scannedInitialOverlaps = false;
 
     private GameObject sourceObject;
-    private bool sourceCanDetectCamo = false;
+    private int sourceCamoDetectionLevel;
 
     private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
     private static readonly int ColorId = Shader.PropertyToID("_Color");
@@ -79,9 +79,9 @@ public class AcidPuddleArea : MonoBehaviour
         UpdateColliderShape();
     }
 
-    public void InitializeFromImpactPosition(Vector3 impactPosition, bool sourceCanDetectCamo, GameObject sourceObject)
+    public void InitializeFromImpactPosition(Vector3 impactPosition, int sourceCamoDetectionLevel, GameObject sourceObject)
     {
-        this.sourceCanDetectCamo = sourceCanDetectCamo;
+        this.sourceCamoDetectionLevel = Mathf.Max(0, sourceCamoDetectionLevel);
         this.sourceObject = sourceObject;
 
         float baseY = 0.002f;
@@ -107,7 +107,7 @@ public class AcidPuddleArea : MonoBehaviour
 
     private bool CanAffect(EnemyHealth health)
     {
-        return health != null && health.CanBeAffectedByTower(sourceCanDetectCamo);
+        return health != null && health.CanBeAffectedByTower(sourceCamoDetectionLevel);
     }
 
     private void Update()
@@ -311,7 +311,7 @@ public class AcidPuddleArea : MonoBehaviour
         health.TakeDamage(new EnemyDamageInfo(
             puddleDamage,
             source: sourceObject,
-            canAffectCamo: sourceCanDetectCamo));
+            camoDetectionLevel: sourceCamoDetectionLevel));
         damageApplicationsUsed++;
         nextTickTimeByEnemy[health] = now + Mathf.Max(0.01f, tickInterval);
     }

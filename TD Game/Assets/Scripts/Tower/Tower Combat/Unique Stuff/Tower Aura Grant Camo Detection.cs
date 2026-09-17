@@ -14,6 +14,7 @@ public class TowerAuraGrantCamoDetection : MonoBehaviour
 
     [Header("Rules")]
     [SerializeField] private bool includeSelf = false;
+    [Min(0)] [SerializeField] private int grantedDetectionLevels = 1;
 
     private readonly List<TowerCombatStats> grantedTargets = new List<TowerCombatStats>();
     private readonly List<TowerCombatStats> currentTargets = new List<TowerCombatStats>();
@@ -29,7 +30,7 @@ public class TowerAuraGrantCamoDetection : MonoBehaviour
         if (rangeProfile == null)
             rangeProfile = GetComponent<TowerRangeProfile>();
 
-        sourceId = transform.root.gameObject.GetInstanceID();
+        sourceId = GetInstanceID();
     }
 
     private void Update()
@@ -81,7 +82,7 @@ public class TowerAuraGrantCamoDetection : MonoBehaviour
             if (target == null)
                 continue;
 
-            target.AddGrantedCamoSource(sourceId);
+            target.AddGrantedCamoSource(sourceId, grantedDetectionLevels);
 
             if (!grantedTargets.Contains(target))
                 grantedTargets.Add(target);

@@ -48,6 +48,9 @@ public class WaveEditorWindow : EditorWindow
 
     private readonly Dictionary<string, string> enemyPickerCategories = new Dictionary<string, string>();
     private readonly Dictionary<string, bool> collapsedCatalogCategories = new Dictionary<string, bool>();
+    private List<int> catalogDisplayOrder;
+    private readonly Dictionary<int, string> catalogDisplayCategories = new Dictionary<int, string>();
+    private EnemyCatalog displayedCatalog;
     private static bool saveQueued;
     private static WaveSet.WaveDefinition copiedWave;
     private static string copiedWaveSourceName;
@@ -971,13 +974,27 @@ public class WaveEditorWindow : EditorWindow
 
         catalogScroll = EditorGUILayout.BeginScrollView(catalogScroll);
 
-        List<int> sortedEntryIndices = BuildSortedCatalogEntryIndices(entries);
+        bool rebuildCatalogDisplay = catalogDisplayOrder == null || displayedCatalog != enemyCatalog
+            || catalogDisplayOrder.Count != entries.arraySize;
+        if (rebuildCatalogDisplay || (Event.current.type == EventType.Layout
+            && !EditorGUIUtility.editingTextField && GUIUtility.hotControl == 0))
+        {
+            if (!EditorGUIUtility.editingTextField && GUI.GetNameOfFocusedControl().StartsWith("EnemyCatalogField_", StringComparison.Ordinal))
+                GUI.FocusControl(null);
+            catalogDisplayOrder = BuildSortedCatalogEntryIndices(entries);
+            catalogDisplayCategories.Clear();
+            foreach (int catalogIndex in catalogDisplayOrder)
+                catalogDisplayCategories[catalogIndex] = NormalizeCategory(entries.GetArrayElementAtIndex(catalogIndex).FindPropertyRelative("category").stringValue);
+            displayedCatalog = enemyCatalog;
+        }
+
+        List<int> sortedEntryIndices = catalogDisplayOrder;
         string lastCategory = null;
         for (int sortedIndex = 0; sortedIndex < sortedEntryIndices.Count; sortedIndex++)
         {
             int entryIndex = sortedEntryIndices[sortedIndex];
             SerializedProperty entry = entries.GetArrayElementAtIndex(entryIndex);
-            string category = NormalizeCategory(entry.FindPropertyRelative("category").stringValue);
+            string category = catalogDisplayCategories[entryIndex];
             if (!string.Equals(lastCategory, category, StringComparison.Ordinal))
             {
                 EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
@@ -1005,16 +1022,23 @@ public class WaveEditorWindow : EditorWindow
             }
             EditorGUILayout.EndHorizontal();
 
-            EditorGUILayout.PropertyField(entry.FindPropertyRelative("id"));
-            EditorGUILayout.PropertyField(entry.FindPropertyRelative("displayName"), new GUIContent("Display Name (Optional)"));
-            EditorGUILayout.PropertyField(entry.FindPropertyRelative("prefab"));
-            EditorGUILayout.PropertyField(entry.FindPropertyRelative("category"));
-            EditorGUILayout.PropertyField(entry.FindPropertyRelative("threatValue"));
+            DrawCatalogEntryField(entry, "id");
+            DrawCatalogEntryField(entry, "displayName", new GUIContent("Display Name (Optional)"));
+            DrawCatalogEntryField(entry, "prefab");
+            DrawCatalogEntryField(entry, "category");
+            DrawCatalogEntryField(entry, "threatValue");
             EditorGUILayout.EndVertical();
         }
 
         EditorGUILayout.EndScrollView();
         EditorGUILayout.EndVertical();
+    }
+
+    private void DrawCatalogEntryField(SerializedProperty entry, string fieldName, GUIContent label = null)
+    {
+        SerializedProperty property = entry.FindPropertyRelative(fieldName);
+        GUI.SetNextControlName("EnemyCatalogField_" + property.propertyPath);
+        EditorGUILayout.PropertyField(property, label ?? new GUIContent(property.displayName));
     }
 
     private string GetStepSummary(SerializedProperty step, int index)
@@ -1814,6 +1838,8 @@ public class WaveEditorWindow : EditorWindow
 
     private void SortCatalogEntries(SerializedProperty entries, bool recordUndo)
     {
+        catalogDisplayOrder = null;
+        GUI.FocusControl(null);
         if (entries == null || entries.arraySize <= 1)
             return;
 

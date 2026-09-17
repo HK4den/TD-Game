@@ -94,7 +94,7 @@ public class TowerRangeQuery : MonoBehaviour
         if (enemy.IsBeamProtected)
             return false;
 
-        if (enemy.IsCamoHidden && !combatStats.CanDetectCamo)
+        if (enemy.CamoLevel > combatStats.CamoDetectionLevel)
             return false;
 
         return true;

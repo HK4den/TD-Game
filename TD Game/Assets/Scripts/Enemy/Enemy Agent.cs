@@ -70,7 +70,34 @@ public class EnemyAgent : MonoBehaviour
     public bool IsOnRubbleTerrain => currentTile != null && currentTile.IsRubbleTerrain;
     public bool IsBeamProtected => IsOnBeamTerrain;
     public bool IsTerrainCamo => IsOnBrushTerrain || IsOnThickBrushTerrain;
-    public bool IsCamoHidden => IsAlwaysCamo || IsTerrainCamo;
+    public int BaseCamoLevel => enemyAbilities != null ? enemyAbilities.BaseCamoLevel : 0;
+    public int TerrainCamoLevel => IsOnThickBrushTerrain ? 2 : IsOnBrushTerrain ? 1 : 0;
+    private readonly Dictionary<int, int> camoAuraSources = new Dictionary<int, int>();
+    public int AuraCamoLevel
+    {
+        get
+        {
+            int strongest = 0;
+            foreach (int level in camoAuraSources.Values)
+                strongest = Mathf.Max(strongest, level);
+            return strongest;
+        }
+    }
+    public int CamoLevel => Mathf.Clamp(Mathf.Max(BaseCamoLevel, AuraCamoLevel) + TerrainCamoLevel, 0, 4);
+    public bool IsCamoHidden => CamoLevel > 0;
+
+    public void SetCamoAuraSource(int sourceId, int level)
+    {
+        if (level <= 0)
+            camoAuraSources.Remove(sourceId);
+        else
+            camoAuraSources[sourceId] = Mathf.Clamp(level, 1, 3);
+    }
+
+    public void RemoveCamoAuraSource(int sourceId)
+    {
+        camoAuraSources.Remove(sourceId);
+    }
 
     public bool IsTargetable =>
         !hasReachedGoal &&

@@ -88,3 +88,8 @@ MonoBehaviour:
     prefab: {fileID: 483553121193507500, guid: b8d095670f3ecba4490041c539e01296, type: 3}
     category: split
     threatValue: 1
+  - id: hrm
+    displayName: Gneep hrm
+    prefab: {fileID: 483553121193507500, guid: b712871045f46e440a75a15a0573b8cd, type: 3}
+    category: aura
+    threatValue: 1

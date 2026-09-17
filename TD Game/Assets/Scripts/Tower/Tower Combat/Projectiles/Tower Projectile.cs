@@ -33,7 +33,7 @@ public class TowerProjectile : MonoBehaviour
     private string slowFamilyKey = string.Empty;
     private int slowSourceInstanceId = 0;
     private GameObject sourceObject;
-    private bool sourceCanDetectCamo = false;
+    private int sourceCamoDetectionLevel;
 
     private Collider ownCollider;
     private Rigidbody rb;
@@ -65,7 +65,7 @@ public class TowerProjectile : MonoBehaviour
         string sourceFamilyKey,
         int sourceInstanceId,
         GameObject sourceObject,
-        bool sourceCanDetectCamo)
+        int sourceCamoDetectionLevel)
     {
         moveDirection = direction.sqrMagnitude <= 0.0001f ? Vector3.forward : direction.normalized;
         speed = Mathf.Max(0.01f, moveSpeed);
@@ -77,7 +77,7 @@ public class TowerProjectile : MonoBehaviour
         slowFamilyKey = sourceFamilyKey ?? string.Empty;
         slowSourceInstanceId = sourceInstanceId;
         this.sourceObject = sourceObject;
-        this.sourceCanDetectCamo = sourceCanDetectCamo;
+        this.sourceCamoDetectionLevel = Mathf.Max(0, sourceCamoDetectionLevel);
 
         lifetimeTimer = 0f;
         isSpent = false;
@@ -123,7 +123,7 @@ public class TowerProjectile : MonoBehaviour
         if (health == null || !health.IsAlive)
             return;
 
-        if (!health.CanBeAffectedByTower(sourceCanDetectCamo))
+        if (!health.CanBeAffectedByTower(sourceCamoDetectionLevel))
             return;
 
         if (alreadyHit.Contains(health))
@@ -142,7 +142,7 @@ public class TowerProjectile : MonoBehaviour
                 health.TakeDamage(new EnemyDamageInfo(
                     effectAmount,
                     source: sourceObject,
-                    canAffectCamo: sourceCanDetectCamo));
+                    camoDetectionLevel: sourceCamoDetectionLevel));
                 break;
         }
 
@@ -162,7 +162,7 @@ public class TowerProjectile : MonoBehaviour
         if (spawnAcidPuddleOnHit && acidPuddlePrefab != null && effectMode == EffectMode.Damage)
         {
             AcidPuddleArea puddle = Instantiate(acidPuddlePrefab);
-            puddle.InitializeFromImpactPosition(health.transform.position, sourceCanDetectCamo, sourceObject);
+            puddle.InitializeFromImpactPosition(health.transform.position, sourceCamoDetectionLevel, sourceObject);
         }
 
         remainingPierce--;

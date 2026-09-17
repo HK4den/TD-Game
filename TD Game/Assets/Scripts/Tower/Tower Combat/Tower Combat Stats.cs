@@ -52,8 +52,10 @@ public class TowerCombatStats : MonoBehaviour
 
     [Header("Camo Detection")]
     [SerializeField] private bool hasNaturalCamoDetection = false;
+    [Min(1)] [SerializeField] private int naturalCamoDetectionLevel = 1;
+    [SerializeField] private bool allowExternalCamoDetection = true;
 
-    private readonly HashSet<int> grantedCamoSourceIds = new HashSet<int>();
+    private readonly Dictionary<int, int> grantedCamoSourceIds = new Dictionary<int, int>();
 
     private readonly FloatStat powerStat = new FloatStat();
     private readonly FloatStat shootIntervalStat = new FloatStat();
@@ -119,8 +121,43 @@ public class TowerCombatStats : MonoBehaviour
         }
     }
 
-    public bool HasGrantedCamoDetection => grantedCamoSourceIds.Count > 0;
-    public bool CanDetectCamo => hasNaturalCamoDetection || HasGrantedCamoDetection;
+    public int NaturalCamoDetectionLevel
+    {
+        get => hasNaturalCamoDetection ? Mathf.Max(1, naturalCamoDetectionLevel) : 0;
+        set
+        {
+            hasNaturalCamoDetection = value > 0;
+            naturalCamoDetectionLevel = Mathf.Max(1, value);
+            RaiseStatsChanged();
+        }
+    }
+
+    public bool AllowExternalCamoDetection
+    {
+        get => allowExternalCamoDetection;
+        set
+        {
+            if (allowExternalCamoDetection == value) return;
+            allowExternalCamoDetection = value;
+            RaiseStatsChanged();
+        }
+    }
+
+    public int GrantedCamoDetectionLevel
+    {
+        get
+        {
+            if (!allowExternalCamoDetection) return 0;
+            long total = 0;
+            foreach (int level in grantedCamoSourceIds.Values)
+                total += level;
+            return (int)Math.Min(int.MaxValue, total);
+        }
+    }
+
+    public int CamoDetectionLevel => (int)Math.Min(int.MaxValue, (long)NaturalCamoDetectionLevel + GrantedCamoDetectionLevel);
+    public bool HasGrantedCamoDetection => GrantedCamoDetectionLevel > 0;
+    public bool CanDetectCamo => CamoDetectionLevel > 0;
 
     public float Power => powerStat.GetValue(0.001f);
     public float SecondsBetweenShots => shootIntervalStat.GetValue(0.001f);
@@ -152,13 +189,20 @@ public class TowerCombatStats : MonoBehaviour
         rangeStat.BaseValue = Mathf.Max(0.01f, baseRange);
     }
 
-    public void AddGrantedCamoSource(int sourceId)
+    public void AddGrantedCamoSource(int sourceId, int levels = 1)
     {
         if (sourceId == 0)
             return;
 
-        if (grantedCamoSourceIds.Add(sourceId))
-            RaiseStatsChanged();
+        if (levels <= 0)
+        {
+            RemoveGrantedCamoSource(sourceId);
+            return;
+        }
+        if (grantedCamoSourceIds.TryGetValue(sourceId, out int previous) && previous == levels)
+            return;
+        grantedCamoSourceIds[sourceId] = levels;
+        RaiseStatsChanged();
     }
 
     public void RemoveGrantedCamoSource(int sourceId)
