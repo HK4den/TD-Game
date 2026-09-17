@@ -35,6 +35,7 @@ public class AcidPuddleArea : MonoBehaviour
     [SerializeField] private Renderer[] targetRenderers;
 
     private readonly HashSet<EnemyHealth> enemiesInside = new HashSet<EnemyHealth>();
+    private readonly Dictionary<EnemyHealth, HashSet<Collider>> collidersByEnemy = new Dictionary<EnemyHealth, HashSet<Collider>>();
     private readonly Dictionary<EnemyHealth, float> nextTickTimeByEnemy = new Dictionary<EnemyHealth, float>();
     private readonly Collider[] overlapResults = new Collider[64];
 
@@ -200,17 +201,7 @@ public class AcidPuddleArea : MonoBehaviour
             if (health == null || !health.IsAlive)
                 continue;
 
-            nextTickTimeByEnemy[health] = now + Mathf.Max(0.01f, tickInterval);
-
-            if (!CanAffect(health))
-                continue;
-
-            health.TakeDamage(new EnemyDamageInfo(
-                puddleDamage,
-                source: sourceObject,
-                canAffectCamo: sourceCanDetectCamo));
-
-            damageApplicationsUsed++;
+            TryApplyDamageTick(health, now);
         }
 
         ListPool<EnemyHealth>.Release(toDamage);
@@ -252,6 +243,14 @@ public class AcidPuddleArea : MonoBehaviour
         AddEnemyInside(other, true);
     }
 
+    private void OnTriggerStay(Collider other)
+    {
+        if (!initialized || !isActive || PauseState.IsPaused)
+            return;
+
+        AddEnemyInside(other, false);
+    }
+
     private void AddEnemyInside(Collider other, bool damageImmediately)
     {
         if (other == null)
@@ -262,6 +261,12 @@ public class AcidPuddleArea : MonoBehaviour
             return;
 
         bool newlyAdded = enemiesInside.Add(health);
+        if (!collidersByEnemy.TryGetValue(health, out HashSet<Collider> colliders))
+        {
+            colliders = new HashSet<Collider>();
+            collidersByEnemy.Add(health, colliders);
+        }
+        colliders.Add(other);
 
         if (!nextTickTimeByEnemy.ContainsKey(health))
             nextTickTimeByEnemy.Add(health, Time.time);
@@ -269,19 +274,7 @@ public class AcidPuddleArea : MonoBehaviour
         if (!damageImmediately || !newlyAdded)
             return;
 
-        if (damageApplicationsUsed >= maxDamageApplications)
-            return;
-
-        if (!CanAffect(health))
-            return;
-
-        health.TakeDamage(new EnemyDamageInfo(
-            puddleDamage,
-            source: sourceObject,
-            canAffectCamo: sourceCanDetectCamo));
-
-        damageApplicationsUsed++;
-        nextTickTimeByEnemy[health] = Time.time + Mathf.Max(0.01f, tickInterval);
+        TryApplyDamageTick(health, Time.time);
 
         if (damageApplicationsUsed >= maxDamageApplications)
             BeginFade();
@@ -293,8 +286,34 @@ public class AcidPuddleArea : MonoBehaviour
         if (health == null)
             return;
 
+        if (collidersByEnemy.TryGetValue(health, out HashSet<Collider> colliders))
+        {
+            colliders.Remove(other);
+            colliders.RemoveWhere(collider => collider == null || !collider.enabled || !collider.gameObject.activeInHierarchy);
+            if (colliders.Count > 0)
+                return;
+        }
+
         enemiesInside.Remove(health);
         nextTickTimeByEnemy.Remove(health);
+        collidersByEnemy.Remove(health);
+    }
+
+    private void TryApplyDamageTick(EnemyHealth health, float now)
+    {
+        if (PauseState.IsPaused || !isActive || damageApplicationsUsed >= maxDamageApplications || puddleDamage <= 0f)
+            return;
+        if (!CanAffect(health))
+            return;
+        if (nextTickTimeByEnemy.TryGetValue(health, out float nextTick) && now < nextTick)
+            return;
+
+        health.TakeDamage(new EnemyDamageInfo(
+            puddleDamage,
+            source: sourceObject,
+            canAffectCamo: sourceCanDetectCamo));
+        damageApplicationsUsed++;
+        nextTickTimeByEnemy[health] = now + Mathf.Max(0.01f, tickInterval);
     }
 
     private void RefreshCurrentOverlaps()
@@ -356,6 +375,7 @@ public class AcidPuddleArea : MonoBehaviour
         {
             enemiesInside.Remove(toRemove[i]);
             nextTickTimeByEnemy.Remove(toRemove[i]);
+            collidersByEnemy.Remove(toRemove[i]);
         }
 
         ListPool<EnemyHealth>.Release(toRemove);
