@@ -31,7 +31,7 @@ public class BounceObject : MonoBehaviour
 
     public void TryBounce(Collider other)
     {
-        if (isOnCooldown)
+        if (PauseState.IsPaused || isOnCooldown)
             return;
 
         PlayerMovement player = other.GetComponent<PlayerMovement>();

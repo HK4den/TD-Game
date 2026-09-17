@@ -23,6 +23,14 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float airAcceleration = 20f;
     [SerializeField] private float airDeceleration = 8f;
 
+    [Header("External Momentum")]
+    [Tooltip("Horizontal momentum lost per second while airborne, independent of movement input.")]
+    [Min(0f)] [SerializeField] private float externalAirDrag = 8f;
+    [Tooltip("Horizontal momentum lost per second when grounded.")]
+    [Min(0f)] [SerializeField] private float externalGroundFriction = 35f;
+    [Tooltip("Fraction of external horizontal momentum kept on landing. 0 stops it; 1 keeps all of it. Ground friction then slows the remainder.")]
+    [Range(0f, 1f)] public float landingMomentumRetention = 0.25f;
+
     [Header("Jump/Grav")]
     [SerializeField] private float jumpHeight = 1.5f;
     [SerializeField] private float gravity = -20f;
@@ -41,6 +49,9 @@ public class PlayerMovement : MonoBehaviour
 
     private Vector3 velocity;
     private Vector3 horizontalVelocity;
+    private Vector3 externalHorizontalVelocity;
+    private int impulseVersion;
+    private bool landingMomentumApplied;
 
     private bool isSprinting;
     private bool isGrounded;
@@ -63,7 +74,9 @@ public class PlayerMovement : MonoBehaviour
 
     public bool IsGrounded => isGrounded;
     public float VerticalVelocity => velocity.y;
-    public Vector3 HorizontalVelocity => horizontalVelocity;
+    public Vector3 HorizontalVelocity => movementMode == MovementMode.ForcedMovement
+        ? Vector3.ProjectOnPlane(forcedWorldVelocity, Vector3.up)
+        : horizontalVelocity + externalHorizontalVelocity;
     public bool IsMovementLocked => movementMode == MovementMode.ForcedMovement;
     public bool HasSpeedOverride => hasSpeedOverride;
     public bool IsSprinting => isSprinting;
@@ -105,15 +118,17 @@ public class PlayerMovement : MonoBehaviour
             return;
 
         UpdateGrounded();
+        if (!isGrounded)
+            landingMomentumApplied = false;
+        if (isGrounded && !wasGroundedLastFrame)
+            ApplyLandingMomentum();
         UpdateBoostTimer();
         UpdateTimersAndJump();
 
         bool hasMoveInputThisFrame = HasMoveInput();
         HandleSprintAutoCancel(hasMoveInputThisFrame);
 
-        if (movementMode == MovementMode.ForcedMovement)
-            HandleForcedMovement();
-        else
+        if (movementMode == MovementMode.Normal)
             HandleMovement();
 
         ApplyGravityAndMove();
@@ -124,6 +139,12 @@ public class PlayerMovement : MonoBehaviour
 
     private void UpdateGrounded()
     {
+        if (velocity.y > 0f || (movementMode == MovementMode.ForcedMovement && forcedWorldVelocity.y > 0f))
+        {
+            isGrounded = false;
+            return;
+        }
+
         Vector3 origin = transform.position + controller.center;
         float radius = controller.radius * 0.95f;
 
@@ -199,6 +220,7 @@ public class PlayerMovement : MonoBehaviour
 
             jumpBufferTimer = 0f;
             coyoteTimer = 0f;
+            isGrounded = false;
 
             Jumped?.Invoke();
         }
@@ -239,18 +261,59 @@ public class PlayerMovement : MonoBehaviour
             smoothRate * Time.deltaTime
         );
 
-        controller.Move(horizontalVelocity * Time.deltaTime);
-    }
-
-    private void HandleForcedMovement()
-    {
-        controller.Move(forcedWorldVelocity * Time.deltaTime);
     }
 
     private void ApplyGravityAndMove()
     {
+        float drag = isGrounded ? externalGroundFriction : externalAirDrag;
+        externalHorizontalVelocity = Vector3.MoveTowards(
+            externalHorizontalVelocity, Vector3.zero, Mathf.Max(0f, drag) * Time.deltaTime);
+
+        Vector3 movementVelocity = movementMode == MovementMode.ForcedMovement
+            ? forcedWorldVelocity
+            : horizontalVelocity + externalHorizontalVelocity;
+        controller.Move(movementVelocity * Time.deltaTime);
+
         velocity.y += gravity * Time.deltaTime;
-        controller.Move(Vector3.up * velocity.y * Time.deltaTime);
+        int versionBeforeMove = impulseVersion;
+        CollisionFlags collisions = controller.Move(Vector3.up * velocity.y * Time.deltaTime);
+
+        if (versionBeforeMove == impulseVersion)
+        {
+            if ((collisions & CollisionFlags.Above) != 0 && velocity.y > 0f)
+                velocity.y = 0f;
+            if ((collisions & CollisionFlags.Below) != 0 && velocity.y < 0f)
+            {
+                if (!isGrounded)
+                    ApplyLandingMomentum();
+                velocity.y = groundedStick;
+            }
+        }
+    }
+
+    private void ApplyLandingMomentum()
+    {
+        if (landingMomentumApplied)
+            return;
+
+        externalHorizontalVelocity *= Mathf.Clamp01(landingMomentumRetention);
+        landingMomentumApplied = true;
+    }
+
+    private void OnControllerColliderHit(ControllerColliderHit hit)
+    {
+        if (hit.normal.y >= Mathf.Cos(controller.slopeLimit * Mathf.Deg2Rad) || hit.normal.y < -0.01f)
+            return;
+
+        Vector3 wallNormal = Vector3.ProjectOnPlane(hit.normal, Vector3.up).normalized;
+        RemoveBlockedVelocity(ref externalHorizontalVelocity, wallNormal);
+    }
+
+    private static void RemoveBlockedVelocity(ref Vector3 movementVelocity, Vector3 normal)
+    {
+        float intoSurface = Vector3.Dot(movementVelocity, normal);
+        if (intoSurface < 0f)
+            movementVelocity -= normal * intoSurface;
     }
 
     private float GetCurrentTargetSpeed()
@@ -289,15 +352,17 @@ public class PlayerMovement : MonoBehaviour
 
     public void ApplyLaunch(Vector3 launchVelocity, bool replaceHorizontal = true, bool replaceVertical = true)
     {
+        if (PauseState.IsPaused)
+            return;
+
         if (replaceHorizontal)
         {
-            horizontalVelocity.x = launchVelocity.x;
-            horizontalVelocity.z = launchVelocity.z;
+            horizontalVelocity = Vector3.zero;
+            externalHorizontalVelocity = Vector3.ProjectOnPlane(launchVelocity, Vector3.up);
         }
         else
         {
-            horizontalVelocity.x += launchVelocity.x;
-            horizontalVelocity.z += launchVelocity.z;
+            externalHorizontalVelocity += Vector3.ProjectOnPlane(launchVelocity, Vector3.up);
         }
 
         if (replaceVertical)
@@ -306,7 +371,40 @@ public class PlayerMovement : MonoBehaviour
             velocity.y += launchVelocity.y;
 
         movementMode = MovementMode.Normal;
+        forcedWorldVelocity = Vector3.zero;
         isSprinting = true;
+        RegisterImpulse();
+    }
+
+    public void AddImpulse(Vector3 velocityChange)
+    {
+        if (PauseState.IsPaused || movementMode != MovementMode.Normal)
+            return;
+
+        externalHorizontalVelocity += Vector3.ProjectOnPlane(velocityChange, Vector3.up);
+        if (isGrounded && velocityChange.y > 0f && velocity.y < 0f)
+            velocity.y = 0f;
+        velocity.y += velocityChange.y;
+        RegisterImpulse();
+    }
+
+    public void AddForce(Vector3 acceleration, float duration)
+    {
+        if (duration <= 0f)
+            return;
+
+        AddImpulse(acceleration * duration);
+    }
+
+    private void RegisterImpulse()
+    {
+        impulseVersion++;
+        if (velocity.y <= 0f)
+            return;
+
+        isGrounded = false;
+        coyoteTimer = 0f;
+        jumpBufferTimer = 0f;
     }
 
     // Returns true only if the boost was actually applied/replaced.
@@ -338,6 +436,7 @@ public class PlayerMovement : MonoBehaviour
         movementMode = MovementMode.ForcedMovement;
         forcedWorldVelocity = worldVelocity;
         horizontalVelocity = Vector3.zero;
+        externalHorizontalVelocity = Vector3.zero;
     }
 
     public void UpdateForcedMovementVelocity(Vector3 worldVelocity)
