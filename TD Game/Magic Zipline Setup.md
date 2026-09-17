@@ -39,7 +39,19 @@ Script: Assets/Scripts/Environment/Magic Zipline.cs (next to the mushroom script
   Speed. A purely vertical route uses the exit object's forward direction for
   horizontal launch. Rotate the exit if needed.
 
-Jump-off clears all velocity and uses the player's current normal jump speed. The
+Every successful grab enables sprint, just like a mushroom launch.
+
+Under Jump-Off Launch (below Release At End), enable Launch On Jump Off to replace
+the normal jump with a launch in the full camera look direction, including upward
+or downward. Jump Off Launch Force sets its speed in units per second, default 12.
+The minimum ride/attachment time still applies. The waiting carrier is removed so
+it cannot be regrabbed. Returning to the entrance starts a fresh ride after a short
+0.25-second guard against immediate recapture. Another zipline can catch you.
+Horizontal momentum uses existing air drag and steering limits; vertical velocity
+uses normal gravity, so a downward launch continues falling until landing.
+The existing jump sound and On Jump Off event still play.
+
+With Launch On Jump Off disabled, jump-off clears all velocity and uses the player's current normal jump speed. The
 existing jump sound plays. Normal air steering resumes immediately. The carrier
 waits exactly at the jump-off position and regrabbing resumes toward the exit.
 Entering the start again after the regrab cooldown resets the abandoned carrier
@@ -69,6 +81,25 @@ Carrier Rotation Offset defaults to (90, 0, 0), laying the default ring horizont
 while tilting with the route. Carrier Height Offset adds 0.2 world units above the
 shared Visual Offset. Both affect only the carrier visual, not movement or grabbing;
 adjust the rotation offset if a custom carrier prefab uses different axes.
+
+All ziplines automatically use Assets/Resources/Zipline Spring Settings.asset for
+their spring settings. Edit that one asset to tune every zipline; there is no
+per-zipline spring override. Keep its name and Resources location unchanged.
+The Visuals section (materials, colors, prefabs, offsets) remains independently
+editable on each zipline.
+
+Hook And Rider Spring moves the player through the existing collision-checked ride
+movement, and the hook follows the player's actual position. Entry velocity supplies
+the spring push on initial grabs and regrabs. Original defaults are restored:
+Stretch Strength 0.8, Maximum Stretch 0.5, Spring Stiffness 100, Spring Damping 12,
+and Hook Stretch Multiplier 1. The multiplier scales both rider and hook stretch.
+Set Stretch Strength or the multiplier to zero to disable the spring.
+
+Stretch eases out near the endpoint. Jump-off freezes the carrier at the player's
+actual stretched position and clears the spring so it does not drift while waiting.
+Walls encountered during the stretch interrupt the ride through the normal collision
+checks. The beam stays fixed; the camera follows the player without an additional
+camera offset. Pausing freezes the spring too.
 
 On Grab, On Jump Off, On Arrive, On Blocked, and On Reset events can drive additional
 effects, animation, and sound. They are separate from the player movement logic.

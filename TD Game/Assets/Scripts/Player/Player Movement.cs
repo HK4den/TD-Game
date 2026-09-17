@@ -534,6 +534,7 @@ public class PlayerMovement : MonoBehaviour
 
         guidedRideOwner = owner;
         guidedJumpRequest = jumpRequest;
+        isSprinting = true;
         movementMode = MovementMode.ForcedMovement;
         velocity = horizontalVelocity = externalHorizontalVelocity = forcedWorldVelocity = Vector3.zero;
         isGrounded = wasGroundedLastFrame = false;
@@ -553,7 +554,7 @@ public class PlayerMovement : MonoBehaviour
         return !guidedMoveBlocked;
     }
 
-    public void EndGuidedRide(MonoBehaviour owner, Vector3 releaseVelocity, bool jump)
+    public void EndGuidedRide(MonoBehaviour owner, Vector3 releaseVelocity, bool jump, bool playJumpSound = false)
     {
         if (guidedRideOwner != owner)
             return;
@@ -576,6 +577,8 @@ public class PlayerMovement : MonoBehaviour
             externalHorizontalVelocity = Vector3.ProjectOnPlane(releaseVelocity, Vector3.up);
             velocity.y = releaseVelocity.y;
             RegisterImpulse();
+            if (playJumpSound)
+                Jumped?.Invoke();
         }
     }
 

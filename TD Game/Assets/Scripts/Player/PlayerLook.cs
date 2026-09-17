@@ -5,6 +5,8 @@ using UnityEngine.UI;
 
 public class PlayerLook : MonoBehaviour
 {
+    public Vector3 ViewDirection => cameraPivot != null ? cameraPivot.forward : transform.forward;
+
     [Header("References")]
     [SerializeField] private Transform cameraPivot;
     [SerializeField] private PlayerMovement playerMovement;

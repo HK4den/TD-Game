@@ -24,6 +24,11 @@ public class MagicZipline : MonoBehaviour
     [Min(0f)] public float horizontalLaunchSpeed = 12f;
     public float verticalLaunchSpeed = 8f;
 
+    [Header("Jump-Off Launch")]
+    [Tooltip("Jump launches in your full look direction and removes the waiting hook, preventing regrab. Returning to the entrance can start a new ride.")]
+    public bool launchOnJumpOff;
+    [Min(0f)] public float jumpOffLaunchForce = 12f;
+
     [Header("Visuals")]
     [SerializeField] private Material beamMaterial;
     [SerializeField] private Color beamColor = new Color(0.65f, 0.15f, 1f, 0.8f);
@@ -37,6 +42,12 @@ public class MagicZipline : MonoBehaviour
     [Tooltip("Local rotation relative to the route. X = 90 lays the default carrier ring flat while retaining the route's slope.")]
     [SerializeField] private Vector3 carrierRotationOffset = new Vector3(90f, 0f, 0f);
 
+    private float hookStretchMultiplier => ZiplineSpringSettings.Shared.hookStretchMultiplier;
+    private float stretchStrength => ZiplineSpringSettings.Shared.stretchStrength;
+    private float maximumStretch => ZiplineSpringSettings.Shared.maximumStretch;
+    private float springStiffness => ZiplineSpringSettings.Shared.springStiffness;
+    private float springDamping => ZiplineSpringSettings.Shared.springDamping;
+
     [Header("Events")]
     public UnityEvent onGrab = new UnityEvent();
     public UnityEvent onJumpOff = new UnityEvent();
@@ -48,6 +59,8 @@ public class MagicZipline : MonoBehaviour
     private PlayerMovement departedPlayer;
     private Vector3 carrierPosition;
     private Vector3 grabOffset;
+    private Vector3 hookStretch;
+    private Vector3 hookSpringVelocity;
     private float grabbedAt;
     private float regrabAt;
     private float expiresAt;
@@ -124,9 +137,14 @@ public class MagicZipline : MonoBehaviour
 
     private void TryGrab(PlayerMovement player, bool restart)
     {
+        Vector3 entryVelocity = player.HorizontalVelocity + Vector3.up * player.VerticalVelocity;
+        if (player.IsGrounded)
+            entryVelocity.y = 0f;
         if (!player.BeginGuidedRide(this, TryJumpOff))
             return;
 
+        hookStretch = Vector3.zero;
+        hookSpringVelocity = entryVelocity * Mathf.Max(0f, stretchStrength);
         rider = player;
         if (restart)
             carrierPosition = StartPosition;
@@ -139,10 +157,14 @@ public class MagicZipline : MonoBehaviour
 
     private void AdvanceRide()
     {
+        UpdateHookSpring();
         Vector3 direction = (endPoint.position - carrierPosition).normalized;
         carrierPosition = Vector3.MoveTowards(carrierPosition, endPoint.position, Mathf.Max(0.1f, travelSpeed) * Time.deltaTime);
         float blend = grabTransitionTime <= 0f ? 1f : Mathf.Clamp01((Time.time - grabbedAt) / grabTransitionTime);
-        Vector3 target = carrierPosition + grabOffset * (1f - Mathf.SmoothStep(0f, 1f, blend));
+        float endBlendDistance = Mathf.Max(0.1f, maximumStretch * Mathf.Max(0f, hookStretchMultiplier));
+        float springBlend = Mathf.Clamp01(Vector3.Distance(carrierPosition, endPoint.position) / endBlendDistance);
+        Vector3 target = carrierPosition + grabOffset * (1f - Mathf.SmoothStep(0f, 1f, blend))
+            + hookStretch * Mathf.Max(0f, hookStretchMultiplier) * Mathf.SmoothStep(0f, 1f, springBlend);
         if (!rider.MoveGuidedRide(this, target))
         {
             Release(Vector3.zero);
@@ -172,11 +194,23 @@ public class MagicZipline : MonoBehaviour
         if (rider == null || PauseState.IsPaused || Time.time - grabbedAt < Mathf.Max(minimumRideTime, grabTransitionTime))
             return;
 
+        if (launchOnJumpOff)
+        {
+            PlayerLook look = rider.GetComponentInChildren<PlayerLook>();
+            Vector3 direction = look != null ? look.ViewDirection : rider.transform.forward;
+            departedPlayer = rider;
+            regrabAt = Time.time + 0.25f;
+            Release(direction.normalized * Mathf.Max(0f, jumpOffLaunchForce), true);
+            onJumpOff.Invoke();
+            return;
+        }
+
         float returnTime = rider.JumpReturnTime;
         float jumpApexHeight = rider.JumpTakeoffSpeed * returnTime * 0.25f;
         activeGrabRadius = Mathf.Min(Mathf.Max(0.01f, carrierGrabRadius), Mathf.Max(0.01f, jumpApexHeight * 0.5f));
         departedPlayer = rider;
         carrierPosition = rider.transform.position;
+        hookStretch = hookSpringVelocity = Vector3.zero;
         regrabAt = Time.time + returnTime * Mathf.Clamp(regrabReturnTimeFraction, 0.05f, 0.9f);
         float lifetime = Mathf.Max(0f, abandonedLifetime);
         if (extendLifetimeForHighJumps)
@@ -189,10 +223,11 @@ public class MagicZipline : MonoBehaviour
         onJumpOff.Invoke();
     }
 
-    private void Release(Vector3 releaseVelocity)
+    private void Release(Vector3 releaseVelocity, bool playJumpSound = false)
     {
+        hookStretch = hookSpringVelocity = Vector3.zero;
         if (rider != null)
-            rider.EndGuidedRide(this, releaseVelocity, false);
+            rider.EndGuidedRide(this, releaseVelocity, false, playJumpSound);
         rider = null;
         waiting = false;
         carrierPosition = StartPosition;
@@ -271,6 +306,34 @@ public class MagicZipline : MonoBehaviour
         return line.transform;
     }
 
+    private void UpdateHookSpring()
+    {
+        if (maximumStretch <= 0f || stretchStrength <= 0f)
+        {
+            hookStretch = hookSpringVelocity = Vector3.zero;
+            return;
+        }
+
+        float remainingTime = Mathf.Min(Time.deltaTime, 0.25f);
+        while (remainingTime > 0f)
+        {
+            float step = Mathf.Min(remainingTime, 1f / 240f);
+            Vector3 acceleration = -Mathf.Clamp(springStiffness, 1f, 500f) * hookStretch
+                - Mathf.Clamp(springDamping, 0f, 100f) * hookSpringVelocity;
+            hookSpringVelocity += acceleration * step;
+            hookStretch += hookSpringVelocity * step;
+            if (hookStretch.magnitude > maximumStretch)
+            {
+                hookStretch = hookStretch.normalized * maximumStretch;
+                Vector3 outward = hookStretch.normalized;
+                float outwardSpeed = Vector3.Dot(hookSpringVelocity, outward);
+                if (outwardSpeed > 0f)
+                    hookSpringVelocity -= outward * outwardSpeed;
+            }
+            remainingTime -= step;
+        }
+    }
+
     private void UpdateVisuals()
     {
         if (beam == null)
@@ -283,7 +346,7 @@ public class MagicZipline : MonoBehaviour
         startVisual.SetPositionAndRotation(StartPosition + visualOffset, rotation);
         endVisual.SetPositionAndRotation(finish + visualOffset, rotation);
         carrierVisual.SetPositionAndRotation(
-            carrierPosition + visualOffset + Vector3.up * carrierHeightOffset,
+            (rider != null ? rider.transform.position : carrierPosition) + visualOffset + Vector3.up * carrierHeightOffset,
             rotation * Quaternion.Euler(carrierRotationOffset));
         carrierVisual.gameObject.SetActive(rider != null || waiting);
     }
