@@ -287,7 +287,7 @@ public class PlayerLook : MonoBehaviour
     private void HandleCameraBob()
     {
         Vector2 move = controls.Player.Move.ReadValue<Vector2>();
-        bool isMoving = move.sqrMagnitude > 0.01f;
+        bool isMoving = move.sqrMagnitude > 0.01f && (playerMovement == null || !playerMovement.IsGuidedRideActive);
 
         if (!isMoving)
         {

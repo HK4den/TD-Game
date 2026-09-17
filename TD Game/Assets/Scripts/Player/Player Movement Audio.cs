@@ -106,6 +106,16 @@ public class PlayerMovementAudio : MonoBehaviour
             return;
         }
 
+        if (playerMovement.IsGuidedRideActive)
+        {
+            StopLoopingMovementAudio();
+            wasGroundedLastFrame = false;
+            lastVerticalVelocity = 0f;
+            airborneTime = 0f;
+            playedFallOneSecondSfx = playedFallThreeSecondSfx = false;
+            return;
+        }
+
         HandleJumpAndLandOneShots();
         UpdateFootstepState();
         UpdateLoopVolumes();

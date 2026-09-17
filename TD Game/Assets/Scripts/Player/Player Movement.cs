@@ -71,6 +71,14 @@ public class PlayerMovement : MonoBehaviour
 
     // Forced movement support (future launch crystals)
     private Vector3 forcedWorldVelocity;
+    private MonoBehaviour guidedRideOwner;
+    private Action guidedJumpRequest;
+    private Vector3 guidedMoveDirection;
+    private bool guidedMoveBlocked;
+
+    public bool IsGuidedRideActive => guidedRideOwner != null;
+    public float JumpTakeoffSpeed => Mathf.Sqrt(2f * Mathf.Max(0f, jumpHeight) * Mathf.Max(0f, -gravity));
+    public float JumpReturnTime => gravity < -0.0001f ? 2f * JumpTakeoffSpeed / -gravity : 0f;
 
     public bool IsGrounded => isGrounded;
     public float VerticalVelocity => velocity.y;
@@ -116,6 +124,12 @@ public class PlayerMovement : MonoBehaviour
     {
         if (PauseState.IsPaused)
             return;
+
+        if (IsGuidedRideActive)
+        {
+            UpdateBoostTimer();
+            return;
+        }
 
         UpdateGrounded();
         if (!isGrounded)
@@ -194,7 +208,7 @@ public class PlayerMovement : MonoBehaviour
 
     public void SustainSpeedOverride(float speed, float duration)
     {
-        if (duration <= 0f)
+        if (duration <= 0f || IsGuidedRideActive)
             return;
 
         hasSpeedOverride = true;
@@ -290,6 +304,9 @@ public class PlayerMovement : MonoBehaviour
             : GetCombinedHorizontalVelocity();
         controller.Move(movementVelocity * Time.deltaTime);
 
+        if (IsGuidedRideActive)
+            return;
+
         velocity.y += gravity * Time.deltaTime;
         int versionBeforeMove = impulseVersion;
         CollisionFlags collisions = controller.Move(Vector3.up * velocity.y * Time.deltaTime);
@@ -318,6 +335,15 @@ public class PlayerMovement : MonoBehaviour
 
     private void OnControllerColliderHit(ControllerColliderHit hit)
     {
+        if (IsGuidedRideActive)
+        {
+            bool drivingIntoGround = hit.normal.y > 0.5f && guidedMoveDirection.y < -0.01f;
+            bool blockingSurface = hit.normal.y <= 0.5f && Vector3.Dot(guidedMoveDirection, hit.normal) < -0.1f;
+            if (drivingIntoGround || blockingSurface)
+                guidedMoveBlocked = true;
+            return;
+        }
+
         if (hit.normal.y >= Mathf.Cos(controller.slopeLimit * Mathf.Deg2Rad) || hit.normal.y < -0.01f)
             return;
 
@@ -368,7 +394,7 @@ public class PlayerMovement : MonoBehaviour
 
     public void ApplyLaunch(Vector3 launchVelocity, bool replaceHorizontal = true, bool replaceVertical = true)
     {
-        if (PauseState.IsPaused)
+        if (PauseState.IsPaused || IsGuidedRideActive)
             return;
 
         if (replaceHorizontal)
@@ -426,7 +452,7 @@ public class PlayerMovement : MonoBehaviour
     // Returns true only if the boost was actually applied/replaced.
     public bool TryStartSpeedOverride(float speed, float duration)
     {
-        if (duration <= 0f)
+        if (duration <= 0f || IsGuidedRideActive)
             return false;
 
         // Only replace if this cloud gives MORE remaining boost time
@@ -449,6 +475,8 @@ public class PlayerMovement : MonoBehaviour
 
     public void StartForcedMovement(Vector3 worldVelocity)
     {
+        if (IsGuidedRideActive)
+            return;
         movementMode = MovementMode.ForcedMovement;
         forcedWorldVelocity = worldVelocity;
         horizontalVelocity = Vector3.zero;
@@ -462,6 +490,8 @@ public class PlayerMovement : MonoBehaviour
 
     public void StopForcedMovement()
     {
+        if (IsGuidedRideActive)
+            return;
         movementMode = MovementMode.Normal;
         forcedWorldVelocity = Vector3.zero;
     }
@@ -470,6 +500,12 @@ public class PlayerMovement : MonoBehaviour
     {
         if (PauseState.IsPaused)
             return;
+
+        if (IsGuidedRideActive)
+        {
+            guidedJumpRequest?.Invoke();
+            return;
+        }
 
         if (movementMode != MovementMode.Normal)
             return;
@@ -489,6 +525,58 @@ public class PlayerMovement : MonoBehaviour
             return;
 
         isSprinting = !isSprinting;
+    }
+
+    public bool BeginGuidedRide(MonoBehaviour owner, Action jumpRequest)
+    {
+        if (owner == null || PauseState.IsPaused || IsMovementLocked || !isActiveAndEnabled || !controller.enabled)
+            return false;
+
+        guidedRideOwner = owner;
+        guidedJumpRequest = jumpRequest;
+        movementMode = MovementMode.ForcedMovement;
+        velocity = horizontalVelocity = externalHorizontalVelocity = forcedWorldVelocity = Vector3.zero;
+        isGrounded = wasGroundedLastFrame = false;
+        coyoteTimer = jumpBufferTimer = 0f;
+        return true;
+    }
+
+    public bool MoveGuidedRide(MonoBehaviour owner, Vector3 target)
+    {
+        if (guidedRideOwner != owner || PauseState.IsPaused || !controller.enabled)
+            return false;
+
+        Vector3 displacement = target - transform.position;
+        guidedMoveDirection = displacement.normalized;
+        guidedMoveBlocked = false;
+        controller.Move(displacement);
+        return !guidedMoveBlocked;
+    }
+
+    public void EndGuidedRide(MonoBehaviour owner, Vector3 releaseVelocity, bool jump)
+    {
+        if (guidedRideOwner != owner)
+            return;
+
+        guidedRideOwner = null;
+        guidedJumpRequest = null;
+        movementMode = MovementMode.Normal;
+        forcedWorldVelocity = horizontalVelocity = externalHorizontalVelocity = velocity = Vector3.zero;
+        coyoteTimer = jumpBufferTimer = 0f;
+        isGrounded = wasGroundedLastFrame = false;
+        landingMomentumApplied = false;
+        if (jump)
+        {
+            velocity.y = JumpTakeoffSpeed;
+            RegisterImpulse();
+            Jumped?.Invoke();
+        }
+        else
+        {
+            externalHorizontalVelocity = Vector3.ProjectOnPlane(releaseVelocity, Vector3.up);
+            velocity.y = releaseVelocity.y;
+            RegisterImpulse();
+        }
     }
 
     private void OnDrawGizmosSelected()

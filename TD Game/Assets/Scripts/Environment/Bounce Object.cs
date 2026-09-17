@@ -38,7 +38,7 @@ public class BounceObject : MonoBehaviour
         if (player == null)
             player = other.GetComponentInParent<PlayerMovement>();
 
-        if (player == null)
+        if (player == null || player.IsGuidedRideActive)
             return;
 
         Vector3 launchVector = GetLaunchVelocity();
