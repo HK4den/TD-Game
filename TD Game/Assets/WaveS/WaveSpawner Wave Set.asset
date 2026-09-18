@@ -24,20 +24,6 @@ MonoBehaviour:
       editorCollapsed: 0
       type: 0
       enemy:
-        enemyId: hrm
-        prefab: {fileID: 483553121193507500, guid: b712871045f46e440a75a15a0573b8cd, type: 3}
-      enemies: []
-      randomPool: []
-      count: 3
-      repeatCount: 1
-      spawnInterval: 1
-      delayBeforeStep: 0
-      delayAfterStep: 0.25
-      delayDuration: 1
-    - label: gneep xsmall
-      editorCollapsed: 0
-      type: 0
-      enemy:
         enemyId: gneep_xsmall
         prefab: {fileID: 483553121193507500, guid: 6846748b898642d408864d575a5cb333, type: 3}
       enemies: []

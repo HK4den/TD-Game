@@ -101,7 +101,7 @@ public class EnemyHealth : MonoBehaviour
         if (damageInfo.damage <= 0f)
             return 0f;
 
-        if (enemyAgent != null)
+        if (enemyAgent != null && !damageInfo.isRedirectedDamage)
         {
             if (enemyAgent.IsBeamProtected)
                 return 0f;

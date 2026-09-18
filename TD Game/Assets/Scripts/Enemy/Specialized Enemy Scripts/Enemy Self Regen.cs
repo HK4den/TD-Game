@@ -91,10 +91,11 @@ public class EnemySelfRegen : MonoBehaviour
 
     private void HandleDamaged(EnemyHealth health, EnemyDamageInfo damageInfo, float finalDamage)
     {
-        tickTimer = Mathf.Max(0.01f, tickInterval);
+        if (!requireDelayAfterDamage)
+            return;
 
-        if (requireDelayAfterDamage)
-            nextAllowedRegenTime = Time.time + Mathf.Max(0f, delayAfterTakingDamage);
+        tickTimer = Mathf.Max(0.01f, tickInterval);
+        nextAllowedRegenTime = Time.time + Mathf.Max(0f, delayAfterTakingDamage);
     }
 
     private void HandleDied(EnemyHealth health)

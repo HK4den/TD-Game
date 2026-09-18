@@ -307,9 +307,12 @@ MonoBehaviour:
   selfHealth: {fileID: -4781632782304773973}
   selfAgent: {fileID: 483553121193507500}
   radiusVisualizer: {fileID: -499451787450544180}
-  siphonRadius: 1
+  siphonRadius: 1.25
   siphonPercent: 1
   alwaysShowRadius: 1
+  showSiphonOverlay: 1
+  siphonOverlayMaterial: {fileID: 2100000, guid: 1f56a9cea6183f64d87d2f7a08d6ac00, type: 2}
+  siphonOverlayDuration: 0.1
 --- !u!114 &-499451787450544180
 MonoBehaviour:
   m_ObjectHideFlags: 0

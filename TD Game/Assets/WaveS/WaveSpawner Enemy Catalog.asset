@@ -32,17 +32,17 @@ MonoBehaviour:
     displayName: Big Gneep
     prefab: {fileID: 483553121193507500, guid: 7598663ac31d4b543a01948434d7559c, type: 3}
     category: basic
-    threatValue: 1
+    threatValue: 5
   - id: glorp
     displayName: Glorp
     prefab: {fileID: 483553121193507500, guid: 4aa9a2cd2a15e154aae0a15935a37b32, type: 3}
     category: basic
-    threatValue: 1
+    threatValue: 4
   - id: gneep_small
     displayName: Gneep Small
     prefab: {fileID: 483553121193507500, guid: 0c80271f8dd298040ae45a4df7cc1bce, type: 3}
     category: basic
-    threatValue: 1
+    threatValue: 2
   - id: gneep_xsmall
     displayName: gneep xsmall
     prefab: {fileID: 483553121193507500, guid: 6846748b898642d408864d575a5cb333, type: 3}
@@ -52,7 +52,7 @@ MonoBehaviour:
     displayName: Med Gneep
     prefab: {fileID: 483553121193507500, guid: c6ff7a424e99f0746a5fccc26dfddd3c, type: 3}
     category: basic
-    threatValue: 1
+    threatValue: 3
   - id: explorp
     displayName: Explorp
     prefab: {fileID: 483553121193507500, guid: 1c8ec1adae44c7c4997eb4c305c3f61d, type: 3}

@@ -21,6 +21,11 @@ public class EnemyNearbyDamageSiphon : MonoBehaviour
     [Header("Radius Visual")]
     [SerializeField] private bool alwaysShowRadius = true;
 
+    [Header("Protected Enemy Flash")]
+    [SerializeField] private bool showSiphonOverlay = true;
+    [SerializeField] private Material siphonOverlayMaterial;
+    [Min(0.001f)] [SerializeField] private float siphonOverlayDuration = 0.1f;
+
     public float SiphonRadius => Mathf.Max(0f, siphonRadius);
     public float SiphonPercent => Mathf.Clamp01(siphonPercent);
     public bool CanCurrentlySiphon => enabled && gameObject.activeInHierarchy && selfHealth != null && !selfHealth.IsDead;
@@ -113,6 +118,14 @@ public class EnemyNearbyDamageSiphon : MonoBehaviour
             damageInfo.showDamageNumber,
             damageInfo.source != null ? damageInfo.source : originalTarget.gameObject,
             camoDetectionLevel: damageInfo.CamoDetectionLevel);
+
+        if (bestSiphoner.showSiphonOverlay && bestSiphoner.siphonOverlayMaterial != null)
+        {
+            EnemySiphonOverlay overlay = originalTarget.GetComponent<EnemySiphonOverlay>();
+            if (overlay == null)
+                overlay = originalTarget.gameObject.AddComponent<EnemySiphonOverlay>();
+            overlay.Show(bestSiphoner.siphonOverlayMaterial, bestSiphoner.siphonOverlayDuration);
+        }
 
         siphonerHealth.TakeDamage(redirectedInfo);
     }

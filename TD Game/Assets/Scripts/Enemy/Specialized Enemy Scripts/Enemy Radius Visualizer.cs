@@ -109,6 +109,12 @@ public class EnemyRadiusVisualizer : MonoBehaviour
         ApplyRadius();
     }
 
+    public bool OwnsRenderer(Renderer candidate)
+    {
+        return visualObject != null && candidate != null
+            && (candidate.transform == visualObject.transform || candidate.transform.IsChildOf(visualObject.transform));
+    }
+
     public void SetMaterial(Material newMaterial)
     {
         radiusMaterial = newMaterial;
