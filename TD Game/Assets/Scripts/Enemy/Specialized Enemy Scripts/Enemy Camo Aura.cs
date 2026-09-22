@@ -14,6 +14,7 @@ public class EnemyCamoAura : MonoBehaviour
     [SerializeField] private EnemyRadiusVisualizer radiusVisualizer;
     [SerializeField] private bool alwaysShowRadius = true;
 
+    private readonly List<EnemyAgent> nearbyCandidates = new List<EnemyAgent>();
     private EnemyHealth selfHealth;
     private float timer;
     private readonly HashSet<EnemyAgent> grantedTargets = new HashSet<EnemyAgent>();
@@ -53,11 +54,16 @@ public class EnemyCamoAura : MonoBehaviour
         timer = Mathf.Max(0.01f, refreshInterval);
         currentTargets.Clear();
         float radiusSquared = Mathf.Max(0f, radius) * Mathf.Max(0f, radius);
-        foreach (EnemyAgent target in FindObjectsByType<EnemyAgent>(FindObjectsSortMode.None))
+        EnemyRegistry.GetNearby(transform.position, radius, nearbyCandidates);
+        IReadOnlyList<EnemyAgent> enemies = nearbyCandidates;
+        for (int index = 0; index < enemies.Count; index++)
         {
+            EnemyAgent target = enemies[index];
+            if (target == null)
+                continue;
             if (!target.isActiveAndEnabled || target.HasReachedGoal)
                 continue;
-            EnemyHealth health = target.GetComponent<EnemyHealth>();
+            EnemyHealth health = target.Health;
             if (health == null || !health.IsAlive || (!includeSelf && health == selfHealth))
                 continue;
             Vector3 offset = target.transform.position - transform.position;

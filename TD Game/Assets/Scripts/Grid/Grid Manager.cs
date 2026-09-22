@@ -27,6 +27,7 @@ public class GridManager : MonoBehaviour
 
     public void RebuildLookupFromChildren()
     {
+        GridTile.InvalidateNavigation();
         tiles = new GridTile[gridWidth, gridHeight];
 
         if (tileParent == null)

@@ -51,7 +51,7 @@ public class EnemyHealth : MonoBehaviour
     private void Awake()
     {
         hp = Mathf.Max(0.01f, maxHP);
-        economy = FindFirstObjectByType<EconomyManager>();
+        economy = SceneReferences.Find<EconomyManager>(this);
 
         cachedColliders = GetComponentsInChildren<Collider>(true);
         cachedRigidbodies = GetComponentsInChildren<Rigidbody>(true);
@@ -236,7 +236,7 @@ public class EnemyHealth : MonoBehaviour
             return;
 
         Vector3 pos = transform.position + deathSoundOffset;
-        Instantiate(deathSoundPrefab, pos, Quaternion.identity);
+        DestroyAfterAudio.Spawn(deathSoundPrefab, pos, Quaternion.identity, gameObject.scene);
     }
 
     private void DisableCombatPresence()

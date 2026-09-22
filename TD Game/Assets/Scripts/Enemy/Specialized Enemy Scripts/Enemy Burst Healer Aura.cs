@@ -24,7 +24,7 @@ public class EnemyBurstHealerAura : MonoBehaviour
     [SerializeField] private bool showRadiusOnBurst = true;
     [SerializeField] private float radiusVisibleDuration = 0.35f;
 
-    private readonly Collider[] overlapResults = new Collider[64];
+    private Collider[] overlapResults = new Collider[64];
     private readonly HashSet<EnemyHealth> uniqueTargets = new HashSet<EnemyHealth>();
 
     private float burstTimer;
@@ -66,10 +66,10 @@ public class EnemyBurstHealerAura : MonoBehaviour
     {
         uniqueTargets.Clear();
 
-        int count = Physics.OverlapSphereNonAlloc(
+        int count = GrowingOverlap.Sphere(
             transform.position,
             radius,
-            overlapResults,
+            ref overlapResults,
             overlapMask,
             QueryTriggerInteraction.Collide);
 

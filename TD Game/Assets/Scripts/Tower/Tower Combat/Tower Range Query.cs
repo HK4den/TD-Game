@@ -10,6 +10,28 @@ public class TowerRangeQuery : MonoBehaviour
 
     private readonly List<EnemyAgent> reusableResults = new List<EnemyAgent>(32);
 
+    private readonly List<EnemyAgent> nearbyCandidates = new List<EnemyAgent>(32);
+
+    private void CollectCandidates()
+    {
+        float radius = combatStats.Range;
+        if (rangeProfile.Shape == TowerRangeProfile.RangeShape.SingleBox)
+            radius = transform.TransformVector(rangeProfile.GetExtendedSingleBoxCenter(radius, combatStats.BaseRange)).magnitude
+                + rangeProfile.GetExtendedSingleBoxSize(radius, combatStats.BaseRange).magnitude * 0.5f;
+        else if (rangeProfile.Shape == TowerRangeProfile.RangeShape.MultiBox)
+        {
+            radius = 0f;
+            foreach (TowerRangeProfile.BoxRangeDefinition definition in rangeProfile.MultiBoxDefinitions)
+            {
+                if (definition == null) continue;
+                float bound = transform.TransformVector(rangeProfile.GetExtendedMultiBoxCenter(definition, combatStats.Range, combatStats.BaseRange)).magnitude
+                    + rangeProfile.GetExtendedMultiBoxSize(definition, combatStats.Range, combatStats.BaseRange).magnitude * 0.5f;
+                radius = Mathf.Max(radius, bound);
+            }
+        }
+        EnemyRegistry.GetNearby(transform.position, radius, nearbyCandidates);
+    }
+
     public TowerCombatStats CombatStats => combatStats;
     public TowerRangeProfile RangeProfile => rangeProfile;
 
@@ -26,7 +48,8 @@ public class TowerRangeQuery : MonoBehaviour
     {
         reusableResults.Clear();
 
-        IReadOnlyList<EnemyAgent> enemies = EnemyRegistry.AliveEnemies;
+        CollectCandidates();
+        IReadOnlyList<EnemyAgent> enemies = nearbyCandidates;
         for (int i = 0; i < enemies.Count; i++)
         {
             EnemyAgent enemy = enemies[i];
@@ -42,7 +65,8 @@ public class TowerRangeQuery : MonoBehaviour
 
     public bool HasAnyEnemyInRange()
     {
-        IReadOnlyList<EnemyAgent> enemies = EnemyRegistry.AliveEnemies;
+        CollectCandidates();
+        IReadOnlyList<EnemyAgent> enemies = nearbyCandidates;
         for (int i = 0; i < enemies.Count; i++)
         {
             EnemyAgent enemy = enemies[i];

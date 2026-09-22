@@ -38,6 +38,7 @@ public class EnemyAgent : MonoBehaviour
     [SerializeField] private float speed = 2.5f;
 
     private readonly List<GridTile> tilePath = new List<GridTile>();
+    private readonly List<float> remainingSegmentDistances = new List<float>();
     private readonly List<MoveSpeedEntry> activeMoveSpeedEntries = new List<MoveSpeedEntry>();
     private readonly Dictionary<string, float> strongestMoveSpeedByFamily = new Dictionary<string, float>();
 
@@ -55,6 +56,9 @@ public class EnemyAgent : MonoBehaviour
     private float terrainSlowPercent = 0f;
 
     public bool HasReachedGoal => hasReachedGoal;
+    public EnemyHealth Health => enemyHealth;
+    private EnemyDamageTakenController cachedDamageTakenController;
+    public EnemyDamageTakenController DamageTakenController => cachedDamageTakenController;
     public bool HasValidPath => tilePath != null && tilePath.Count > 0;
     public float MoveSpeed => speed;
     public float BaseMoveSpeed => speed;
@@ -73,30 +77,35 @@ public class EnemyAgent : MonoBehaviour
     public int BaseCamoLevel => enemyAbilities != null ? enemyAbilities.BaseCamoLevel : 0;
     public int TerrainCamoLevel => IsOnThickBrushTerrain ? 2 : IsOnBrushTerrain ? 1 : 0;
     private readonly Dictionary<int, int> camoAuraSources = new Dictionary<int, int>();
-    public int AuraCamoLevel
-    {
-        get
-        {
-            int strongest = 0;
-            foreach (int level in camoAuraSources.Values)
-                strongest = Mathf.Max(strongest, level);
-            return strongest;
-        }
-    }
+    public int AuraCamoLevel { get; private set; }
     public int CamoLevel => Mathf.Clamp(Mathf.Max(BaseCamoLevel, AuraCamoLevel) + TerrainCamoLevel, 0, 4);
     public bool IsCamoHidden => CamoLevel > 0;
 
     public void SetCamoAuraSource(int sourceId, int level)
     {
         if (level <= 0)
-            camoAuraSources.Remove(sourceId);
-        else
-            camoAuraSources[sourceId] = Mathf.Clamp(level, 1, 3);
+        {
+            RemoveCamoAuraSource(sourceId);
+            return;
+        }
+        int clampedLevel = Mathf.Clamp(level, 1, 3);
+        if (camoAuraSources.TryGetValue(sourceId, out int previous) && previous == clampedLevel)
+            return;
+        camoAuraSources[sourceId] = clampedLevel;
+        RecalculateAuraCamoLevel();
     }
 
     public void RemoveCamoAuraSource(int sourceId)
     {
-        camoAuraSources.Remove(sourceId);
+        if (camoAuraSources.Remove(sourceId))
+            RecalculateAuraCamoLevel();
+    }
+
+    private void RecalculateAuraCamoLevel()
+    {
+        AuraCamoLevel = 0;
+        foreach (int level in camoAuraSources.Values)
+            AuraCamoLevel = Mathf.Max(AuraCamoLevel, level);
     }
 
     public bool IsTargetable =>
@@ -182,9 +191,11 @@ public class EnemyAgent : MonoBehaviour
             MoveSpeedEntry entry = activeMoveSpeedEntries[i];
             if (entry.sourceInstanceId == sourceInstanceId && entry.familyKey == resolvedFamilyKey)
             {
+                bool strengthChanged = entry.multiplier != multiplier;
                 entry.multiplier = multiplier;
                 entry.expireTime = expireTime;
-                RecalculateExternalMoveSpeedMultiplier();
+                if (strengthChanged)
+                    RecalculateExternalMoveSpeedMultiplier();
                 return;
             }
         }
@@ -208,11 +219,24 @@ public class EnemyAgent : MonoBehaviour
 
     private void Awake()
     {
-        if (grid == null) grid = FindFirstObjectByType<GridManager>();
-        if (pathfinder == null) pathfinder = FindFirstObjectByType<GridPathfinder>();
+        if (grid == null) grid = SceneReferences.Find<GridManager>(this);
+        if (pathfinder == null) pathfinder = SceneReferences.Find<GridPathfinder>(this);
         if (slowController == null) slowController = GetComponent<EnemySlowController>();
         if (enemyHealth == null) enemyHealth = GetComponent<EnemyHealth>();
         if (enemyAbilities == null) enemyAbilities = GetComponent<EnemyAbilities>();
+        cachedDamageTakenController = GetComponent<EnemyDamageTakenController>();
+        if (cachedDamageTakenController == null)
+            cachedDamageTakenController = GetComponentInParent<EnemyDamageTakenController>();
+    }
+
+    private void OnEnable()
+    {
+        EnemyRegistry.Register(this);
+    }
+
+    private void OnDisable()
+    {
+        EnemyRegistry.Unregister(this);
     }
 
     private void Start()
@@ -242,6 +266,7 @@ public class EnemyAgent : MonoBehaviour
 
         UpdateCurrentTileAndTerrainState();
         FollowPath();
+        EnemyRegistry.UpdatePosition(this);
         UpdateCurrentTileAndTerrainState();
     }
 
@@ -261,7 +286,6 @@ public class EnemyAgent : MonoBehaviour
         if (grid == null || pathfinder == null)
             return;
 
-        grid.RebuildLookupFromChildren();
 
         Vector2Int startCoord = grid.WorldToGrid(transform.position);
         GridTile startTile = grid.GetTile(startCoord.x, startCoord.y);
@@ -270,6 +294,7 @@ public class EnemyAgent : MonoBehaviour
         List<GridTile> newPath = pathfinder.FindPathAStarAllowStartBlocked(startTile, goalTile);
 
         tilePath.Clear();
+        remainingSegmentDistances.Clear();
 
         if (newPath == null || newPath.Count == 0)
         {
@@ -278,6 +303,11 @@ public class EnemyAgent : MonoBehaviour
         }
 
         tilePath.AddRange(newPath);
+        for (int pathIndex = 0; pathIndex < tilePath.Count; pathIndex++)
+            remainingSegmentDistances.Add(0f);
+        for (int pathIndex = tilePath.Count - 2; pathIndex >= 0; pathIndex--)
+            remainingSegmentDistances[pathIndex] = remainingSegmentDistances[pathIndex + 1]
+                + Vector3.Distance(tilePath[pathIndex].transform.position, tilePath[pathIndex + 1].transform.position);
         index = FindBestPathIndexAfterRepath();
     }
 
@@ -426,12 +456,7 @@ public class EnemyAgent : MonoBehaviour
 
         total += Vector3.Distance(currentPos, currentTarget);
 
-        for (int i = index; i < tilePath.Count - 1; i++)
-        {
-            Vector3 a = tilePath[i].transform.position;
-            Vector3 b = tilePath[i + 1].transform.position;
-            total += Vector3.Distance(a, b);
-        }
+        total += remainingSegmentDistances[index];
 
         return total;
     }
@@ -441,15 +466,7 @@ public class EnemyAgent : MonoBehaviour
         if (tilePath == null || tilePath.Count <= 1)
             return 0f;
 
-        float total = 0f;
-        for (int i = 0; i < tilePath.Count - 1; i++)
-        {
-            Vector3 a = tilePath[i].transform.position;
-            Vector3 b = tilePath[i + 1].transform.position;
-            total += Vector3.Distance(a, b);
-        }
-
-        return total;
+        return remainingSegmentDistances[0];
     }
 
     private bool RemoveExpiredMoveSpeedEntries()

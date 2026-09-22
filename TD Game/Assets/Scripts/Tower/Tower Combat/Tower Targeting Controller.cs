@@ -59,35 +59,22 @@ public class TowerTargetingController : MonoBehaviour
         if (inRange == null || inRange.Count == 0)
             return null;
 
-        reusableCandidates.Clear();
-        for (int i = 0; i < inRange.Count; i++)
-        {
-            EnemyAgent enemy = inRange[i];
-            if (enemy == null)
-                continue;
-
-            reusableCandidates.Add(enemy);
-        }
-
-        if (reusableCandidates.Count == 0)
-            return null;
-
         switch (CurrentMode)
         {
             case TowerTargetingMode.First:
-                return SelectFirst(reusableCandidates);
+                return SelectFirst(inRange);
 
             case TowerTargetingMode.Last:
-                return SelectLast(reusableCandidates);
+                return SelectLast(inRange);
 
             case TowerTargetingMode.Close:
-                return SelectClosest(reusableCandidates);
+                return SelectClosest(inRange);
 
             case TowerTargetingMode.Strong:
-                return SelectStrongest(reusableCandidates);
+                return SelectStrongest(inRange);
 
             case TowerTargetingMode.Weak:
-                return SelectWeakest(reusableCandidates);
+                return SelectWeakest(inRange);
 
             case TowerTargetingMode.None:
             default:
@@ -214,7 +201,7 @@ public class TowerTargetingController : MonoBehaviour
             if (enemy == null)
                 continue;
 
-            EnemyHealth health = enemy.GetComponent<EnemyHealth>();
+            EnemyHealth health = enemy.Health;
             if (health == null || !health.IsAlive)
                 continue;
 
@@ -239,7 +226,7 @@ public class TowerTargetingController : MonoBehaviour
             if (enemy == null)
                 continue;
 
-            EnemyHealth health = enemy.GetComponent<EnemyHealth>();
+            EnemyHealth health = enemy.Health;
             if (health == null || !health.IsAlive)
                 continue;
 

@@ -30,7 +30,7 @@ public class EnemyDeathExplosion : EnemyDeathBehavior
     [SerializeField] private bool showRadiusOnExplosion = true;
     [SerializeField] private float radiusVisibleDuration = 0.35f;
 
-    private readonly Collider[] overlapResults = new Collider[64];
+    private Collider[] overlapResults = new Collider[64];
     private readonly HashSet<EnemyHealth> uniqueTargets = new HashSet<EnemyHealth>();
 
     public override float GetRequiredDelay()
@@ -75,10 +75,10 @@ public class EnemyDeathExplosion : EnemyDeathBehavior
 
         uniqueTargets.Clear();
 
-        int count = Physics.OverlapSphereNonAlloc(
+        int count = GrowingOverlap.Sphere(
             ownerHealth.transform.position,
             explosionRadius,
-            overlapResults,
+            ref overlapResults,
             overlapMask,
             QueryTriggerInteraction.Collide);
 
@@ -143,7 +143,7 @@ public class EnemyDeathExplosion : EnemyDeathBehavior
         if (explosionSfxPrefab == null)
             return;
 
-        Instantiate(explosionSfxPrefab, position, Quaternion.identity);
+        DestroyAfterAudio.Spawn(explosionSfxPrefab, position, Quaternion.identity, gameObject.scene);
     }
 
     private void OnDrawGizmosSelected()

@@ -73,7 +73,7 @@ public class TowerProjectileEmitter : MonoBehaviour
             return;
 
         Vector3 pos = transform.position + soundOffset;
-        Instantiate(shootSoundPrefab, pos, Quaternion.identity);
+        DestroyAfterAudio.Spawn(shootSoundPrefab, pos, Quaternion.identity, gameObject.scene);
     }
 
     public bool TryBeginAttack(EnemyAgent attackTarget)
@@ -153,7 +153,7 @@ public class TowerProjectileEmitter : MonoBehaviour
         GameObject sourceObject = transform.root.gameObject;
         int sourceCamoDetectionLevel = combatStats.CamoDetectionLevel;
 
-        TowerProjectile projectile = Instantiate(projectilePrefab, spawnPos, Quaternion.LookRotation(direction));
+        TowerProjectile projectile = TowerProjectile.Spawn(projectilePrefab, spawnPos, Quaternion.LookRotation(direction), gameObject.scene);
         projectile.Initialize(
             direction,
             projectileSpeed,

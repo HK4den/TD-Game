@@ -37,6 +37,9 @@ public class EnemyRadiusVisualizer : MonoBehaviour
     private float chosenSpinSpeed;
     private float spinAngle;
     private bool ready;
+    private float appliedRadius = float.NaN;
+    private float appliedThickness = float.NaN;
+    private Vector3 visualScale;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void ResetOrdering()
@@ -60,7 +63,7 @@ public class EnemyRadiusVisualizer : MonoBehaviour
 
         ownerHealth = GetComponentInParent<EnemyHealth>();
         anchor = ownerHealth != null ? ownerHealth.transform : transform;
-        grid = FindFirstObjectByType<GridManager>();
+        grid = SceneReferences.Find<GridManager>(this);
         layerIndex = spawnCounter++;
         if (targetRenderer != null)
             targetRenderer.sortingOrder = 32767 - (int)System.Math.Min(65535L, layerIndex);
@@ -99,13 +102,17 @@ public class EnemyRadiusVisualizer : MonoBehaviour
             return;
         if (spin && !PauseState.IsPaused)
             spinAngle = Mathf.Repeat(spinAngle + chosenSpinSpeed * Time.deltaTime, 360f);
-        ApplyRadius();
         RefreshVisibilityImmediate();
+        if (visualObject != null && visualObject.activeSelf)
+            ApplyRadius();
     }
 
     public void SetRadius(float newRadius)
     {
-        radius = Mathf.Max(0f, newRadius);
+        newRadius = Mathf.Max(0f, newRadius);
+        if (radius == newRadius)
+            return;
+        radius = newRadius;
         ApplyRadius();
     }
 
@@ -132,6 +139,8 @@ public class EnemyRadiusVisualizer : MonoBehaviour
 
     public void SetAlwaysVisible(bool value)
     {
+        if (alwaysVisible == value)
+            return;
         alwaysVisible = value;
         RefreshVisibilityImmediate();
     }
@@ -149,18 +158,23 @@ public class EnemyRadiusVisualizer : MonoBehaviour
         if (!ready || visualObject == null)
             return;
 
-        float diameter = Mathf.Max(0f, radius * 2f);
-        Vector3 size = meshBounds.size;
-        Vector3 scale = new Vector3(diameter / Mathf.Max(0.0001f, size.x),
-            diameter / Mathf.Max(0.0001f, size.y), diameter / Mathf.Max(0.0001f, size.z));
-        scale[flatAxis] = size[flatAxis] > 0.0001f ? Mathf.Max(0.001f, groundThickness) / size[flatAxis] : 1f;
+        if (appliedRadius != radius || appliedThickness != groundThickness)
+        {
+            float diameter = Mathf.Max(0f, radius * 2f);
+            Vector3 size = meshBounds.size;
+            visualScale = new Vector3(diameter / Mathf.Max(0.0001f, size.x),
+                diameter / Mathf.Max(0.0001f, size.y), diameter / Mathf.Max(0.0001f, size.z));
+            visualScale[flatAxis] = size[flatAxis] > 0.0001f ? Mathf.Max(0.001f, groundThickness) / size[flatAxis] : 1f;
+            visualObject.transform.localScale = visualScale;
+            appliedRadius = radius;
+            appliedThickness = groundThickness;
+        }
         Quaternion rotation = Quaternion.AngleAxis(spinAngle, Vector3.up) * flatRotation;
         float layerDrop = (float)(0.005 * layerIndex / (250.0 + layerIndex));
         Vector3 center = anchor.position;
         center.y = (grid != null ? grid.transform.position.y : anchor.position.y)
             + Mathf.Max(0.006f, yOffset) - layerDrop + Mathf.Max(0.001f, groundThickness) * 0.5f;
-        visualObject.transform.SetPositionAndRotation(center - rotation * Vector3.Scale(meshBounds.center, scale), rotation);
-        visualObject.transform.localScale = scale;
+        visualObject.transform.SetPositionAndRotation(center - rotation * Vector3.Scale(meshBounds.center, visualScale), rotation);
     }
 
     private void ApplyShadowSettings()

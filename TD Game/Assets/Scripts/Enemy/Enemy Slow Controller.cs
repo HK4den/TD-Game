@@ -35,7 +35,8 @@ public class EnemySlowController : MonoBehaviour
             return;
 
         bool removedAny = RemoveExpiredSlows();
-        RecalculateMultiplier();
+        if (removedAny)
+            RecalculateMultiplier();
 
         if (removedAny && debugLogSlowChanges)
             Debug.Log($"[EnemySlowController] Expired slows removed on {name}. Current multiplier={currentMoveSpeedMultiplier:0.###}");
@@ -67,9 +68,11 @@ public class EnemySlowController : MonoBehaviour
             SlowEntry entry = activeSlows[i];
             if (entry.sourceInstanceId == sourceInstanceId && entry.familyKey == resolvedFamilyKey)
             {
+                bool strengthChanged = entry.slowPercent != adjustedSlow;
                 entry.slowPercent = adjustedSlow;
                 entry.expireTime = expireTime;
-                RecalculateMultiplier();
+                if (strengthChanged)
+                    RecalculateMultiplier();
 
                 if (debugLogSlowChanges)
                     Debug.Log($"[EnemySlowController] Refreshed slow on {name} family={resolvedFamilyKey} slow={adjustedSlow:0.###}");

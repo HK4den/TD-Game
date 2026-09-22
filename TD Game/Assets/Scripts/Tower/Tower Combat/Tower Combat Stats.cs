@@ -4,6 +4,15 @@ using UnityEngine;
 
 public class TowerCombatStats : MonoBehaviour
 {
+    private static readonly List<TowerCombatStats> activeTowers = new List<TowerCombatStats>();
+    public static IReadOnlyList<TowerCombatStats> ActiveTowers => activeTowers;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetRegistry() => activeTowers.Clear();
+
+    private void OnEnable() => activeTowers.Add(this);
+    private void OnDisable() => activeTowers.Remove(this);
+
     [Serializable]
     public class FloatStat
     {
@@ -11,15 +20,20 @@ public class TowerCombatStats : MonoBehaviour
 
         private readonly List<float> flatModifiers = new List<float>();
         private readonly List<float> multiplierModifiers = new List<float>();
+        private bool dirty = true;
+        private float cachedValue;
 
         public float BaseValue
         {
             get => baseValue;
-            set => baseValue = value;
+            set { baseValue = value; dirty = true; }
         }
 
         public float GetValue(float minValue = 0f)
         {
+            if (!dirty)
+                return Mathf.Max(minValue, cachedValue);
+
             float flatTotal = 0f;
             for (int i = 0; i < flatModifiers.Count; i++)
                 flatTotal += flatModifiers[i];
@@ -28,19 +42,21 @@ public class TowerCombatStats : MonoBehaviour
             for (int i = 0; i < multiplierModifiers.Count; i++)
                 multiplierTotal *= multiplierModifiers[i];
 
-            float result = (baseValue + flatTotal) * multiplierTotal;
-            return Mathf.Max(minValue, result);
+            cachedValue = (baseValue + flatTotal) * multiplierTotal;
+            dirty = false;
+            return Mathf.Max(minValue, cachedValue);
         }
 
-        public void AddFlat(float amount) => flatModifiers.Add(amount);
-        public void AddMultiplier(float amount) => multiplierModifiers.Add(amount);
-        public void RemoveFlat(float amount) => flatModifiers.Remove(amount);
-        public void RemoveMultiplier(float amount) => multiplierModifiers.Remove(amount);
+        public void AddFlat(float amount) { flatModifiers.Add(amount); dirty = true; }
+        public void AddMultiplier(float amount) { multiplierModifiers.Add(amount); dirty = true; }
+        public void RemoveFlat(float amount) { if (flatModifiers.Remove(amount)) dirty = true; }
+        public void RemoveMultiplier(float amount) { if (multiplierModifiers.Remove(amount)) dirty = true; }
 
         public void ClearModifiers()
         {
             flatModifiers.Clear();
             multiplierModifiers.Clear();
+            dirty = true;
         }
     }
 
@@ -56,6 +72,7 @@ public class TowerCombatStats : MonoBehaviour
     [SerializeField] private bool allowExternalCamoDetection = true;
 
     private readonly Dictionary<int, int> grantedCamoSourceIds = new Dictionary<int, int>();
+    private long grantedCamoTotal;
 
     private readonly FloatStat powerStat = new FloatStat();
     private readonly FloatStat shootIntervalStat = new FloatStat();
@@ -148,10 +165,7 @@ public class TowerCombatStats : MonoBehaviour
         get
         {
             if (!allowExternalCamoDetection) return 0;
-            long total = 0;
-            foreach (int level in grantedCamoSourceIds.Values)
-                total += level;
-            return (int)Math.Min(int.MaxValue, total);
+            return (int)Math.Min(int.MaxValue, grantedCamoTotal);
         }
     }
 
@@ -202,6 +216,7 @@ public class TowerCombatStats : MonoBehaviour
         if (grantedCamoSourceIds.TryGetValue(sourceId, out int previous) && previous == levels)
             return;
         grantedCamoSourceIds[sourceId] = levels;
+        grantedCamoTotal += (long)levels - previous;
         RaiseStatsChanged();
     }
 
@@ -210,8 +225,12 @@ public class TowerCombatStats : MonoBehaviour
         if (sourceId == 0)
             return;
 
-        if (grantedCamoSourceIds.Remove(sourceId))
+        if (grantedCamoSourceIds.TryGetValue(sourceId, out int previous))
+        {
+            grantedCamoSourceIds.Remove(sourceId);
+            grantedCamoTotal -= previous;
             RaiseStatsChanged();
+        }
     }
 
     public void ClearGrantedCamoSources()
@@ -220,6 +239,7 @@ public class TowerCombatStats : MonoBehaviour
             return;
 
         grantedCamoSourceIds.Clear();
+        grantedCamoTotal = 0;
         RaiseStatsChanged();
     }
 

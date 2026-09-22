@@ -19,6 +19,10 @@ public class GridTile : MonoBehaviour
     [SerializeField] private bool occupied;
     [SerializeField] private GameObject occupiedTower;
 
+    public static int NavigationRevision { get; private set; }
+    public static void InvalidateNavigation() => NavigationRevision++;
+    private void OnEnable() => InvalidateNavigation();
+    private void OnDisable() => InvalidateNavigation();
     private Renderer rend;
 
     public int X => x;
@@ -39,7 +43,12 @@ public class GridTile : MonoBehaviour
     public bool IsPassableForEnemies => terrainType != TerrainType.Blocked && !blocksEnemies;
     public bool CanPlaceTower => IsBuildable && !occupied;
 
-    public void SetBlocksEnemies(bool value) => blocksEnemies = value;
+    public void SetBlocksEnemies(bool value)
+    {
+        if (blocksEnemies == value) return;
+        blocksEnemies = value;
+        InvalidateNavigation();
+    }
     public void SetBuildable(bool value) => buildable = value;
 
     public void SetOccupied(bool value) => occupied = value;
@@ -58,6 +67,7 @@ public class GridTile : MonoBehaviour
 
     private void Awake()
     {
+        InvalidateNavigation();
         rend = GetComponent<Renderer>();
         ApplyTerrainRules();
         ApplyVisuals();
@@ -65,6 +75,7 @@ public class GridTile : MonoBehaviour
 
     public void Initialize(int newX, int newZ)
     {
+        InvalidateNavigation();
         x = newX;
         z = newZ;
         gameObject.name = $"Tile ({x}, {z})";
@@ -78,6 +89,7 @@ public class GridTile : MonoBehaviour
 
     public void SetTerrain(TerrainType type)
     {
+        InvalidateNavigation();
         terrainType = type;
         ApplyTerrainRules();
         ApplyVisuals();

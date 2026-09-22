@@ -55,6 +55,17 @@ public class GridPathPreviewVisualizer : MonoBehaviour
 
     private readonly Dictionary<GridTile, Marker> activeMarkers = new Dictionary<GridTile, Marker>();
 
+    private readonly HashSet<GridTile> wantedTiles = new HashSet<GridTile>();
+    private readonly HashSet<GridTile> currentSet = new HashSet<GridTile>();
+    private readonly HashSet<GridTile> previewSet = new HashSet<GridTile>();
+    private readonly Dictionary<GridTile, int> previewIndices = new Dictionary<GridTile, int>();
+    private readonly List<GridTile> toRemove = new List<GridTile>();
+    private List<GridTile> baselinePath;
+    private GridTile baselineStart;
+    private GridTile baselineGoal;
+    private GridPathfinder baselinePathfinder;
+    private int baselineRevision = -1;
+    private int baselineVersion = -1;
     private GridTile lastTile;
     private int lastPathVersion = -999;
 
@@ -82,7 +93,7 @@ public class GridPathPreviewVisualizer : MonoBehaviour
         GridTile hovered = GetHoveredTile();
         int currentVersion = PathChangeBroadcaster.Version;
 
-        bool needsRefresh = hovered != lastTile || currentVersion != lastPathVersion || ShouldRetryMissingPathDisplay();
+        bool needsRefresh = hovered != lastTile || currentVersion != lastPathVersion || baselineRevision != GridTile.NavigationRevision || ShouldRetryMissingPathDisplay();
 
         if (!needsRefresh)
             return;
@@ -117,7 +128,6 @@ public class GridPathPreviewVisualizer : MonoBehaviour
             return;
         }
 
-        grid.RebuildLookupFromChildren();
 
         GridTile startTile = grid.GetTile(startCoord.x, startCoord.y);
         GridTile goalTile = grid.GetTile(goalCoord.x, goalCoord.y);
@@ -128,14 +138,26 @@ public class GridPathPreviewVisualizer : MonoBehaviour
             return;
         }
 
-        List<GridTile> currentPath = pathfinder.FindPathAStar(startTile, goalTile);
+        if (baselinePath == null || baselineStart != startTile || baselineGoal != goalTile ||
+            baselinePathfinder != pathfinder || baselineVersion != PathChangeBroadcaster.Version ||
+            baselineRevision != GridTile.NavigationRevision)
+        {
+            baselinePath = pathfinder.FindPathAStar(startTile, goalTile);
+            baselineStart = startTile;
+            baselineGoal = goalTile;
+            baselinePathfinder = pathfinder;
+            baselineVersion = PathChangeBroadcaster.Version;
+            baselineRevision = GridTile.NavigationRevision;
+        }
+        List<GridTile> currentPath = baselinePath;
         if (currentPath == null || currentPath.Count == 0)
         {
             HideAllMarkersAnimated();
             return;
         }
 
-        HashSet<GridTile> currentSet = new HashSet<GridTile>(currentPath);
+        currentSet.Clear();
+        currentSet.UnionWith(currentPath);
 
         if (hovered == null)
         {
@@ -160,8 +182,16 @@ public class GridPathPreviewVisualizer : MonoBehaviour
         bool originalBlocksEnemies = hovered.BlocksEnemies;
 
         hovered.SetBlocksEnemies(true);
-        List<GridTile> previewPath = pathfinder.FindPathAStar(startTile, goalTile);
-        hovered.SetBlocksEnemies(originalBlocksEnemies);
+        List<GridTile> previewPath;
+        try
+        {
+            previewPath = pathfinder.FindPathAStar(startTile, goalTile);
+        }
+        finally
+        {
+            hovered.SetBlocksEnemies(originalBlocksEnemies);
+            baselineRevision = GridTile.NavigationRevision;
+        }
 
         if (previewPath == null || previewPath.Count == 0)
         {
@@ -174,7 +204,7 @@ public class GridPathPreviewVisualizer : MonoBehaviour
 
     private void ShowCurrentPathOnly(List<GridTile> currentPath, GridTile hovered)
     {
-        HashSet<GridTile> wantedTiles = new HashSet<GridTile>();
+        wantedTiles.Clear();
 
         for (int i = 0; i < currentPath.Count; i++)
         {
@@ -195,7 +225,7 @@ public class GridPathPreviewVisualizer : MonoBehaviour
 
     private void ShowCurrentAsRemoved(List<GridTile> currentPath, GridTile hovered)
     {
-        HashSet<GridTile> wantedTiles = new HashSet<GridTile>();
+        wantedTiles.Clear();
 
         for (int i = 0; i < currentPath.Count; i++)
         {
@@ -216,10 +246,12 @@ public class GridPathPreviewVisualizer : MonoBehaviour
 
     private void ShowPathDiff(List<GridTile> currentPath, List<GridTile> previewPath, GridTile hovered)
     {
-        HashSet<GridTile> wantedTiles = new HashSet<GridTile>();
-        HashSet<GridTile> currentSet = new HashSet<GridTile>(currentPath);
-        HashSet<GridTile> previewSet = new HashSet<GridTile>(previewPath);
-        Dictionary<GridTile, int> previewIndices = BuildPathIndexLookup(previewPath);
+        wantedTiles.Clear();
+        currentSet.Clear();
+        currentSet.UnionWith(currentPath);
+        previewSet.Clear();
+        previewSet.UnionWith(previewPath);
+        BuildPathIndexLookup(previewPath);
 
         for (int i = 0; i < currentPath.Count; i++)
         {
@@ -271,7 +303,8 @@ public class GridPathPreviewVisualizer : MonoBehaviour
 
     private Dictionary<GridTile, int> BuildPathIndexLookup(List<GridTile> path)
     {
-        Dictionary<GridTile, int> lookup = new Dictionary<GridTile, int>();
+        Dictionary<GridTile, int> lookup = previewIndices;
+        lookup.Clear();
 
         if (path == null)
             return lookup;
@@ -390,7 +423,7 @@ public class GridPathPreviewVisualizer : MonoBehaviour
 
     private void RemoveUnwantedMarkers(HashSet<GridTile> wantedTiles)
     {
-        List<GridTile> toRemove = new List<GridTile>();
+        toRemove.Clear();
 
         foreach (var pair in activeMarkers)
         {
@@ -404,7 +437,7 @@ public class GridPathPreviewVisualizer : MonoBehaviour
 
     private void HideAllMarkersAnimated()
     {
-        List<GridTile> toRemove = new List<GridTile>();
+        toRemove.Clear();
 
         foreach (var pair in activeMarkers)
             toRemove.Add(pair.Key);

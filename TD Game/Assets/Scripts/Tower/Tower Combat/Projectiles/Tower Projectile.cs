@@ -27,6 +27,57 @@ public class TowerProjectile : MonoBehaviour
     [SerializeField] private bool spawnAcidPuddleOnHit = false;
     [SerializeField] private AcidPuddleArea acidPuddlePrefab;
 
+    private static readonly Dictionary<(int, int), Stack<TowerProjectile>> pools = new Dictionary<(int, int), Stack<TowerProjectile>>();
+    private (int, int) poolKey;
+    private bool pooled;
+    private TrailRenderer[] trails;
+    private ParticleSystem[] particles;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetPools()
+    {
+        pools.Clear();
+        UnityEngine.SceneManagement.SceneManager.sceneUnloaded -= ClearScenePools;
+        UnityEngine.SceneManagement.SceneManager.sceneUnloaded += ClearScenePools;
+    }
+
+    private static void ClearScenePools(UnityEngine.SceneManagement.Scene scene)
+    {
+        var keys = new System.Collections.Generic.List<(int, int)>();
+        foreach (var key in pools.Keys)
+            if (key.Item1 == scene.handle) keys.Add(key);
+        foreach (var key in keys) pools.Remove(key);
+    }
+
+    public static TowerProjectile Spawn(TowerProjectile prefab, Vector3 position, Quaternion rotation, UnityEngine.SceneManagement.Scene scene)
+    {
+        var key = (scene.handle, prefab.GetInstanceID());
+        if (!pools.TryGetValue(key, out Stack<TowerProjectile> pool))
+        {
+            pool = new Stack<TowerProjectile>();
+            pools.Add(key, pool);
+        }
+        TowerProjectile instance = null;
+        while (pool.Count > 0 && instance == null) instance = pool.Pop();
+        if (instance == null)
+        {
+            instance = Instantiate(prefab, position, rotation);
+            UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(instance.gameObject, scene);
+        }
+        instance.poolKey = key;
+        instance.pooled = true;
+        instance.transform.SetPositionAndRotation(position, rotation);
+        instance.transform.localScale = prefab.transform.localScale;
+        instance.gameObject.SetActive(true);
+        foreach (TrailRenderer trail in instance.trails) trail.Clear();
+        foreach (ParticleSystem particle in instance.particles)
+        {
+            particle.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            if (particle.main.playOnAwake) particle.Play();
+        }
+        return instance;
+    }
+
     private Vector3 moveDirection = Vector3.forward;
     private float lifetimeTimer;
 
@@ -44,6 +95,8 @@ public class TowerProjectile : MonoBehaviour
 
     private void Awake()
     {
+        trails = GetComponentsInChildren<TrailRenderer>(true);
+        particles = GetComponentsInChildren<ParticleSystem>(true);
         ownCollider = GetComponent<Collider>();
         rb = GetComponent<Rigidbody>();
 
@@ -181,6 +234,14 @@ public class TowerProjectile : MonoBehaviour
         if (ownCollider != null)
             ownCollider.enabled = false;
 
-        Destroy(gameObject);
+        sourceObject = null;
+        alreadyHit.Clear();
+        if (pooled && pools.TryGetValue(poolKey, out Stack<TowerProjectile> pool) && pool.Count < 128)
+        {
+            gameObject.SetActive(false);
+            pool.Push(this);
+        }
+        else
+            Destroy(gameObject);
     }
 }

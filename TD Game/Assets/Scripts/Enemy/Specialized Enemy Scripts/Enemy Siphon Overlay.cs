@@ -14,6 +14,7 @@ public class EnemySiphonOverlay : MonoBehaviour
     {
         if (material == null)
             return;
+        enabled = true;
         if (!initialized)
             CreateOverlays();
         if (currentMaterial != material)
@@ -84,6 +85,8 @@ public class EnemySiphonOverlay : MonoBehaviour
         if (!PauseState.IsPaused)
             remainingTime = Mathf.Max(0f, remainingTime - Time.deltaTime);
         RefreshVisibility();
+        if (remainingTime <= 0f)
+            enabled = false;
     }
 
     private void RefreshVisibility()

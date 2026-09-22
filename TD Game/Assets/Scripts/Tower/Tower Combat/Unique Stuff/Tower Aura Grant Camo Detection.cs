@@ -16,8 +16,8 @@ public class TowerAuraGrantCamoDetection : MonoBehaviour
     [SerializeField] private bool includeSelf = false;
     [Min(0)] [SerializeField] private int grantedDetectionLevels = 1;
 
-    private readonly List<TowerCombatStats> grantedTargets = new List<TowerCombatStats>();
-    private readonly List<TowerCombatStats> currentTargets = new List<TowerCombatStats>();
+    private readonly HashSet<TowerCombatStats> grantedTargets = new HashSet<TowerCombatStats>();
+    private readonly HashSet<TowerCombatStats> currentTargets = new HashSet<TowerCombatStats>();
 
     private float tickTimer;
     private int sourceId;
@@ -50,8 +50,8 @@ public class TowerAuraGrantCamoDetection : MonoBehaviour
     {
         currentTargets.Clear();
 
-        TowerCombatStats[] allTowers = FindObjectsByType<TowerCombatStats>(FindObjectsSortMode.None);
-        for (int i = 0; i < allTowers.Length; i++)
+        IReadOnlyList<TowerCombatStats> allTowers = TowerCombatStats.ActiveTowers;
+        for (int i = 0; i < allTowers.Count; i++)
         {
             TowerCombatStats target = allTowers[i];
             if (target == null)
@@ -64,28 +64,25 @@ public class TowerAuraGrantCamoDetection : MonoBehaviour
                 currentTargets.Add(target);
         }
 
-        for (int i = grantedTargets.Count - 1; i >= 0; i--)
+        foreach (TowerCombatStats target in grantedTargets)
         {
-            TowerCombatStats target = grantedTargets[i];
             if (target == null || !currentTargets.Contains(target))
             {
                 if (target != null)
                     target.RemoveGrantedCamoSource(sourceId);
 
-                grantedTargets.RemoveAt(i);
             }
         }
 
-        for (int i = 0; i < currentTargets.Count; i++)
+        grantedTargets.Clear();
+        foreach (TowerCombatStats target in currentTargets)
         {
-            TowerCombatStats target = currentTargets[i];
             if (target == null)
                 continue;
 
             target.AddGrantedCamoSource(sourceId, grantedDetectionLevels);
 
-            if (!grantedTargets.Contains(target))
-                grantedTargets.Add(target);
+            grantedTargets.Add(target);
         }
     }
 
@@ -162,10 +159,10 @@ public class TowerAuraGrantCamoDetection : MonoBehaviour
 
     private void OnDisable()
     {
-        for (int i = 0; i < grantedTargets.Count; i++)
+        foreach (TowerCombatStats target in grantedTargets)
         {
-            if (grantedTargets[i] != null)
-                grantedTargets[i].RemoveGrantedCamoSource(sourceId);
+            if (target != null)
+                target.RemoveGrantedCamoSource(sourceId);
         }
 
         grantedTargets.Clear();

@@ -37,7 +37,7 @@ public class AcidPuddleArea : MonoBehaviour
     private readonly HashSet<EnemyHealth> enemiesInside = new HashSet<EnemyHealth>();
     private readonly Dictionary<EnemyHealth, HashSet<Collider>> collidersByEnemy = new Dictionary<EnemyHealth, HashSet<Collider>>();
     private readonly Dictionary<EnemyHealth, float> nextTickTimeByEnemy = new Dictionary<EnemyHealth, float>();
-    private readonly Collider[] overlapResults = new Collider[64];
+    private Collider[] overlapResults = new Collider[64];
 
     private GridManager gridManager;
     private MaterialPropertyBlock propertyBlock;
@@ -71,7 +71,7 @@ public class AcidPuddleArea : MonoBehaviour
             targetRenderers = GetComponentsInChildren<Renderer>(true);
 
         propertyBlock = new MaterialPropertyBlock();
-        gridManager = FindFirstObjectByType<GridManager>();
+        gridManager = SceneReferences.Find<GridManager>(this);
 
         CacheOriginalRendererAlphas();
         transform.localScale = Vector3.zero;
@@ -342,20 +342,20 @@ public class AcidPuddleArea : MonoBehaviour
             Vector3 center = box.transform.TransformPoint(box.center);
             Vector3 halfExtents = Vector3.Scale(box.size, box.transform.lossyScale) * 0.5f;
 
-            return Physics.OverlapBoxNonAlloc(
+            return GrowingOverlap.Box(
                 center,
                 halfExtents,
-                overlapResults,
+                ref overlapResults,
                 box.transform.rotation,
                 overlapMask,
                 QueryTriggerInteraction.Collide);
         }
 
         Bounds bounds = triggerCollider.bounds;
-        return Physics.OverlapBoxNonAlloc(
+        return GrowingOverlap.Box(
             bounds.center,
             bounds.extents,
-            overlapResults,
+            ref overlapResults,
             Quaternion.identity,
             overlapMask,
             QueryTriggerInteraction.Collide);

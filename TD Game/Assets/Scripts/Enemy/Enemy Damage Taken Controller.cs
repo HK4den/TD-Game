@@ -35,7 +35,8 @@ public class EnemyDamageTakenController : MonoBehaviour
             return;
 
         bool removedAny = RemoveExpiredEntries();
-        RecalculateMultiplier();
+        if (removedAny)
+            RecalculateMultiplier();
 
         if (removedAny && debugLogDamageAmpChanges)
             Debug.Log($"[EnemyDamageTakenController] Expired entries removed on {name}. Current multiplier={currentDamageTakenMultiplier:0.###}");
@@ -58,9 +59,11 @@ public class EnemyDamageTakenController : MonoBehaviour
             DamageAmpEntry entry = activeEntries[i];
             if (entry.sourceInstanceId == sourceInstanceId && entry.familyKey == resolvedFamilyKey)
             {
+                bool strengthChanged = entry.damageTakenPercent != adjustedPercent;
                 entry.damageTakenPercent = adjustedPercent;
                 entry.expireTime = expireTime;
-                RecalculateMultiplier();
+                if (strengthChanged)
+                    RecalculateMultiplier();
 
                 if (debugLogDamageAmpChanges)
                     Debug.Log($"[EnemyDamageTakenController] Refreshed on {name} family={resolvedFamilyKey} amount={adjustedPercent:0.###}");

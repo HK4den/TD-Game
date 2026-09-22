@@ -34,7 +34,7 @@ public class EnemyDamageReductionAura : MonoBehaviour
     [Header("Radius Visual")]
     [SerializeField] private bool alwaysShowRadius = false;
 
-    private readonly Collider[] overlapResults = new Collider[64];
+    private Collider[] overlapResults = new Collider[64];
     private readonly HashSet<EnemyAgent> uniqueTargets = new HashSet<EnemyAgent>();
 
     private float tickTimer;
@@ -74,10 +74,10 @@ public class EnemyDamageReductionAura : MonoBehaviour
     {
         uniqueTargets.Clear();
 
-        int count = Physics.OverlapSphereNonAlloc(
+        int count = GrowingOverlap.Sphere(
             transform.position,
             radius,
-            overlapResults,
+            ref overlapResults,
             overlapMask,
             QueryTriggerInteraction.Collide);
 
@@ -91,7 +91,7 @@ public class EnemyDamageReductionAura : MonoBehaviour
             if (enemyAgent == null || !enemyAgent.IsTargetable)
                 continue;
 
-            EnemyHealth targetHealth = hit.GetComponentInParent<EnemyHealth>();
+            EnemyHealth targetHealth = enemyAgent.Health;
             if (targetHealth == null || targetHealth.IsDead)
                 continue;
 
@@ -114,9 +114,7 @@ public class EnemyDamageReductionAura : MonoBehaviour
             if (targetAgent == null)
                 continue;
 
-            EnemyDamageTakenController damageTaken = targetAgent.GetComponent<EnemyDamageTakenController>();
-            if (damageTaken == null)
-                damageTaken = targetAgent.GetComponentInParent<EnemyDamageTakenController>();
+            EnemyDamageTakenController damageTaken = targetAgent.DamageTakenController;
 
             if (damageTaken != null)
             {

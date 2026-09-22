@@ -19,7 +19,7 @@ public class Billboard : MonoBehaviour
 
     private float chosenRotationDirection = 1f;
 
-    private void Start()
+    private void OnEnable()
     {
         if (rotationMode == RotationMode.Random)
         {
