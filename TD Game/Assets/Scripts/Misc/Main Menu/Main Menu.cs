@@ -8,6 +8,12 @@ public class MainMenu : MonoBehaviour
     [Header("Controller Navigation")]
     [SerializeField] private Selectable firstSelected;
 
+    private void Awake()
+    {
+        PauseState.SetPaused(false);
+        ResetTime();
+    }
+
     private void Start()
     {
         SelectInitialButton();

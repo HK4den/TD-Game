@@ -117,7 +117,7 @@ public class WaveSpawner : MonoBehaviour
 
     private void Update()
     {
-        if (!allowSecretWaveSkip)
+        if (PauseState.IsPaused || !allowSecretWaveSkip)
             return;
 
         if (Keyboard.current != null && Keyboard.current.pKey.wasPressedThisFrame)
@@ -142,6 +142,9 @@ public class WaveSpawner : MonoBehaviour
     [ContextMenu("Start Next Wave")]
     public void StartNextWave()
     {
+        if (PauseState.IsPaused)
+            return;
+
         if (grid != null)
             grid.RebuildLookupFromChildren();
 
@@ -176,7 +179,7 @@ public class WaveSpawner : MonoBehaviour
 
     public void SkipCurrentWave()
     {
-        if (!waveActiveContext)
+        if (PauseState.IsPaused || !waveActiveContext)
             return;
 
         int currentWaveNumber = waveIndex;
@@ -213,7 +216,7 @@ public class WaveSpawner : MonoBehaviour
 
     public EnemyAgent SpawnEnemyFromPrefab(EnemyAgent prefab, Vector3 worldPosition, bool registerToCurrentWave = true)
     {
-        if (prefab == null || grid == null || pathfinder == null)
+        if (PauseState.IsPaused || prefab == null || grid == null || pathfinder == null)
             return null;
 
         EnemyAgent enemy = Instantiate(prefab, worldPosition, Quaternion.identity);
@@ -271,6 +274,7 @@ public class WaveSpawner : MonoBehaviour
 
             for (int i = 0; i < group.count; i++)
             {
+                while (PauseState.IsPaused) yield return null;
                 SpawnOne(group.enemyPrefab);
 
                 if (group.spawnInterval > 0f)
@@ -283,6 +287,7 @@ public class WaveSpawner : MonoBehaviour
                 yield return new WaitForSeconds(group.delayAfterGroup);
         }
 
+        while (PauseState.IsPaused) yield return null;
         spawningFinished = true;
         running = null;
 
@@ -309,6 +314,7 @@ public class WaveSpawner : MonoBehaviour
                 yield return new WaitForSeconds(step.delayAfterStep);
         }
 
+        while (PauseState.IsPaused) yield return null;
         spawningFinished = true;
         running = null;
 
@@ -317,6 +323,7 @@ public class WaveSpawner : MonoBehaviour
 
     private IEnumerator SpawnEmptyWave(int waveNumber)
     {
+        while (PauseState.IsPaused) yield return null;
         spawningFinished = true;
         running = null;
         TryCompleteWaveIfDone(waveNumber);
@@ -361,6 +368,7 @@ public class WaveSpawner : MonoBehaviour
         int count = Mathf.Max(0, step.count);
         for (int i = 0; i < count; i++)
         {
+            while (PauseState.IsPaused) yield return null;
             SpawnOne(prefab);
 
             if (i < count - 1)
@@ -376,6 +384,7 @@ public class WaveSpawner : MonoBehaviour
         int count = Mathf.Max(0, step.count);
         for (int i = 0; i < count; i++)
         {
+            while (PauseState.IsPaused) yield return null;
             WaveSet.EnemyRef enemyRef = step.enemies[i % step.enemies.Count];
             EnemyAgent prefab = ResolveEnemy(enemyRef);
             if (prefab != null)
@@ -399,6 +408,7 @@ public class WaveSpawner : MonoBehaviour
         {
             for (int i = 0; i < step.enemies.Count; i++)
             {
+                while (PauseState.IsPaused) yield return null;
                 EnemyAgent prefab = ResolveEnemy(step.enemies[i]);
                 if (prefab != null)
                     SpawnOne(prefab);
@@ -419,6 +429,7 @@ public class WaveSpawner : MonoBehaviour
         int count = Mathf.Max(0, step.count);
         for (int i = 0; i < count; i++)
         {
+            while (PauseState.IsPaused) yield return null;
             EnemyAgent prefab = ResolveEnemy(ChooseRandomEnemy(step));
             if (prefab != null)
                 SpawnOne(prefab);
@@ -474,7 +485,7 @@ public class WaveSpawner : MonoBehaviour
 
     private void SpawnOne(EnemyAgent prefab)
     {
-        if (prefab == null || grid == null || pathfinder == null)
+        if (PauseState.IsPaused || prefab == null || grid == null || pathfinder == null)
             return;
 
         GridTile spawnTile = grid.GetTile(spawnCoord.x, spawnCoord.y);

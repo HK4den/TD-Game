@@ -169,7 +169,7 @@ public class TowerProjectile : MonoBehaviour
 
     private void TryHit(Collider other)
     {
-        if (isSpent || other == null || other == ownCollider)
+        if (PauseState.IsPaused || isSpent || other == null || other == ownCollider)
             return;
 
         EnemyHealth health = other.GetComponentInParent<EnemyHealth>();

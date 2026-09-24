@@ -15,5 +15,5 @@ MonoBehaviour:
   hookStretchMultiplier: 1
   stretchStrength: 0.8
   maximumStretch: 0.5
-  springStiffness: 100
-  springDamping: 12
+  springStiffness: 256
+  springDamping: 6

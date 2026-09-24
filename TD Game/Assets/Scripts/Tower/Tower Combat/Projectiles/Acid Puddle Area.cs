@@ -237,7 +237,7 @@ public class AcidPuddleArea : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!initialized || !isActive)
+        if (PauseState.IsPaused || !initialized || !isActive)
             return;
 
         AddEnemyInside(other, true);

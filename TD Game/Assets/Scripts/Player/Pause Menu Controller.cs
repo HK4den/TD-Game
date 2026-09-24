@@ -179,13 +179,10 @@ public class PauseMenuController : MonoBehaviour
 
     public void QuitToMenu()
     {
-        Time.timeScale = 1f;
-        Time.fixedDeltaTime = originalFixedDeltaTime;
-        PauseState.SetPaused(false);
-
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.None;
 
+        // Keep gameplay input blocked until the destination scene resets pause state.
         SceneManager.LoadScene(mainMenuSceneName);
     }
 

@@ -26,6 +26,9 @@ public class BoostCloud : MonoBehaviour
 
     private void TryBoostPlayer(Collider other)
     {
+        if (PauseState.IsPaused)
+            return;
+
         PlayerMovement playerMovement = other.GetComponent<PlayerMovement>();
         if (playerMovement == null)
             playerMovement = other.GetComponentInParent<PlayerMovement>();

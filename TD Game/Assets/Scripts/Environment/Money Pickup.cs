@@ -31,7 +31,7 @@ public class MoneyPickup : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (collected)
+        if (PauseState.IsPaused || collected)
             return;
 
         if (!other.CompareTag(playerTag))

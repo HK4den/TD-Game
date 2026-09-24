@@ -22,7 +22,7 @@ public class BaseHealth : MonoBehaviour
 
     public void TakeDamage(int amount)
     {
-        if (IsDead) return;
+        if (PauseState.IsPaused || IsDead) return;
 
         hp -= Mathf.Abs(amount);
         if (hp < 0) hp = 0;

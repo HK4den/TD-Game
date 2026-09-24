@@ -29,6 +29,7 @@ public class GameEndController : MonoBehaviour
         originalFixedDeltaTime = Time.fixedDeltaTime;
 
         IsGameEnded = false;
+        PauseState.SetPaused(false);
         Time.timeScale = 1f;
         Time.fixedDeltaTime = originalFixedDeltaTime;
 
@@ -87,8 +88,8 @@ public class GameEndController : MonoBehaviour
     {
         IsGameEnded = true;
 
-        // Make sure normal pause state is off so the pause menu doesn't stay open.
-        PauseState.SetPaused(false);
+        // Use the shared pause state so gameplay input and movement audio stop too.
+        PauseState.SetPaused(true);
 
         if (winPanelRoot != null)
             winPanelRoot.SetActive(won);

@@ -95,7 +95,7 @@ public class EnemyHealth : MonoBehaviour
 
     public float TakeDamage(EnemyDamageInfo damageInfo)
     {
-        if (died)
+        if (PauseState.IsPaused || died)
             return 0f;
 
         if (damageInfo.damage <= 0f)
@@ -149,7 +149,7 @@ public class EnemyHealth : MonoBehaviour
 
     public float Heal(float amount)
     {
-        if (died)
+        if (PauseState.IsPaused || died)
             return 0f;
 
         if (amount <= 0f)

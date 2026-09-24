@@ -99,6 +99,7 @@ public class PlayerMovement : MonoBehaviour
             : 0f;
 
     public event Action Jumped;
+    public event Action<float> Landed;
 
     private void Awake()
     {
@@ -135,7 +136,11 @@ public class PlayerMovement : MonoBehaviour
         if (!isGrounded)
             landingMomentumApplied = false;
         if (isGrounded && !wasGroundedLastFrame)
+        {
             ApplyLandingMomentum();
+            // Report ground contact before a buffered jump can clear isGrounded.
+            Landed?.Invoke(Mathf.Max(0f, -velocity.y));
+        }
         UpdateBoostTimer();
         UpdateTimersAndJump();
 

@@ -14,6 +14,12 @@ public class EndOfWaveIncomeSummaryManager : MonoBehaviour
         public int towerCount;
     }
 
+    private struct PendingPopup
+    {
+        public Vector3 position;
+        public int amount;
+    }
+
     [Header("Refs")]
     [SerializeField] private WaveSpawner waveSpawner;
     [SerializeField] private EconomyManager economy;
@@ -30,6 +36,7 @@ public class EndOfWaveIncomeSummaryManager : MonoBehaviour
     [SerializeField] private DamageNumber negativeWorldPopupPrefab;
     [SerializeField] private DamageNumber zeroWorldPopupPrefab;
     [SerializeField] private Vector3 perTowerWorldOffset = new Vector3(0f, 1.5f, 0f);
+    [Min(1)] [SerializeField] private int perTowerPopupsPerFrame = 12;
 
     [Header("Breakdown UI")]
     [SerializeField] private CanvasGroup breakdownCanvasGroup;
@@ -47,6 +54,8 @@ public class EndOfWaveIncomeSummaryManager : MonoBehaviour
     [SerializeField] private string zeroHexColor = "#CFCFCF";
 
     private Coroutine currentBreakdownRoutine;
+    private Coroutine popupRoutine;
+    private readonly Queue<PendingPopup> pendingPopups = new Queue<PendingPopup>();
 
     private void Awake()
     {
@@ -68,6 +77,12 @@ public class EndOfWaveIncomeSummaryManager : MonoBehaviour
     {
         if (waveSpawner != null)
             waveSpawner.OnWaveCompleted -= HandleWaveCompleted;
+        if (popupRoutine != null)
+        {
+            StopCoroutine(popupRoutine);
+            popupRoutine = null;
+        }
+        pendingPopups.Clear();
     }
 
     private void HandleWaveCompleted(int waveNumber, int reward)
@@ -86,18 +101,17 @@ public class EndOfWaveIncomeSummaryManager : MonoBehaviour
             int rolledAmount = tower.RollMoneyChange();
             towerMoneyTotal += rolledAmount;
 
-            TowerVisualSquash visualSquash = tower.GetComponent<TowerVisualSquash>();
-            if (visualSquash == null)
-                visualSquash = tower.GetComponentInChildren<TowerVisualSquash>();
+            TowerVisualSquash visualSquash = tower.VisualSquash;
 
             if (visualSquash != null)
                 visualSquash.TriggerMoneyPulse();
 
-            if (economy != null)
-                economy.AdjustMoneySigned(rolledAmount);
-
             if (showPerTowerWorldPopups)
-                SpawnPerTowerWorldPopup(tower.transform.position + perTowerWorldOffset, rolledAmount);
+                pendingPopups.Enqueue(new PendingPopup
+                {
+                    position = tower.transform.position + perTowerWorldOffset,
+                    amount = rolledAmount
+                });
 
             string familyKey = tower.FamilyKey;
             if (string.IsNullOrWhiteSpace(familyKey))
@@ -119,6 +133,12 @@ public class EndOfWaveIncomeSummaryManager : MonoBehaviour
         }
 
         int totalDelta = reward + towerMoneyTotal;
+
+        if (economy != null && towerMoneyTotal != 0)
+            economy.AdjustMoneySigned(towerMoneyTotal);
+
+        if (pendingPopups.Count > 0 && popupRoutine == null)
+            popupRoutine = StartCoroutine(SpawnQueuedPopups());
 
         SpawnTotalPopup(totalDelta);
 
@@ -145,6 +165,29 @@ public class EndOfWaveIncomeSummaryManager : MonoBehaviour
             if (breakdownText != null)
                 breakdownText.text = string.Empty;
         }
+    }
+
+    private IEnumerator SpawnQueuedPopups()
+    {
+        while (pendingPopups.Count > 0)
+        {
+            if (PauseState.IsPaused)
+            {
+                yield return null;
+                continue;
+            }
+
+            int count = Mathf.Min(Mathf.Max(1, perTowerPopupsPerFrame), pendingPopups.Count);
+            for (int i = 0; i < count; i++)
+            {
+                PendingPopup popup = pendingPopups.Dequeue();
+                SpawnPerTowerWorldPopup(popup.position, popup.amount);
+            }
+
+            yield return null;
+        }
+
+        popupRoutine = null;
     }
 
     public void SpawnPickupMoneyPopup(int amount)

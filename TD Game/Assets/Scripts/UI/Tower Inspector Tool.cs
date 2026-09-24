@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class TowerInspectorTool : MonoBehaviour
@@ -39,6 +39,7 @@ public class TowerInspectorTool : MonoBehaviour
 
     private void OnEnable()
     {
+        PauseState.OnPauseChanged += HandlePauseChanged;
         controls.Enable();
 
         controls.Player.PrimaryClick.performed += OnPrimaryClick;
@@ -50,6 +51,8 @@ public class TowerInspectorTool : MonoBehaviour
 
     private void OnDisable()
     {
+        PauseState.OnPauseChanged -= HandlePauseChanged;
+        StopSellHoldUI();
         controls.Player.PrimaryClick.performed -= OnPrimaryClick;
         controls.Player.Upgrade.performed -= OnUpgrade1;
         controls.Player.SwapUpgrade.performed -= OnUpgrade2;
@@ -57,6 +60,12 @@ public class TowerInspectorTool : MonoBehaviour
         controls.Player.Sell.canceled -= OnSellCanceled;
 
         controls.Disable();
+    }
+
+    private void HandlePauseChanged(bool paused)
+    {
+        if (paused)
+            StopSellHoldUI();
     }
 
     public void SetSelectionPermissions(bool allowTowers, bool allowEmptyTiles)

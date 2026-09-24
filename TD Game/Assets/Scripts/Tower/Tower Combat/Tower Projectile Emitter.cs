@@ -78,7 +78,7 @@ public class TowerProjectileEmitter : MonoBehaviour
 
     public bool TryBeginAttack(EnemyAgent attackTarget)
     {
-        if (attackRoutine != null)
+        if (PauseState.IsPaused || attackRoutine != null)
             return false;
 
         attackRoutine = StartCoroutine(AttackRoutine(attackTarget));
@@ -101,6 +101,9 @@ public class TowerProjectileEmitter : MonoBehaviour
 
         for (int burstIndex = 0; burstIndex < shots; burstIndex++)
         {
+            while (PauseState.IsPaused)
+                yield return null;
+
             FireBurstShot(lockedTarget);
 
             if (burstIndex < shots - 1 && delayBetweenBurstShots > 0f)

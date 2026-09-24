@@ -17,6 +17,9 @@ public class TowerShooter : MonoBehaviour
 
     private void Update()
     {
+        if (PauseState.IsPaused)
+            return;
+
         if (Time.time < nextFireTime) return;
 
         EnemyHealth target = FindNearestEnemy();

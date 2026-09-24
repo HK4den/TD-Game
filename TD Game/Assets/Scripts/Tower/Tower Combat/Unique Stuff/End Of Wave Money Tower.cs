@@ -14,6 +14,9 @@ public class EndOfWaveMoneyTower : MonoBehaviour
 
     [Header("Refs")]
     [SerializeField] private TowerIdentity towerIdentity;
+    private TowerVisualSquash visualSquash;
+
+    public TowerVisualSquash VisualSquash => visualSquash;
 
     [Header("Weighted Outcomes")]
     [SerializeField]
@@ -44,6 +47,10 @@ public class EndOfWaveMoneyTower : MonoBehaviour
 
         if (towerIdentity == null)
             towerIdentity = GetComponentInChildren<TowerIdentity>();
+
+        visualSquash = GetComponent<TowerVisualSquash>();
+        if (visualSquash == null)
+            visualSquash = GetComponentInChildren<TowerVisualSquash>();
     }
 
     public int RollMoneyChange()

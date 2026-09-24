@@ -14,7 +14,7 @@ public class PlayerTeleportTrigger : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!other.CompareTag(playerTag))
+        if (PauseState.IsPaused || !other.CompareTag(playerTag))
             return;
 
         if (destination == null)

@@ -42,6 +42,7 @@ public class PlayerMovementAudio : MonoBehaviour
 
     [Header("Jump / Land Detection")]
     [SerializeField] private float minLandingAirborneTime = 0.08f;
+    [Tooltip("Minimum fall speed for landings without a jump. Jump landings still require the minimum airborne time.")]
     [SerializeField] private float minLandingVerticalVelocity = 2f;
 
     [Header("Long Fall Detection")]
@@ -68,7 +69,8 @@ public class PlayerMovementAudio : MonoBehaviour
     private FootstepState currentState = FootstepState.None;
 
     private bool wasGroundedLastFrame;
-    private float lastVerticalVelocity;
+    private float peakFallSpeed;
+    private bool hasJumpedSinceLanding;
     private float airborneTime;
     private bool playedFallOneSecondSfx;
     private bool playedFallThreeSecondSfx;
@@ -83,14 +85,37 @@ public class PlayerMovementAudio : MonoBehaviour
         CreateLoopInstance(boostLoopPrefab, ref boostLoopInstance, ref boostSource, ref boostBaseVolume);
     }
 
-    private void Start()
+    private void OnEnable()
     {
+        PauseState.OnPauseChanged += HandlePauseChanged;
+
         if (playerMovement != null)
         {
             wasGroundedLastFrame = playerMovement.IsGrounded;
-            lastVerticalVelocity = playerMovement.VerticalVelocity;
             playerMovement.Jumped += OnPlayerJumped;
+            playerMovement.Landed += OnPlayerLanded;
         }
+
+        if (PauseState.IsPaused)
+            StopLoopingMovementAudio();
+    }
+
+    private void OnDisable()
+    {
+        PauseState.OnPauseChanged -= HandlePauseChanged;
+        if (playerMovement != null)
+        {
+            playerMovement.Jumped -= OnPlayerJumped;
+            playerMovement.Landed -= OnPlayerLanded;
+        }
+
+        StopLoopingMovementAudio();
+    }
+
+    private void HandlePauseChanged(bool paused)
+    {
+        if (paused)
+            StopLoopingMovementAudio();
     }
 
     private void Update()
@@ -102,7 +127,6 @@ public class PlayerMovementAudio : MonoBehaviour
         {
             StopLoopingMovementAudio();
             wasGroundedLastFrame = playerMovement.IsGrounded;
-            lastVerticalVelocity = playerMovement.VerticalVelocity;
             return;
         }
 
@@ -110,7 +134,8 @@ public class PlayerMovementAudio : MonoBehaviour
         {
             StopLoopingMovementAudio();
             wasGroundedLastFrame = false;
-            lastVerticalVelocity = 0f;
+            hasJumpedSinceLanding = false;
+            peakFallSpeed = 0f;
             airborneTime = 0f;
             playedFallOneSecondSfx = playedFallThreeSecondSfx = false;
             return;
@@ -121,14 +146,10 @@ public class PlayerMovementAudio : MonoBehaviour
         UpdateLoopVolumes();
 
         wasGroundedLastFrame = playerMovement.IsGrounded;
-        lastVerticalVelocity = playerMovement.VerticalVelocity;
     }
 
     private void OnDestroy()
     {
-        if (playerMovement != null)
-            playerMovement.Jumped -= OnPlayerJumped;
-
         DestroyLoopInstance(ref walkLoopInstance, ref walkSource);
         DestroyLoopInstance(ref sprintLoopInstance, ref sprintSource);
         DestroyLoopInstance(ref boostLoopInstance, ref boostSource);
@@ -136,19 +157,43 @@ public class PlayerMovementAudio : MonoBehaviour
 
     private void OnPlayerJumped()
     {
+        if (PauseState.IsPaused)
+            return;
+
+        hasJumpedSinceLanding = true;
         SpawnOneShot(jumpSfxPrefab);
+    }
+
+    private void OnPlayerLanded(float landingSpeed)
+    {
+        // Ground contact can be followed by another jump in the same movement update.
+        // A jump may land near its apex with almost no falling speed. Only non-jump
+        // landings need the speed threshold, to filter walking over curved surfaces.
+        if (!PauseState.IsPaused && !playerMovement.IsGuidedRideActive &&
+            airborneTime >= minLandingAirborneTime &&
+            (hasJumpedSinceLanding || Mathf.Max(peakFallSpeed, landingSpeed) > minLandingVerticalVelocity))
+        {
+            SpawnOneShot(landSfxPrefab);
+        }
+
+        wasGroundedLastFrame = true;
+        hasJumpedSinceLanding = false;
+        airborneTime = 0f;
+        peakFallSpeed = 0f;
+        playedFallOneSecondSfx = false;
+        playedFallThreeSecondSfx = false;
     }
 
     private void HandleJumpAndLandOneShots()
     {
         bool isGrounded = playerMovement.IsGrounded;
 
-        bool justLanded = !wasGroundedLastFrame && isGrounded;
         bool justLeftGround = wasGroundedLastFrame && !isGrounded;
 
         if (justLeftGround)
         {
             airborneTime = 0f;
+            peakFallSpeed = 0f;
             playedFallOneSecondSfx = false;
             playedFallThreeSecondSfx = false;
         }
@@ -156,18 +201,15 @@ public class PlayerMovementAudio : MonoBehaviour
         if (!isGrounded)
         {
             airborneTime += Time.deltaTime;
+            peakFallSpeed = Mathf.Max(peakFallSpeed, -playerMovement.VerticalVelocity);
             HandleLongFallOneShots();
-        }
-
-        // Land: only play if we were falling fast enough before touching down.
-        if (justLanded && airborneTime >= minLandingAirborneTime && lastVerticalVelocity < -minLandingVerticalVelocity)
-        {
-            SpawnOneShot(landSfxPrefab);
         }
 
         if (isGrounded)
         {
+            hasJumpedSinceLanding = false;
             airborneTime = 0f;
+            peakFallSpeed = 0f;
             playedFallOneSecondSfx = false;
             playedFallThreeSecondSfx = false;
         }
@@ -293,7 +335,7 @@ public class PlayerMovementAudio : MonoBehaviour
 
     private void SpawnOneShot(GameObject prefab)
     {
-        if (prefab == null)
+        if (PauseState.IsPaused || prefab == null)
             return;
 
         Instantiate(prefab, transform.position, Quaternion.identity);

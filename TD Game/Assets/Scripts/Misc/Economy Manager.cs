@@ -22,7 +22,7 @@ public class EconomyManager : MonoBehaviour
 
     private void Update()
     {
-        if (!allowSecretMoneyBoost)
+        if (PauseState.IsPaused || !allowSecretMoneyBoost)
             return;
 
         if (Keyboard.current != null && Keyboard.current.lKey.wasPressedThisFrame)

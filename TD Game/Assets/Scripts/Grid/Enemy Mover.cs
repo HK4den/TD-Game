@@ -24,7 +24,7 @@ public class EnemyMover : MonoBehaviour
 
     private void Update()
     {
-        if (pathPoints.Count == 0 || index >= pathPoints.Count) return;
+        if (PauseState.IsPaused || pathPoints.Count == 0 || index >= pathPoints.Count) return;
 
         Vector3 target = pathPoints[index];
         Vector3 toTarget = target - transform.position;
