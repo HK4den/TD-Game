@@ -30,6 +30,23 @@ public class HeldItemView : MonoBehaviour
     [SerializeField] private float walkingBobAmount = 0.012f;
     [SerializeField] private float walkingBobRatePerSpeed = 1.7f;
 
+    [Header("Idle Motion")]
+    [SerializeField] private float idleCycleSpeed = 1.5f;
+    [SerializeField] private float idleVerticalAmount = 0.006f;
+    [SerializeField] private float idleHorizontalAmount = 0.003f;
+    [SerializeField] private float idlePitchDegrees = 0.25f;
+    [SerializeField] private float idleRollDegrees = 0.35f;
+    [SerializeField] private float idleFadeInSpeed = 3f;
+    [SerializeField] private float idleFadeOutSpeed = 14f;
+
+    [Header("Guided Ride Motion")]
+    [SerializeField] private float rideHorizontalSwayPerSpeed = 0.007f;
+    [SerializeField] private float rideVerticalSwayPerSpeed = 0.009f;
+    [SerializeField] private float rideAccelerationSway = 0.00045f;
+    [SerializeField] private float maxRideSway = 0.12f;
+    [SerializeField] private float rideResponse = 18f;
+    [SerializeField] private float rideIdleWeight = 0.45f;
+
     [Header("Air Motion")]
     [SerializeField] private float jumpDip = 0.095f;
     [SerializeField] private float fallLift = 0.075f;
@@ -54,6 +71,9 @@ public class HeldItemView : MonoBehaviour
     private Vector3 baseLocalScale;
     private Vector3 smoothedLookLag;
     private Vector3 smoothedMovementSway;
+    private Vector3 smoothedRideSway;
+    private Vector3 previousPlayerPosition;
+    private Vector3 previousRideVelocity;
     private Vector3 targetLookRotation;
     private Vector3 localHorizontalVelocity;
     private Vector3 previousViewEuler;
@@ -63,8 +83,11 @@ public class HeldItemView : MonoBehaviour
     private float airborneTime;
     private float walkingBobPhase;
     private float walkingBobWeight;
+    private float idlePhase;
+    private float idleWeight;
     private float equipAge;
     private bool hasPreviousViewEuler;
+    private bool hasPreviousPlayerPosition;
     private bool hasJumpedSinceLanding;
 
     private void OnValidate()
@@ -165,7 +188,9 @@ public class HeldItemView : MonoBehaviour
         UpdateAirborneTime();
         UpdateLookMotion(deltaTime);
         UpdateMovementMotion(deltaTime);
+        UpdateGuidedRideMotion(deltaTime);
         UpdateAirMotion(deltaTime);
+        UpdateIdleMotion(deltaTime);
 
         equipAge += deltaTime;
         float equipProgress = equipTransitionDuration <= 0f
@@ -175,13 +200,21 @@ public class HeldItemView : MonoBehaviour
         Vector3 equipOffset = Vector3.Lerp(new Vector3(0f, -0.14f, -0.09f), Vector3.zero, easedEquipProgress);
 
         float landingOffset = GetLandingOffset(deltaTime);
-        Vector3 motionOffset = smoothedLookLag + smoothedMovementSway;
+        Vector3 motionOffset = smoothedLookLag + smoothedMovementSway + smoothedRideSway;
         motionOffset.y += airOffset + landingOffset + Mathf.Sin(walkingBobPhase) * walkingBobAmount * walkingBobWeight;
         motionOffset.x += Mathf.Cos(walkingBobPhase * 0.5f) * walkingBobAmount * 0.35f * walkingBobWeight;
+        float idleBreath = Mathf.Sin(idlePhase) * idleWeight;
+        float idleDrift = Mathf.Sin(idlePhase * 0.5f + 0.7f) * idleWeight;
+        motionOffset.y += idleBreath * idleVerticalAmount;
+        motionOffset.x += idleDrift * idleHorizontalAmount;
         viewTransform.localPosition = baseLocalPosition + motionOffset + equipOffset;
 
         Vector3 rotation = targetLookRotation;
+        rotation.x += idleBreath * idlePitchDegrees;
+        rotation.x -= (smoothedRideSway.y + smoothedRideSway.z) * 16f;
         rotation.z -= localHorizontalVelocity.x * strafeRollPerSpeed;
+        rotation.z -= smoothedRideSway.x * 18f;
+        rotation.z += idleDrift * idleRollDegrees;
         Quaternion targetRotation = baseLocalRotation * Quaternion.Euler(rotation);
         float rotationBlend = ResponseBlend(rotationResponse, deltaTime);
         viewTransform.localRotation = Quaternion.Slerp(viewTransform.localRotation, targetRotation, rotationBlend);
@@ -252,6 +285,10 @@ public class HeldItemView : MonoBehaviour
 
         smoothedLookLag = Vector3.zero;
         smoothedMovementSway = Vector3.zero;
+        smoothedRideSway = Vector3.zero;
+        previousRideVelocity = Vector3.zero;
+        previousPlayerPosition = transform.position;
+        hasPreviousPlayerPosition = true;
         targetLookRotation = Vector3.zero;
         localHorizontalVelocity = Vector3.zero;
         airOffset = 0f;
@@ -259,6 +296,8 @@ public class HeldItemView : MonoBehaviour
         landingKickAge = landingKickDuration;
         walkingBobPhase = 0f;
         walkingBobWeight = 0f;
+        idlePhase = 0f;
+        idleWeight = 0f;
         equipAge = 0f;
 
         if (viewPivot != null)
@@ -450,6 +489,51 @@ public class HeldItemView : MonoBehaviour
 
         float response = airborne ? airborneResponse : groundedResponse;
         airOffset = Mathf.Lerp(airOffset, targetOffset, ResponseBlend(response, deltaTime));
+    }
+
+    private void UpdateGuidedRideMotion(float deltaTime)
+    {
+        Vector3 currentPosition = transform.position;
+        bool riding = playerMovement != null && playerMovement.IsGuidedRideActive;
+        Vector3 targetSway = Vector3.zero;
+
+        // The zipline moves the rider in LateUpdate, before this view updates.
+        if (riding && hasPreviousPlayerPosition && deltaTime > 0.0001f)
+        {
+            Vector3 worldVelocity = Vector3.ClampMagnitude(
+                (currentPosition - previousPlayerPosition) / deltaTime, 30f);
+            Vector3 worldAcceleration = Vector3.ClampMagnitude(
+                (worldVelocity - previousRideVelocity) / deltaTime, 200f);
+            Vector3 localVelocity = transform.InverseTransformDirection(worldVelocity);
+            Vector3 localAcceleration = transform.InverseTransformDirection(worldAcceleration);
+
+            targetSway = new Vector3(
+                -localVelocity.x * rideHorizontalSwayPerSpeed,
+                -localVelocity.y * rideVerticalSwayPerSpeed,
+                -localVelocity.z * rideHorizontalSwayPerSpeed);
+            targetSway -= localAcceleration * rideAccelerationSway;
+            targetSway = Vector3.ClampMagnitude(targetSway, maxRideSway);
+            previousRideVelocity = worldVelocity;
+        }
+        else
+        {
+            previousRideVelocity = Vector3.zero;
+        }
+
+        smoothedRideSway = Vector3.Lerp(smoothedRideSway, targetSway, ResponseBlend(rideResponse, deltaTime));
+        previousPlayerPosition = currentPosition;
+        hasPreviousPlayerPosition = true;
+    }
+
+    private void UpdateIdleMotion(float deltaTime)
+    {
+        bool riding = playerMovement != null && playerMovement.IsGuidedRideActive;
+        bool standingStill = playerMovement == null ||
+            (playerMovement.IsGrounded && playerMovement.HorizontalVelocity.sqrMagnitude < 0.04f);
+        float targetWeight = riding ? Mathf.Clamp01(rideIdleWeight) : standingStill ? 1f : 0f;
+        float response = riding ? rideResponse : targetWeight > idleWeight ? idleFadeInSpeed : idleFadeOutSpeed;
+        idleWeight = Mathf.Lerp(idleWeight, targetWeight, ResponseBlend(response, deltaTime));
+        idlePhase = Mathf.Repeat(idlePhase + deltaTime * idleCycleSpeed, Mathf.PI * 4f);
     }
 
     private float GetLandingOffset(float deltaTime)
