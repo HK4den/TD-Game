@@ -6,6 +6,8 @@ using UnityEngine.UI;
 public class PlayerLook : MonoBehaviour
 {
     public Vector3 ViewDirection => cameraPivot != null ? cameraPivot.forward : transform.forward;
+    public Transform CameraPivot => cameraPivot;
+    public Camera PlayerCamera => playerCamera;
 
     [Header("References")]
     [SerializeField] private Transform cameraPivot;
@@ -31,6 +33,12 @@ public class PlayerLook : MonoBehaviour
     [Header("Bobbing/Sprint FOV")]
     [SerializeField] private float walkBobSpeed = 8f;
     [SerializeField] private float walkBobAmount = 0.03f;
+
+    [Header("Landing Impact" )]
+    [SerializeField] private float landingDipAmount = 0.035f;
+    [SerializeField] private float landingDipDuration = 0.12f;
+    [SerializeField] private float landingDipMinFallSpeed = 2f;
+    [SerializeField] private float landingDipMinAirborneTime = 0.08f;
 
     [SerializeField] private float sprintBobSpeed = 12f;
     [SerializeField] private float sprintBobAmount = 0.06f;
@@ -59,6 +67,11 @@ public class PlayerLook : MonoBehaviour
     private float currentTilt;
     private float mouseSensitivity;
     private float lookSuppressedUntilTime;
+    private float airborneTime;
+    private float landingDipTimer = -1f;
+    private float landingDipOffset;
+    private float appliedLandingDipOffset;
+    private bool hasJumpedSinceLanding;
 
     // Legacy/manual override support
     private Coroutine fovOverrideRoutine;
@@ -83,11 +96,28 @@ public class PlayerLook : MonoBehaviour
     {
         LoadSensitivity();
         controls.Enable();
+
+        if (playerMovement != null)
+        {
+            playerMovement.Jumped += OnPlayerJumped;
+            playerMovement.Landed += OnPlayerLanded;
+        }
     }
 
     private void OnDisable()
     {
         controls.Disable();
+
+        if (playerMovement != null)
+        {
+            playerMovement.Jumped -= OnPlayerJumped;
+            playerMovement.Landed -= OnPlayerLanded;
+        }
+
+        landingDipTimer = -1f;
+        landingDipOffset = 0f;
+        hasJumpedSinceLanding = false;
+        airborneTime = 0f;
     }
 
     private void OnDestroy()
@@ -120,10 +150,62 @@ public class PlayerLook : MonoBehaviour
                 ApplyMouseLook(look);
         }
 
+        UpdateAirborneTime();
+        HandleLandingDip();
         HandleCameraBob();
         HandleSprintFOV();
         HandleStrafeTilt();
         ApplyCameraRotation();
+    }
+
+    private void OnPlayerJumped()
+    {
+        hasJumpedSinceLanding = true;
+    }
+
+    private void OnPlayerLanded(float landingSpeed)
+    {
+        bool wasAirborneLongEnough = airborneTime >= landingDipMinAirborneTime;
+        bool isMeaningfulLanding = hasJumpedSinceLanding ||
+            (wasAirborneLongEnough && landingSpeed >= landingDipMinFallSpeed);
+
+        if (!PauseState.IsPaused && !playerMovement.IsGuidedRideActive && isMeaningfulLanding)
+        {
+            landingDipTimer = 0f;
+            landingDipOffset = 0f;
+        }
+
+        hasJumpedSinceLanding = false;
+        airborneTime = 0f;
+    }
+
+    private void UpdateAirborneTime()
+    {
+        if (playerMovement == null || playerMovement.IsGrounded || playerMovement.IsGuidedRideActive)
+        {
+            airborneTime = 0f;
+            return;
+        }
+
+        airborneTime += Time.deltaTime;
+    }
+
+    private void HandleLandingDip()
+    {
+        if (landingDipTimer < 0f)
+            return;
+
+        landingDipTimer += Time.deltaTime;
+
+        if (landingDipDuration <= 0f || landingDipTimer >= landingDipDuration)
+        {
+            landingDipTimer = -1f;
+            landingDipOffset = 0f;
+            return;
+        }
+
+        float progress = landingDipTimer / landingDipDuration;
+        landingDipOffset = -landingDipAmount * Mathf.Sin(progress * Mathf.PI);
     }
 
     private void LoadSensitivity()
@@ -294,11 +376,14 @@ public class PlayerLook : MonoBehaviour
         if (!isMoving)
         {
             bobTimer = 0f;
+            Vector3 positionWithoutLandingDip =
+                cameraPivot.localPosition - Vector3.up * appliedLandingDipOffset;
             cameraPivot.localPosition = Vector3.Lerp(
-                cameraPivot.localPosition,
+                positionWithoutLandingDip,
                 pivotStartLocalPos,
                 Time.deltaTime * 10f
-            );
+            ) + Vector3.up * landingDipOffset;
+            appliedLandingDipOffset = landingDipOffset;
             return;
         }
 
@@ -313,7 +398,8 @@ public class PlayerLook : MonoBehaviour
         bobTimer += Time.deltaTime * speed;
 
         float bobOffset = Mathf.Sin(bobTimer) * amount;
-        cameraPivot.localPosition = pivotStartLocalPos + Vector3.up * bobOffset;
+        cameraPivot.localPosition = pivotStartLocalPos + Vector3.up * (bobOffset + landingDipOffset);
+        appliedLandingDipOffset = landingDipOffset;
     }
 
     private void HandleSprintFOV()

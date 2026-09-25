@@ -10,8 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 654d8e92226359b48a90ab8b3ea0755c, type: 3}
-  m_Name: Targeting
+  m_Name: Targeter's Wand
   m_EditorClassIdentifier: Assembly-CSharp::ToolDefinition
   displayName: Targeter's Wand
   icon: {fileID: 21300000, guid: 6e8a3c1ebf591554d8e909a3f23ab066, type: 3}
-  toolKind: 0
+  toolKind: 4
+  heldItemPrefab: {fileID: 0}
+  heldItemLocalPosition: {x: 0.28, y: -0.22, z: 0.58}
+  heldItemLocalEulerAngles: {x: 0, y: 12, z: 0}
+  heldItemLocalScale: {x: 1, y: 1, z: 1}
+  heldItemTint: {r: 0.84, g: 0.3, b: 1, a: 1}

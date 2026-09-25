@@ -10,8 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 654d8e92226359b48a90ab8b3ea0755c, type: 3}
-  m_Name: Mining
+  m_Name: Miner's Staff
   m_EditorClassIdentifier: Assembly-CSharp::ToolDefinition
   displayName: Miner's Staff
   icon: {fileID: 21300000, guid: 2ee8c3aefb10cd747a1f89b4accd2a69, type: 3}
-  toolKind: 0
+  toolKind: 3
+  heldItemPrefab: {fileID: 0}
+  heldItemLocalPosition: {x: 0.28, y: -0.22, z: 0.58}
+  heldItemLocalEulerAngles: {x: 0, y: 12, z: 0}
+  heldItemLocalScale: {x: 1, y: 1, z: 1}
+  heldItemTint: {r: 0.48, g: 0.88, b: 0.26, a: 1}

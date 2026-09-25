@@ -29,6 +29,7 @@ public class ToolHotbar : MonoBehaviour
     [Header("Tool Behaviours (existing scripts)")]
     [SerializeField] private TowerPlacementController placementTool;
     [SerializeField] private TowerInspectorTool inspectTool;
+    [SerializeField] private Behaviour targetingTool;
 
     [Header("Visual-only hover highlight (optional)")]
     [SerializeField] private GridHoverSelector hoverSelector;
@@ -117,6 +118,13 @@ public class ToolHotbar : MonoBehaviour
 
         if (hoverSelector != null)
             hoverSelector.enabled = false;
+
+        for (int i = 0; i < slots.Length; i++)
+        {
+            Behaviour slotBehaviour = slots[i].toolBehaviour;
+            if (slotBehaviour != null && slotBehaviour != inspectTool)
+                slotBehaviour.enabled = false;
+        }
 
         currentSlotIndex = FindNearestOwnedSlot(
             Mathf.Clamp(startSlotIndex, 0, Mathf.Max(0, slots.Length - 1)));
@@ -373,28 +381,56 @@ public class ToolHotbar : MonoBehaviour
 
     private void AutoWireSlotsIfNeeded()
     {
-        if (slots == null || slots.Length != 9)
+        if (slots == null)
             slots = new Slot[9];
+        else if (slots.Length != 9)
+            Array.Resize(ref slots, 9);
 
-        bool anyNonEmpty = false;
+        bool anyConfiguredSlot = false;
+
         for (int i = 0; i < slots.Length; i++)
         {
-            if (slots[i].kind != ToolKind.Empty)
+            Slot slot = slots[i];
+
+            // The definition is the item being equipped; keep its behavior and view in sync.
+            if (slot.definition != null)
+                slot.kind = slot.definition.toolKind;
+
+            if (slot.toolBehaviour == null)
             {
-                anyNonEmpty = true;
-                break;
+                switch (slot.kind)
+                {
+                    case ToolKind.Placement:
+                        slot.toolBehaviour = placementTool;
+                        break;
+                    case ToolKind.Inspect:
+                        slot.toolBehaviour = inspectTool;
+                        break;
+                    case ToolKind.Targeting:
+                        slot.toolBehaviour = targetingTool;
+                        break;
+                }
             }
+
+            slots[i] = slot;
+            if (slot.kind != ToolKind.Empty)
+                anyConfiguredSlot = true;
         }
 
-        if (anyNonEmpty)
+        if (anyConfiguredSlot)
             return;
 
-        slots[0] = new Slot { kind = ToolKind.Placement, toolBehaviour = placementTool };
-        slots[1] = new Slot { kind = ToolKind.Inspect, toolBehaviour = inspectTool };
-
-        for (int i = 2; i < slots.Length; i++)
+        slots[0] = new Slot
         {
-            slots[i] = new Slot { kind = ToolKind.Empty, toolBehaviour = null, definition = null };
-        }
+            kind = ToolKind.Placement,
+            definition = null,
+            toolBehaviour = placementTool
+        };
+        slots[1] = new Slot
+        {
+            kind = ToolKind.Inspect,
+            definition = null,
+            toolBehaviour = inspectTool
+        };
     }
 }

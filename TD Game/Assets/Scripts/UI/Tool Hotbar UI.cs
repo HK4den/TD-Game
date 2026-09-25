@@ -26,41 +26,30 @@ public class ToolHotbarUI : MonoBehaviour
 
     public void Refresh()
     {
-        ClearSlots();
-
         if (hotbar == null || slotContainer == null || slotPrefab == null)
             return;
 
         int ownedCount = hotbar.OwnedSlotCount;
         int selectedOwnedIndex = hotbar.GetOwnedIndexFromRealIndex(hotbar.CurrentSlotIndex);
 
+        while (spawnedSlots.Count < ownedCount)
+        {
+            HotbarSlotUI ui = Instantiate(slotPrefab, slotContainer);
+            spawnedSlots.Add(ui);
+        }
+
+        while (spawnedSlots.Count > ownedCount)
+        {
+            int last = spawnedSlots.Count - 1;
+            if (spawnedSlots[last] != null)
+                Destroy(spawnedSlots[last].gameObject);
+            spawnedSlots.RemoveAt(last);
+        }
+
         for (int i = 0; i < ownedCount; i++)
         {
             ToolHotbar.Slot slot = hotbar.GetOwnedSlot(i);
-            HotbarSlotUI ui = Instantiate(slotPrefab, slotContainer);
-            bool isSelected = (i == selectedOwnedIndex);
-
-            ui.Setup(i + 1, slot.definition, isSelected);
-            spawnedSlots.Add(ui);
-        }
-    }
-
-    private void ClearSlots()
-    {
-        for (int i = 0; i < spawnedSlots.Count; i++)
-        {
-            if (spawnedSlots[i] != null)
-                Destroy(spawnedSlots[i].gameObject);
-        }
-
-        spawnedSlots.Clear();
-
-        if (slotContainer == null)
-            return;
-
-        for (int i = slotContainer.childCount - 1; i >= 0; i--)
-        {
-            Destroy(slotContainer.GetChild(i).gameObject);
+            spawnedSlots[i].Setup(i + 1, slot.definition, i == selectedOwnedIndex);
         }
     }
 }
