@@ -6,6 +6,16 @@ public class ToolDefinition : ScriptableObject
     public string displayName;
     public Sprite icon;
     public ToolHotbar.ToolKind toolKind;
+    [Tooltip("Optional scene behaviour binding ID. Leave empty for the existing tool-kind mapping.")]
+    public string behaviourId;
+
+    [Header("Availability")]
+    [Tooltip("Optional alternate hotbar icon while the item is on cooldown.")]
+    public Sprite cooldownIcon;
+    [Tooltip("Zero means unlimited uses. Limited charges must be restored explicitly by the item's behaviour.")]
+    [Min(0)] public int maximumCharges;
+    public ItemCooldownKind cooldownKind;
+    [Min(0f)] public float cooldownAmount;
 
     [Header("Held Model")]
     [Tooltip("Assign a visual prefab to show in hand. Leave empty to use the colored cube placeholder during Play.")]

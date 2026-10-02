@@ -1,8 +1,14 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class TowerInspectorTool : MonoBehaviour
+public class TowerInspectorTool : MonoBehaviour, IToolEquipBehaviour
 {
+    public bool UsesGridHover => true;
+    public bool AllowsTowerSelection => true;
+    public bool AllowsEmptyTileSelection => true;
+    public void Equip(ItemRuntimeState item) => enabled = true;
+    // Inspection remains the global upgrade/sell authority while other tools are held.
+    public void Unequip() => SetSelectionPermissions(false, false);
     [Header("Refs")]
     [SerializeField] private Camera cam;
     [SerializeField] private float maxDistance = 8f;

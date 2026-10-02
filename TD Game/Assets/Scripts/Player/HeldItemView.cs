@@ -86,6 +86,10 @@ public class HeldItemView : MonoBehaviour
     private float idlePhase;
     private float idleWeight;
     private float equipAge;
+    private float unequipAge;
+    private bool isUnequipping;
+    private ToolHotbar.Slot pendingSlot;
+    private bool equipAnimationSent;
     private bool hasPreviousViewEuler;
     private bool hasPreviousPlayerPosition;
     private bool hasJumpedSinceLanding;
@@ -132,7 +136,7 @@ public class HeldItemView : MonoBehaviour
     private void OnEnable()
     {
         if (hotbar != null)
-            hotbar.OnHotbarChanged += RefreshHeldItem;
+            hotbar.OnEquippedItemChanged += RefreshHeldItem;
 
         if (playerMovement != null)
         {
@@ -155,7 +159,7 @@ public class HeldItemView : MonoBehaviour
     private void OnDisable()
     {
         if (hotbar != null)
-            hotbar.OnHotbarChanged -= RefreshHeldItem;
+            hotbar.OnEquippedItemChanged -= RefreshHeldItem;
 
         if (playerMovement != null)
         {
@@ -197,7 +201,12 @@ public class HeldItemView : MonoBehaviour
             ? 1f
             : Mathf.Clamp01(equipAge / equipTransitionDuration);
         float easedEquipProgress = equipProgress * equipProgress * (3f - 2f * equipProgress);
-        Vector3 equipOffset = Vector3.Lerp(new Vector3(0f, -0.14f, -0.09f), Vector3.zero, easedEquipProgress);
+        float unequipProgress = equipTransitionDuration <= 0f
+            ? 1f : Mathf.Clamp01(unequipAge / equipTransitionDuration);
+        float easedUnequipProgress = unequipProgress * unequipProgress * (3f - 2f * unequipProgress);
+        Vector3 equipOffset = isUnequipping
+            ? Vector3.Lerp(Vector3.zero, new Vector3(0f, -0.14f, -0.09f), easedUnequipProgress)
+            : Vector3.Lerp(new Vector3(0f, -0.14f, -0.09f), Vector3.zero, easedEquipProgress);
 
         float landingOffset = GetLandingOffset(deltaTime);
         Vector3 motionOffset = smoothedLookLag + smoothedMovementSway + smoothedRideSway;
@@ -218,9 +227,46 @@ public class HeldItemView : MonoBehaviour
         Quaternion targetRotation = baseLocalRotation * Quaternion.Euler(rotation);
         float rotationBlend = ResponseBlend(rotationResponse, deltaTime);
         viewTransform.localRotation = Quaternion.Slerp(viewTransform.localRotation, targetRotation, rotationBlend);
+
+        if (isUnequipping)
+        {
+            unequipAge += deltaTime;
+            if (unequipAge >= equipTransitionDuration)
+            {
+                isUnequipping = false;
+                BuildHeldItem(pendingSlot);
+            }
+        }
+        else if (!equipAnimationSent && equipAge >= equipTransitionDuration)
+        {
+            equipAnimationSent = true;
+            HeldItemAnimation animation = heldModel.GetComponentInChildren<HeldItemAnimation>(true);
+            if (animation != null) animation.OnEquipped();
+        }
     }
 
     private void RefreshHeldItem()
+    {
+        if (viewTransform == null)
+            return;
+
+        pendingSlot = hotbar != null ? hotbar.CurrentSlot : default;
+        if (heldModel != null && equipTransitionDuration > 0f)
+        {
+            if (!isUnequipping)
+            {
+                HeldItemAnimation animation = heldModel.GetComponentInChildren<HeldItemAnimation>(true);
+                if (animation != null) animation.OnUnequipped();
+                unequipAge = 0f;
+                isUnequipping = true;
+            }
+            return;
+        }
+
+        BuildHeldItem(pendingSlot);
+    }
+
+    private void BuildHeldItem(ToolHotbar.Slot slot)
     {
         if (viewTransform == null)
             return;
@@ -232,7 +278,6 @@ public class HeldItemView : MonoBehaviour
             heldModel = null;
         }
 
-        ToolHotbar.Slot slot = hotbar != null ? hotbar.CurrentSlot : default;
         currentKind = slot.kind;
         currentDefinition = slot.definition;
 
@@ -299,6 +344,7 @@ public class HeldItemView : MonoBehaviour
         idlePhase = 0f;
         idleWeight = 0f;
         equipAge = 0f;
+        equipAnimationSent = false;
 
         if (viewPivot != null)
         {

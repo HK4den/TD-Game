@@ -61,6 +61,7 @@ public class WaveSpawner : MonoBehaviour
 
     public event Action<int> OnWaveStarted;
     public event Action<int, int> OnWaveCompleted;
+    public event Action OnEnemyKilled;
 
     public int TotalWaves => HasWaveSet ? waveSet.WaveCount : (waves != null ? waves.Length : 0);
     public int NextWaveNumber => Mathf.Clamp(waveIndex + 1, 1, Mathf.Max(1, TotalWaves));
@@ -526,6 +527,8 @@ public class WaveSpawner : MonoBehaviour
         if (enemy == null)
             enemy = health.GetComponentInParent<EnemyAgent>();
 
+        if (enemy != null && activeWaveMembers.Contains(enemy))
+            OnEnemyKilled?.Invoke();
         MarkEnemyResolved(enemy);
     }
 

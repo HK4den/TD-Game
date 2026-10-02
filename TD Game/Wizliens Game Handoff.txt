@@ -1,0 +1,294 @@
+WIZLIENS — GAME CONTEXT AND DESIGN HANDOFF
+Updated October 1, 2026
+
+This document gives a new AI chat the context needed to discuss or develop Wizliens. It combines the solo developer's stated intentions with a snapshot of the Unity project. It is general game context, not a request to implement every feature described here.
+
+Read the design and working boundaries before suggesting changes. For design intent, the developer's statements are authoritative. For current implementation, inspect the current project when you have access: code, prefab settings, and scene overrides can change after this snapshot. If you only have this document, do not claim to have inspected or tested the game yourself.
+
+Status language used here:
+• Current: present in inspected code/assets, or explicitly reported playable by the developer. Code support does not establish that every configuration is used in the active scene.
+• Planned: a feature or rule the developer wants; do not assume it already exists.
+• Tentative: an idea or approximate value that is still open.
+• Historical validation: checks reported by existing project notes, not fresh checks performed while writing this document.
+
+
+1. QUICK ORIENTATION
+
+Wizliens is a single-player, first-person tower-defense game with substantial platforming. The name combines "wizard" and "aliens." You play John Wizard, a very basic wizard who places little wizards with different magical specialties as towers. Together you defend wizard towers and small cities, depending on the map, from Glorps: evil little alien cats, mostly green, with many enemy types.
+
+The tone is deliberately silly. Almost anything can be a kind of magic, including acid, bees, or capitalism. The game should support expressive builds, tower synergies, strategic decisions, and fluid movement. The developer wants players rewarded for both strategic and mechanical skill and gives fun the highest priority.
+
+Tower defense and platforming should have equal importance. Their connection is economic: platforming earns money for defense, while defense income may buy items that improve platforming performance. Platforming also gives the player something meaningful to do while waves are running.
+
+This is the developer's first real game being made for commercial, made solo. A full playable game loop already exists. The developer plays through the current game during development sessions and knows it well. Much more content and polish are wanted before all the pieces are put together for a better game loop; UI is the most unfinished area and has recently received work. The developer considers a rough minimal release conceivable by concentrating on towers and waves, but wants a better game than that. This is not a confirmed release plan, price, or statement that a Steam build exists.
+
+The developer is most excited about classes and interactions between towers. Feature planning is flexible and driven by ideas that seem good for the game; there is no committed chronological roadmap.
+
+
+2. WORLD, CHARACTERS, AND NAMING
+
+John Wizard is intentionally a basic wizard. The towers are little wizards of different magic types, not merely generic buildings with guns. The protected location can be a wizard tower or a little city depending on the map.
+
+"Glorp" is an official name. Gneep, Geep, Gnarp, and similar names are possible labels for enemy stages or levels of advancement/strength but as of right now theres nothing specific chosen. Existing file names and enemy IDs use some of these words, but they do not establish a final naming hierarchy. Do not invent a formal taxonomy from the asset names.
+
+The absurd magical categories are part of the creative direction. Capitalism is planned as a tower theme replacing Gamblermancer. A Cartomancer that draws cards is another example of the kind of magic the game can contain. Keep suggestions compatible with the playful world.
+
+There are campaign and map ideas, but the developer does not want to detail them in this general handoff right now. The intended campaign is a simple silly story that also functions somewhat as a tutorial. There is no need to invent its plot, map list, or lore to discuss the rest of the game.
+
+
+3. DESIGN PHILOSOPHY AND PROTECTED DECISIONS
+
+Player freedom and builds
+The developer particularly enjoys builds, strategy, and freedom. Players should be able to choose towers, upgrade paths, classes, and other systems to express how they want to play. Replay variety should emerge in part from those choices and their interactions. Do not interpret the wish that players face different things as a commitment to randomized waves or procedural maps.
+
+Skill and fun
+Reward good tower decisions and good movement. Fun is the priority; the game does not need a newly invented formal definition of fairness before work can continue. The developer wants player choice comparable to other strategic tower-defense games.
+
+Randomness
+Most mechanics should not revolve around RNG. Dedicated randomness-themed mechanics are exceptions. Examples are a Cartomancer drawing cards to determine its behavior for a round, a Capitalist tower randomly gaining or losing money at round end, and a possible capitalism-themed player class involving stock investment. These are design examples, not fully specified systems. Their existence does not authorize adding random failure or random outcomes to unrelated core mechanics.
+
+Synergy
+Many towers should work together. Some conditions should combine into stronger conditions, and some conditions from one tower should increase the damage dealt by particular other towers. This is a central intended source of build depth.
+
+Movement boundary
+Preserve the established movement system and feel. The preferred direction is to add compatible mechanics, especially environmental traversal such as ziplines, bounce/jump pads, and boost clouds. Do not redesign movement or casually retune it while working on another feature.
+
+Pathing boundary
+The current pathing system and its gameplay role are intended to stay. Preserve it when adding features. Any optimization or fix should respect existing route and placement behavior.
+
+Upgrade boundary
+The direction of classes, towers, and split paths is intended to stay. Tower upgrades use split paths rather than crosspaths. Possible class split paths are still tentative; do not treat every class as already having a finalized branching tree.
+
+Scope and tone
+The game is entirely single-player. Suggestions should be realistic for one developer making their first game. Preserve the silly tone.
+
+
+4. DEFENSE AND PLATFORMING: THE INTENDED ECONOMY LOOP
+
+The loop connects both halves of the game:
+
+Build and improve defense → earn defense income → potentially buy useful movement items → complete platforming areas more effectively → earn money for stronger defense.
+
+Platforming reward design:
+• Coins distributed through an area give partial rewards even if the player cannot finish it.
+• Completing an area gives a larger monetary reward.
+• Rewarding faster times with additional money is an idea under consideration, inspired by Neon White.
+• Particular levels might award an item or another kind of reward, but money should be the main reward.
+• New platforming areas unlock according to the round reached. Later areas should be harder and pay more.
+• Replays can recover missed cash. They must not repeatedly award the same full payout as a money farm.
+• Purchasable items may provide buffs or abilities that improve movement and allow faster clears.
+
+The interplay matters more than any currently undecided formula. Do not assume an exact score system, payout curve, shop, unlock schedule, or item catalog has been settled.
+
+Implementation distinction: money pickups, economy handling, and environmental traversal exist. This review did not establish a complete system for course completion payouts, timed medals/bonuses, round-gated course unlocks, or tracking all claimed course rewards. Treat those as design requirements until current project evidence shows their implementation.
+
+Current MoneyPickup code awards money once per pickup instance, then destroys or disables it. That is a useful existing piece, but does not by itself prevent a reloaded/reset course from recreating rewards. Future course reward logic needs to honor the intended replay rule.
+
+
+5. CLASSES: PLANNED PLAYER PROGRESSION
+
+Classes are a major planned feature, not an already implemented class system. The current inventory provides foundations for active items, but classes, passive skills, class progression, and class abilities are not supplied by that inventory framework.
+
+The developer's progression idea is deliberately flexible:
+• A class might start with a passive effect or an active item/ability.
+• After a set number of rounds, it might receive the other kind of effect.
+• Further progression could strengthen existing effects, add more passives, or provide another active item.
+• Different classes can progress differently: leveling speed, ability count, and overall power need not be uniform.
+• Higher-power classes might level more slowly, similar to the variation among BTD6 heroes.
+• Classes may offer split paths, but that possibility is not yet fully designed.
+
+Do not convert this into a universal progression schedule without discussing the particular class. The developer has not fixed the class roster, round thresholds, leveling formula, or starting kit for each class.
+
+
+6. TOWER INTERACTIONS AND THE CONDITION SYSTEM
+
+Condition combinations and specific tower synergies are planned. Detailed tower roles, upgrade trees, roster plans, and comprehensive condition catalogs belong in a dedicated tower design document. This general handoff records the principles and one supplied example.
+
+Developer-supplied example:
+• Burn: 2 damage every 0.45 seconds.
+• Frostbite: the enemy freezes in place every 0.5 seconds for a short time.
+• Burn + Frostbite produces Frostburn: 3 damage every 0.45 seconds, plus freezing for a short time.
+
+Combination lifecycle is important:
+The two original conditions remain present. Their effects are suppressed while the combined condition is active; they are not consumed or deleted. When either contributing condition expires, Frostburn stops and the surviving individual condition resumes its effect.
+
+For example, if Burn expires while Frostbite remains, Frostburn ends and Frostbite acts on its own again. If Frostbite expires first, Burn resumes.
+
+The individual condition timers therefore still matter during the combination. The exact freeze duration, Frostburn freeze cadence, stacking/reapplication rules, and broader combination list have not been specified. Do not silently fill them in as confirmed rules.
+
+This is a planned condition-system example, not a claim that existing slow or acid-puddle code already implements Burn/Frostbite/Frostburn. Existing effect infrastructure should be considered when designing the eventual system, while preserving its behavior unless changes are requested.
+
+Current tower families represented in assets include Causticist, Coincaster, Cryomancer, Evocationist, Gamblermancer, Pyromancer, and Spellpiercer. Capitalism/Capitalist is intended to replace Gamblermancer. Until that change happens, Gamblermancer can still appear in the actual project. Asset presence alone does not establish a complete or final roster.
+
+
+7. MODES, CAMPAIGN, AND REPLAYABILITY
+
+The planned main modes per map are Short, Medium, and Long, broadly inspired by Bloons TD.
+
+Tentative round counts:
+• Short: about 40 rounds.
+• Medium: about 70 rounds.
+• Long: about 100 rounds.
+
+Medium is the baseline for prices. Short should be a percentage cheaper, and Long a percentage more expensive. The percentages and round counts are not final. Do not equate these modes with a finalized difficulty system or invent additional differences.
+
+Submodes may eventually exist, but the developer currently has no specific submode designs.
+
+Losing means losing all lives, in the Bloons-style sense. Current code represents this through BaseHealth. The current GameEndController wins when the final configured wave completes and loses when the base is destroyed. This is current behavior; it does not settle all rules for future modes or a campaign.
+
+Replayability should grow through more towers, more terrain tiles, more enemy mechanics, classes, path choices, and synergies. The intended variety is linked strongly to player choices. Avoid making an unexplained leap from that goal to compulsory randomization.
+
+
+8. CURRENT BUILD AND DEVELOPMENT PRIORITIES
+
+Developer-reported state:
+There is a full playable loop. The developer plays the game fully with the available content when developing, so future chats should not treat them as unfamiliar with their own game. The current build still needs substantial content and polish. UI and related work are the clearest unfinished area, with recent development already addressing it.
+
+Known planned directions:
+• Classes with passive and active effects and progression.
+• Interactions between towers and a richer condition system.
+• More towers, including the Capitalism replacement.
+• More terrain tiles and enemy mechanics.
+• More traversal/environmental movement mechanics.
+• Movement-supporting items and richer platforming rewards/progression.
+• Short/Medium/Long modes, with possible later submodes.
+• A small story/tutorial campaign.
+
+These are directions, not an agreed delivery order. Classes and tower interactions are the areas the developer is most excited about. UI has the strongest stated need for polish. Do not invent deadlines, milestones, release pricing, or an ordered backlog.
+
+Future discussions can focus on the feature the developer wants next without forcing all open design questions to be answered first. More specific documents can be written when a topic warrants them.
+
+
+9. CURRENT UNITY SYSTEMS — IMPLEMENTATION SNAPSHOT
+
+Project foundation
+Unity version: 6000.3.13f1. Language: C#. Rendering: Universal Render Pipeline, package 17.3.0. Input: Unity Input System, package 1.19.0. The project contains first-party gameplay scripts alongside third-party assets, including Damage Numbers Pro. Bundled multiplayer-related packages do not establish multiplayer gameplay.
+
+Scenes
+The main gameplay scene is Assets/Scenes/Tower Defense Test.unity. Build settings include Opening, MainMenu, and Tower Defense Test. Terrain Test and ufo scenes also exist. A scene named "Test" is not evidence that the playable loop is missing.
+
+Player and movement
+The player controller uses CharacterController and supports sprint/jump, acceleration and deceleration on ground/in air, coyote time, jump buffering, external forces/impulses, launches, boosts, and guided/forced movement. Environmental scripts include bounce objects, boost clouds, magic ziplines, teleports, and money pickups. Movement audio and boost-timer UI also exist. Extend these systems with the developer's movement boundary in mind.
+
+Grid, pathing, and terrain
+The grid stores tile identity, terrain, buildability, occupancy, and enemy blocking. A* pathfinding and path-change notification coordinate routing. Placement and path previews support evaluating route changes. Placement logic can block enemy movement with towers and enforce a remaining route when those settings are enabled. Check prefab/scene configuration before claiming a particular setting is active.
+
+Current terrain enum names are Normal, Swamp, Fire, Energy, Blocked, Beam, Brush, ThickBrush, and Rubble. An enum entry alone is not proof of a finished mechanic. Inspected tile rules make Blocked impassable/unbuildable; Beam, ThickBrush, and Rubble are unbuildable but passable; Brush is buildable/passable. Enemy code gives Brush and ThickBrush terrain slowing and camo bonuses. Beam provides absolute protection against tower effects. More terrain types/mechanics are planned.
+
+Tower placement and management
+The placement tool has a radial tower menu, ghost preview, affordability/buildability/occupancy checks, placement orientation, audio feedback, and path checks. Towers have identities, purchase costs, upgrade states, and a value ledger recording investment. The inspector handles selection, upgrading, selling, and terrain inspection; selection/range visuals exist.
+
+Upgrades replace a tower with its configured upgrade prefab in place, carry forward the value ledger, add the upgrade cost, and preserve tile occupancy. Configured upgrades can offer one or two paths. This is the current implementation basis for split paths; it is not a crosspath system.
+
+Tower combat
+Combat is divided among stats, attack control, targeting, range queries/profiles, rotation, and projectile emission. Target mode names are None, First, Last, Close, Strong, and Weak. First/Last use remaining route distance. Range profiles support a sphere, one box, or multiple boxes; directional range matters for some configurations.
+
+Projectiles support damage/healing modes, pierce, optional slows, and optional acid puddles. Additional components include aura debuffs, detection support, and end-of-wave money towers. These building blocks do not imply that every tower uses every feature.
+
+Enemy behavior
+Enemies have movement, health, abilities, slow handling, and damage modifiers. Specialized components support splitting on death, self-regeneration, health-based speed changes, healing auras, damage reduction, camo auras, damage siphoning, death explosions, radius visuals, and siphon flashes. Enemy code supports slow/extra-damage resistance or immunity. Inspect actual prefabs and waves to determine which abilities appear in a specific run.
+
+Current slow stacking
+Slow entries track sources, family keys, strengths, and expiration. The strongest slow from each family contributes; different families combine multiplicatively. This is an existing slow system, separate from the planned condition-combination system.
+
+Camo and detection
+Intrinsic enemy camo can be level 1–3. Camo auras provide a level, with the strongest aura considered. Effective enemy camo is the greater of intrinsic/aura camo plus terrain bonuses, capped at 4. Brush adds 1; ThickBrush adds 2. Thus enemy protection is not limited to three effective levels.
+
+Tower detection must meet or exceed effective enemy camo. Natural detection and allowed external grants contribute; distinct tower detection grants add together. Beam protection remains absolute regardless of detection. Projectiles snapshot detection when fired, and acid puddles inherit that level. Enemy terrain protection is evaluated when the attack impacts/ticks. Removing an aura affects future tower targeting/shots, not detection already carried by attacks in flight. These rules matter for support synergy and consistency.
+
+Economy, waves, and endings
+EconomyManager handles money changes/spending. Enemy deaths can reward money, pickups award money, configured wave completion awards income, and special towers can have end-of-wave money outcomes. Income summaries, money HUD, base health, and win/lose panels exist. Pause and game end stop time/input through the existing shared systems.
+
+Tools and inventory
+The hotbar supports up to nine owned items and hides empty slots. The inspected gameplay scene configures Inspect, Placement, and Targeting. Mining is a defined tool kind/asset, but its behavior binding in the inspected scene is empty; do not describe mining as a finished feature on that basis.
+
+ToolDefinition assets describe items; ItemRuntimeState holds per-item charges/cooldowns. Duplicate copies can have independent state. Runtime state can survive switching/reordering/retained loadout changes, but is not saved between sessions. Cooldowns can use seconds, completed rounds, or wave kills. Existing tools are documented as unlimited without configured cooldowns.
+
+The inspector remains available for upgrading/selling/deselecting even when it is not the held item. Held-item presentation supports lowering/raising and optional animation hooks. Custom tools can use behavior IDs and IToolEquipBehaviour rather than hardcoding every action into the hotbar. This is an extensible item foundation, not an implemented class system.
+
+
+10. AUTHORED CONTENT SNAPSHOT
+
+The enemy catalog contains 16 entries:
+armored1, armored1_2, fast_glorp4, big_gneep, glorp, gneep_small, gneep_xsmall, med_gneep, explorp, fast_glorp1, fast_glorp2, fast_glorp3, splitz1, splitz1_mini, splitz2, hrm.
+
+The authored Wave Set contains 17 definitions with these labels:
+Wave 0.75, Wave 1, Wave 1.05, Wave 1.2, Wave 1.5, Wave 1.6, Wave 2, Wave 2.5, Wave 3, Wave 4, Wave 4.5, Wave 5, Wave 6, Wave 7, Wave 8, Wave 9, Wave 10.
+
+These are editor labels for actual sequential wave definitions, not fractional rounds in the planned mode system. The 17-definition asset is not the planned 40/70/100-round content. Do not call it 10 waves simply because the last label is Wave 10.
+
+WaveSet is a ScriptableObject, with completion rewards and step-based spawning: SingleGroup, Alternating, Sequence, RandomPool, Burst, and Delay. EnemyCatalog provides IDs/prefab references. A custom Wave Editor exists. WaveSpawner also supports legacy serialized waves, so verify its assigned source before changing wave content.
+
+Catalog categories/threat values, file names, and prefab folders are authoring data. They do not establish a finished balance model or finalized enemy taxonomy.
+
+
+11. PERFORMANCE AND VALIDATION CONTEXT
+
+Performance Review.md, dated September 21, 2026, records several optimization passes. They include spatial enemy lookup, active tower/enemy registries, cached remaining route distance, reusable A* storage and a heap, bounded path caching, placement-preview caching, cached stat/aura totals, shared scene references, reduced inactive overlay work, and slow recalculation when relevant state changes.
+
+Tower projectiles and certain combat audio one-shots have pooling. Reusable overlap buffers grow/retry when full. Preserve effect coverage, targeting behavior, route tie-breaking, attack timing, and gameplay responsiveness when optimizing; silently reducing tick rates or dropping targets would change the game.
+
+Historical evidence in the notes includes successful editor assembly compilation and isolated randomized comparisons: 4,000 path/cache comparisons and 2,000 spatial queries. Inventory notes also describe standalone checks using minimal Unity stubs. These are useful evidence for specific code paths, not validation of all Unity lifecycle, physics, visuals, or audio.
+
+The developer's regular full playthroughs are separate evidence that the game loop is exercised. The old performance notes still list crowded-wave/lifecycle checks and before/after Profiler measurements as outstanding. Do not claim those particular checks have happened unless newer evidence establishes it.
+
+No Unity play session, compilation, or new automated tests were run to create this handoff. This document is based on project inspection, existing notes, and the developer's statements.
+
+
+12. FILE MAP FOR A CHAT WITH PROJECT ACCESS
+
+Paths below are relative to the Unity project root, currently:
+C:\Users\kaden\OneDrive\Desktop\TD-Game\TD Game
+
+Design/context
+• This file: Wizliens Game Handoff.txt — the general handoff rebuilt from the conversation.
+• GAME CONTEXT HANDOFF.txt — earlier draft; prefer this newer handoff for general context.
+• Docs/Inventory.md — inventory contracts, charges/cooldowns, held items, and validation scope.
+• Camo Levels.md — detection, terrain protection, aura grants, attack snapshots.
+• Movement Momentum.md — player forces, damping, friction, landing momentum.
+• Magic Zipline Setup.md — guided rides, grabs, release/launch behavior, scene setup.
+• Enemy Aura Setup.md — camo aura and radius visualizer.
+• Siphon Overlay Setup.md — siphon visual setup.
+• Performance Review.md — optimization history and validation limits.
+
+Gameplay and authored data
+• Assets/Scenes/Tower Defense Test.unity — primary gameplay scene.
+• Assets/Scenes/MainMenu.unity and Opening.unity — menu/opening.
+• Assets/WaveS/WaveSpawner Wave Set.asset — authored wave definitions.
+• Assets/WaveS/WaveSpawner Enemy Catalog.asset — catalog entries.
+• Assets/Prefabs/TowersBullets — tower, upgrade, projectile, and related prefabs.
+• Assets/Prefabs/Enemies — enemy prefabs.
+• Assets/Prefabs/Objects Platforming — environmental platforming prefabs.
+• Assets/Prefabs/Managers — manager prefabs; scene overrides may modify their settings.
+• Assets/Prefabs/Scriptable Objects — tool definitions and other authored data.
+
+Code entry points
+• Assets/Scripts/Player/Player Movement.cs and PlayerLook.cs — movement/look.
+• Assets/Scripts/Environment — zipline, bounce, boosts, pickups, teleport.
+• Assets/Scripts/Grid — tiles, grid, A*; Grid/Path contains previews/base health.
+• Assets/Scripts/Tower/Tower Place — placement/orientation.
+• Assets/Scripts/Tower/Tower Combat — stats, attacks, targeting, range, projectiles, support behaviors.
+• Assets/Scripts/Tower/Tower Upgrade State.cs and Tower Value Ledger.cs — upgrades/investment.
+• Assets/Scripts/Enemy — movement/health/modifiers and specialized abilities.
+• Assets/Scripts/Misc/Wave Spawner.cs and Economy Manager.cs — waves/economy.
+• Assets/Scripts/Waves — WaveSet/EnemyCatalog definitions.
+• Assets/Editor/Waves/WaveEditorWindow.cs — wave authoring UI.
+• Assets/Scripts/Misc/Tool Hotbar.cs and Player/Tool Definition.cs, ItemRuntimeState.cs, IToolEquipBehaviour.cs — item foundation.
+• Assets/Scripts/UI — HUD, inspection, radial menu, game end, item displays.
+
+When implementing a feature, read the relevant source and actual assigned assets/scene overrides. Serialized defaults are not always active gameplay values. Broad systems being present does not prove every planned feature is wired up.
+
+
+13. HOW TO CONTINUE FROM THIS HANDOFF
+
+Use the established concept and priorities to answer the developer's actual request. Do not reopen the full questionnaire: title, world, tone, player role, single-player scope, core economy relationship, skill philosophy, movement/pathing boundaries, and upgrade direction are already answered.
+
+Ask only for a missing detail that materially affects the current task. Some unresolved details are intentionally postponed or tentative: mode price percentages, exact class kits/leveling schedules, specific tower/condition designs, freeze durations, time bonus formulas, course unlock schedules, item catalogs, and campaign/map details.
+
+Keep detailed tower designs in a dedicated document when that work is requested. Campaign/map ideas can wait until the developer chooses to discuss them. It is fine for open details to remain open in this general context file.
+
+For design suggestions, explain how an idea supports player freedom, synergy, strategic/mechanical skill, fun, and feasible solo development. Label new suggestions as suggestions. Do not turn them into decisions the developer supposedly made.
+
+For implementation, preserve movement feel, the current pathing system, split-path direction, and existing timing/stacking rules unless the developer authorizes a change. Distinguish code support, active configuration, personally reported playability, and actual test evidence.
+
+This handoff should help a future chat start with the right understanding. It should evolve when the developer makes decisions or the project changes.

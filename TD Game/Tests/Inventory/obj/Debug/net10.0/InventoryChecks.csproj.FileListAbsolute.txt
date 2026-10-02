@@ -1,0 +1,15 @@
+C:\Users\kaden\OneDrive\Desktop\TD-Game\TD Game\Tests\Inventory\bin\Debug\net10.0\InventoryChecks.exe
+C:\Users\kaden\OneDrive\Desktop\TD-Game\TD Game\Tests\Inventory\bin\Debug\net10.0\InventoryChecks.deps.json
+C:\Users\kaden\OneDrive\Desktop\TD-Game\TD Game\Tests\Inventory\bin\Debug\net10.0\InventoryChecks.runtimeconfig.json
+C:\Users\kaden\OneDrive\Desktop\TD-Game\TD Game\Tests\Inventory\bin\Debug\net10.0\InventoryChecks.dll
+C:\Users\kaden\OneDrive\Desktop\TD-Game\TD Game\Tests\Inventory\bin\Debug\net10.0\InventoryChecks.pdb
+C:\Users\kaden\OneDrive\Desktop\TD-Game\TD Game\Tests\Inventory\obj\Debug\net10.0\InventoryChecks.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\kaden\OneDrive\Desktop\TD-Game\TD Game\Tests\Inventory\obj\Debug\net10.0\InventoryChecks.AssemblyInfoInputs.cache
+C:\Users\kaden\OneDrive\Desktop\TD-Game\TD Game\Tests\Inventory\obj\Debug\net10.0\InventoryChecks.AssemblyInfo.cs
+C:\Users\kaden\OneDrive\Desktop\TD-Game\TD Game\Tests\Inventory\obj\Debug\net10.0\InventoryChecks.csproj.CoreCompileInputs.cache
+C:\Users\kaden\OneDrive\Desktop\TD-Game\TD Game\Tests\Inventory\obj\Debug\net10.0\InventoryChecks.sourcelink.json
+C:\Users\kaden\OneDrive\Desktop\TD-Game\TD Game\Tests\Inventory\obj\Debug\net10.0\InventoryChecks.dll
+C:\Users\kaden\OneDrive\Desktop\TD-Game\TD Game\Tests\Inventory\obj\Debug\net10.0\refint\InventoryChecks.dll
+C:\Users\kaden\OneDrive\Desktop\TD-Game\TD Game\Tests\Inventory\obj\Debug\net10.0\InventoryChecks.pdb
+C:\Users\kaden\OneDrive\Desktop\TD-Game\TD Game\Tests\Inventory\obj\Debug\net10.0\InventoryChecks.genruntimeconfig.cache
+C:\Users\kaden\OneDrive\Desktop\TD-Game\TD Game\Tests\Inventory\obj\Debug\net10.0\ref\InventoryChecks.dll

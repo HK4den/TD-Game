@@ -3,8 +3,17 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class TowerPlacementController : MonoBehaviour
+public class TowerPlacementController : MonoBehaviour, IToolEquipBehaviour
 {
+    public bool UsesGridHover => true;
+    public bool AllowsTowerSelection => true;
+    public bool AllowsEmptyTileSelection => false;
+    public void Equip(ItemRuntimeState item) => enabled = true;
+    public void Unequip()
+    {
+        enabled = false;
+        ClearSelectionAndHideGhost();
+    }
     [Serializable]
     public class PlaceableTowerEntry
     {

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -11,6 +12,7 @@ public class ToolHotbar : MonoBehaviour
         Inspect = 2,
         Mining = 3,
         Targeting = 4,
+        Custom = 5,
     }
 
     [Serializable]
@@ -21,7 +23,18 @@ public class ToolHotbar : MonoBehaviour
 
         [Tooltip("Enable/disable this behaviour when the slot is equipped. Leave null for Empty.")]
         public Behaviour toolBehaviour;
+        [NonSerialized] public ItemRuntimeState runtimeState;
     }
+
+    [Serializable]
+    public struct BehaviourBinding
+    {
+        public string id;
+        public Behaviour behaviour;
+    }
+
+    [Header("Additional Item Behaviours")]
+    [SerializeField] private BehaviourBinding[] behaviourBindings = Array.Empty<BehaviourBinding>();
 
     [Header("Slots (size should be 9 max)")]
     [SerializeField] private Slot[] slots = new Slot[9];
@@ -29,6 +42,7 @@ public class ToolHotbar : MonoBehaviour
     [Header("Tool Behaviours (existing scripts)")]
     [SerializeField] private TowerPlacementController placementTool;
     [SerializeField] private TowerInspectorTool inspectTool;
+    [SerializeField] private Behaviour miningTool;
     [SerializeField] private Behaviour targetingTool;
 
     [Header("Visual-only hover highlight (optional)")]
@@ -40,6 +54,12 @@ public class ToolHotbar : MonoBehaviour
 
     private int currentSlotIndex;
     private PlayerControls controls;
+    private WaveSpawner waveSpawner;
+    private Behaviour equippedBehaviour;
+    private ItemRuntimeState lastAnnouncedItem;
+    private bool equipmentSuspended;
+    public ItemRuntimeState CurrentItem => CurrentSlot.runtimeState;
+    public bool IsBehaviourEquipped(Behaviour behaviour) => behaviour != null && equippedBehaviour == behaviour;
 
     public int CurrentSlotIndex => currentSlotIndex;
 
@@ -61,6 +81,7 @@ public class ToolHotbar : MonoBehaviour
 
     public Slot GetOwnedSlot(int ownedIndex)
     {
+        if (slots == null || ownedIndex < 0) return default;
         int count = 0;
 
         for (int i = 0; i < slots.Length; i++)
@@ -103,10 +124,169 @@ public class ToolHotbar : MonoBehaviour
         : default;
 
     public event Action OnHotbarChanged;
+    public event Action OnEquippedItemChanged;
+
+    // The visible hotbar remains a compact list of owned items. Call these methods
+    // when a class or level changes the player's loadout.
+    public bool SetLoadout(IReadOnlyList<ToolDefinition> definitions)
+    {
+        if (definitions == null || definitions.Count > 9)
+            return false;
+
+        List<Slot> loadout = new List<Slot>();
+        List<Slot> previous = GetLoadout();
+        for (int i = 0; i < definitions.Count; i++)
+            if (definitions[i] != null && definitions[i].toolKind != ToolKind.Empty)
+            {
+                int retained = previous.FindIndex(slot => slot.definition == definitions[i]);
+                if (retained >= 0)
+                {
+                    loadout.Add(previous[retained]);
+                    previous.RemoveAt(retained);
+                }
+                else loadout.Add(MakeSlot(definitions[i]));
+            }
+        return SetSlots(loadout);
+    }
+
+    private bool SetSlots(IReadOnlyList<Slot> loadout, int selectedOwnedIndex = -1)
+    {
+        if (loadout == null || loadout.Count > 9)
+            return false;
+
+        ToolDefinition selected = CurrentSlot.definition;
+        ItemRuntimeState selectedItem = CurrentItem;
+        ToolKind selectedKind = CurrentSlot.kind;
+        UnequipCurrent();
+        if (slots == null || slots.Length != 9)
+            slots = new Slot[9];
+        for (int i = 0; i < slots.Length; i++)
+            slots[i] = default;
+
+        int count = 0;
+        for (int i = 0; i < loadout.Count; i++)
+        {
+            Slot slot = loadout[i];
+            if (slot.kind == ToolKind.Empty)
+                continue;
+            if (slot.runtimeState == null) slot.runtimeState = new ItemRuntimeState(slot.definition);
+            slots[count++] = slot;
+        }
+
+        currentSlotIndex = 0;
+        if (selectedOwnedIndex >= 0 && selectedOwnedIndex < count)
+            currentSlotIndex = selectedOwnedIndex;
+        else if (selectedKind != ToolKind.Empty)
+        {
+            for (int i = 0; i < count; i++)
+                if ((selectedItem != null && slots[i].runtimeState == selectedItem) ||
+                    (selectedItem == null && slots[i].kind == selectedKind && slots[i].definition == selected))
+                { currentSlotIndex = i; break; }
+        }
+        ApplySlot(currentSlotIndex);
+        return true;
+    }
+
+    public bool AddItem(ToolDefinition definition)
+    {
+        if (definition == null || definition.toolKind == ToolKind.Empty || OwnedSlotCount >= 9)
+            return false;
+        List<Slot> loadout = GetLoadout();
+        loadout.Add(MakeSlot(definition));
+        return SetSlots(loadout);
+    }
+
+    public bool RemoveItemAt(int ownedIndex)
+    {
+        List<Slot> loadout = GetLoadout();
+        if (ownedIndex < 0 || ownedIndex >= loadout.Count)
+            return false;
+        loadout.RemoveAt(ownedIndex);
+        return SetSlots(loadout);
+    }
+
+    public bool MoveItem(int fromOwnedIndex, int toOwnedIndex)
+    {
+        List<Slot> loadout = GetLoadout();
+        if (fromOwnedIndex < 0 || fromOwnedIndex >= loadout.Count ||
+            toOwnedIndex < 0 || toOwnedIndex >= loadout.Count)
+            return false;
+        Slot moved = loadout[fromOwnedIndex];
+        loadout.RemoveAt(fromOwnedIndex);
+        loadout.Insert(toOwnedIndex, moved);
+        int selected = GetOwnedIndexFromRealIndex(currentSlotIndex);
+        if (selected == fromOwnedIndex) selected = toOwnedIndex;
+        else if (fromOwnedIndex < selected && selected <= toOwnedIndex) selected--;
+        else if (toOwnedIndex <= selected && selected < fromOwnedIndex) selected++;
+        return SetSlots(loadout, selected);
+    }
+
+    private List<Slot> GetLoadout()
+    {
+        List<Slot> loadout = new List<Slot>();
+        if (slots == null) return loadout;
+        for (int i = 0; i < slots.Length; i++)
+            if (slots[i].kind != ToolKind.Empty)
+                loadout.Add(slots[i]);
+        return loadout;
+    }
+
+    private Slot MakeSlot(ToolDefinition definition)
+    {
+        return new Slot
+        {
+            kind = definition.toolKind,
+            definition = definition,
+            toolBehaviour = ResolveBehaviour(definition.toolKind),
+            runtimeState = new ItemRuntimeState(definition)
+        };
+    }
+
+    private Behaviour ResolveBehaviour(ToolKind kind)
+    {
+        switch (kind)
+        {
+            case ToolKind.Placement: return placementTool;
+            case ToolKind.Inspect: return inspectTool;
+            case ToolKind.Mining: return miningTool;
+            case ToolKind.Targeting: return targetingTool;
+            default: return null;
+        }
+    }
+
+    private Behaviour ResolveBehaviour(Slot slot)
+    {
+        if (slot.definition != null && !string.IsNullOrWhiteSpace(slot.definition.behaviourId))
+        {
+            if (behaviourBindings != null)
+                foreach (BehaviourBinding binding in behaviourBindings)
+                    if (binding.id == slot.definition.behaviourId) return binding.behaviour;
+            Debug.LogWarning($"No item behaviour binding for '{slot.definition.behaviourId}'.", this);
+            return null;
+        }
+        return slot.toolBehaviour != null ? slot.toolBehaviour : ResolveBehaviour(slot.kind);
+    }
+
+    private void Update()
+    {
+        if (PauseState.IsPaused || slots == null) return;
+        foreach (Slot slot in slots)
+            slot.runtimeState?.AdvanceCooldown(ItemCooldownKind.Seconds, Time.deltaTime);
+    }
+
+    private void HandleWaveCompleted(int wave, int reward) => AdvanceItemCooldowns(ItemCooldownKind.Rounds, 1);
+    private void HandleEnemyKilled() => AdvanceItemCooldowns(ItemCooldownKind.Kills, 1);
+
+    private void AdvanceItemCooldowns(ItemCooldownKind kind, int amount)
+    {
+        if (slots == null) return;
+        foreach (Slot slot in slots) slot.runtimeState?.AdvanceCooldown(kind, amount);
+    }
 
     private void Awake()
     {
         controls = new PlayerControls();
+        waveSpawner = FindFirstObjectByType<WaveSpawner>();
 
         AutoWireSlotsIfNeeded();
 
@@ -121,7 +301,7 @@ public class ToolHotbar : MonoBehaviour
 
         for (int i = 0; i < slots.Length; i++)
         {
-            Behaviour slotBehaviour = slots[i].toolBehaviour;
+            Behaviour slotBehaviour = ResolveBehaviour(slots[i]);
             if (slotBehaviour != null && slotBehaviour != inspectTool)
                 slotBehaviour.enabled = false;
         }
@@ -134,6 +314,16 @@ public class ToolHotbar : MonoBehaviour
 
     private void OnEnable()
     {
+        if (equipmentSuspended)
+        {
+            equipmentSuspended = false;
+            ApplySlot(currentSlotIndex);
+        }
+        if (waveSpawner != null)
+        {
+            waveSpawner.OnWaveCompleted += HandleWaveCompleted;
+            waveSpawner.OnEnemyKilled += HandleEnemyKilled;
+        }
         controls.Enable();
 
         controls.Player.Slot1.performed += OnSlot1Performed;
@@ -152,6 +342,11 @@ public class ToolHotbar : MonoBehaviour
 
     private void OnDisable()
     {
+        if (waveSpawner != null)
+        {
+            waveSpawner.OnWaveCompleted -= HandleWaveCompleted;
+            waveSpawner.OnEnemyKilled -= HandleEnemyKilled;
+        }
         controls.Player.Slot1.performed -= OnSlot1Performed;
         controls.Player.Slot2.performed -= OnSlot2Performed;
         controls.Player.Slot3.performed -= OnSlot3Performed;
@@ -165,7 +360,11 @@ public class ToolHotbar : MonoBehaviour
         controls.Player.PrevSlot.performed -= OnPrevPerformed;
 
         controls.Disable();
+        UnequipCurrent();
+        equipmentSuspended = true;
     }
+
+    private void OnDestroy() => controls?.Dispose();
 
     private void OnSlot1Performed(InputAction.CallbackContext ctx) => EquipOwnedSlot(0);
     private void OnSlot2Performed(InputAction.CallbackContext ctx) => EquipOwnedSlot(1);
@@ -262,29 +461,16 @@ public class ToolHotbar : MonoBehaviour
 
     private void UnequipCurrent()
     {
-        if (placementTool != null)
-        {
-            placementTool.enabled = false;
-            placementTool.ClearSelectionAndHideGhost();
-        }
-
-        // Do NOT disable inspectTool here.
-        // It remains the global inspection / upgrade / sell authority.
-
+        if (equippedBehaviour is IToolEquipBehaviour handler)
+            handler.Unequip();
+        else if (equippedBehaviour != null && equippedBehaviour != inspectTool)
+            equippedBehaviour.enabled = false;
+        equippedBehaviour = null;
         if (hoverSelector != null)
         {
             hoverSelector.enabled = false;
         }
 
-        if (slots != null && currentSlotIndex >= 0 && currentSlotIndex < slots.Length)
-        {
-            if (slots[currentSlotIndex].toolBehaviour != null &&
-                slots[currentSlotIndex].toolBehaviour != placementTool &&
-                slots[currentSlotIndex].toolBehaviour != inspectTool)
-            {
-                slots[currentSlotIndex].toolBehaviour.enabled = false;
-            }
-        }
     }
 
     private void ApplySlot(int index)
@@ -298,61 +484,15 @@ public class ToolHotbar : MonoBehaviour
         if (inspectTool != null)
             inspectTool.enabled = true;
 
-        //Change this to change what can use the grid hover. Should just be these 3 for right now, maybe more in future.
-        bool wantsHover =
-    slot.kind == ToolKind.Placement ||
-    slot.kind == ToolKind.Inspect ||
-    slot.kind == ToolKind.Targeting;
-
+        equippedBehaviour = slot.kind != ToolKind.Empty ? ResolveBehaviour(slot) : null;
+        IToolEquipBehaviour handler = equippedBehaviour as IToolEquipBehaviour;
         if (hoverSelector != null)
-            hoverSelector.enabled = wantsHover;
-
-        switch (slot.kind)
-        {
-            case ToolKind.Empty:
-
-                if (placementTool != null)
-                    placementTool.enabled = false;
-
-                if (inspectTool != null)
-                    inspectTool.SetSelectionPermissions(false, false);
-
-                break;
-
-            case ToolKind.Placement:
-
-                if (placementTool != null)
-                    placementTool.enabled = true;
-
-                if (inspectTool != null)
-                    inspectTool.SetSelectionPermissions(true, false);
-
-                break;
-
-            case ToolKind.Inspect:
-
-                if (placementTool != null)
-                    placementTool.enabled = false;
-
-                if (inspectTool != null)
-                    inspectTool.SetSelectionPermissions(true, true);
-
-                break;
-
-            case ToolKind.Mining:
-            case ToolKind.Targeting:
-
-                if (placementTool != null)
-                    placementTool.enabled = false;
-
-                if (inspectTool != null)
-                    inspectTool.SetSelectionPermissions(false, false);
-
-                if (slot.toolBehaviour != null)
-                    slot.toolBehaviour.enabled = true;
-
-                break;
-        }
+            hoverSelector.enabled = handler != null && handler.UsesGridHover;
+        if (inspectTool != null)
+            inspectTool.SetSelectionPermissions(handler != null && handler.AllowsTowerSelection,
+                handler != null && handler.AllowsEmptyTileSelection);
+        if (handler != null) handler.Equip(slot.runtimeState);
+        else if (equippedBehaviour != null) equippedBehaviour.enabled = true;
 
         if (debugLogSwitching)
         {
@@ -360,6 +500,11 @@ public class ToolHotbar : MonoBehaviour
         }
 
         OnHotbarChanged?.Invoke();
+        if (lastAnnouncedItem != slot.runtimeState)
+        {
+            lastAnnouncedItem = slot.runtimeState;
+            OnEquippedItemChanged?.Invoke();
+        }
     }
 
     private int FindNearestOwnedSlot(int startIndex)
@@ -397,20 +542,9 @@ public class ToolHotbar : MonoBehaviour
                 slot.kind = slot.definition.toolKind;
 
             if (slot.toolBehaviour == null)
-            {
-                switch (slot.kind)
-                {
-                    case ToolKind.Placement:
-                        slot.toolBehaviour = placementTool;
-                        break;
-                    case ToolKind.Inspect:
-                        slot.toolBehaviour = inspectTool;
-                        break;
-                    case ToolKind.Targeting:
-                        slot.toolBehaviour = targetingTool;
-                        break;
-                }
-            }
+                slot.toolBehaviour = ResolveBehaviour(slot.kind);
+            if (slot.kind != ToolKind.Empty)
+                slot.runtimeState = new ItemRuntimeState(slot.definition);
 
             slots[i] = slot;
             if (slot.kind != ToolKind.Empty)
@@ -424,13 +558,15 @@ public class ToolHotbar : MonoBehaviour
         {
             kind = ToolKind.Placement,
             definition = null,
-            toolBehaviour = placementTool
+            toolBehaviour = placementTool,
+            runtimeState = new ItemRuntimeState(null)
         };
         slots[1] = new Slot
         {
             kind = ToolKind.Inspect,
             definition = null,
-            toolBehaviour = inspectTool
+            toolBehaviour = inspectTool,
+            runtimeState = new ItemRuntimeState(null)
         };
     }
 }

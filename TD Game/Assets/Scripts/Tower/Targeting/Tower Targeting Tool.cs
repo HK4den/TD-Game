@@ -1,8 +1,13 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class TowerTargetingTool : MonoBehaviour
+public class TowerTargetingTool : MonoBehaviour, IToolEquipBehaviour
 {
+    public bool UsesGridHover => true;
+    public bool AllowsTowerSelection => false;
+    public bool AllowsEmptyTileSelection => false;
+    public void Equip(ItemRuntimeState item) => enabled = true;
+    public void Unequip() => enabled = false;
     [Header("References")]
     [SerializeField] private Camera cam;
     [SerializeField] private ToolHotbar hotbar;
@@ -70,7 +75,7 @@ public class TowerTargetingTool : MonoBehaviour
         if (hotbar == null)
             return false;
 
-        return hotbar.CurrentSlot.kind == ToolHotbar.ToolKind.Targeting;
+        return hotbar.IsBehaviourEquipped(this);
     }
 
     private void UpdateHoveredTower()
